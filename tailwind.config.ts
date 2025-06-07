@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,10 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				'barbershop-gold': 'hsl(var(--barbershop-gold))',
+				'barbershop-dark': 'hsl(var(--barbershop-dark))',
+				'barbershop-navy': 'hsl(var(--barbershop-navy))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
