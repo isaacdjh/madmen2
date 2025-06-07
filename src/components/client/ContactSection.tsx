@@ -8,7 +8,7 @@ interface ContactSectionProps {
 
 const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
   return (
-    <section className="py-20 barbershop-gradient text-white">
+    <section id="contacto" className="py-20 barbershop-gradient text-white">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>

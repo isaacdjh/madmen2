@@ -7,31 +7,25 @@ import AdminPanel from '@/components/AdminPanel';
 import ClientWebsite from '@/components/ClientWebsite';
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState('client');
 
   const handleBookingClick = () => {
-    setCurrentView('booking');
+    // Los clientes siempre se quedan en la vista de cliente
+    setCurrentView('client');
   };
 
   const handleLearnMoreClick = () => {
-    setCurrentView('website');
+    setCurrentView('client');
   };
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'home':
-        return (
-          <HeroSection 
-            onBookingClick={handleBookingClick}
-            onLearnMoreClick={handleLearnMoreClick}
-          />
-        );
+      case 'client':
+        return <ClientWebsite onBookingClick={handleBookingClick} />;
       case 'booking':
         return <BookingPortal />;
       case 'admin':
         return <AdminPanel />;
-      case 'website':
-        return <ClientWebsite onBookingClick={handleBookingClick} />;
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-8">
@@ -61,18 +55,15 @@ const Index = () => {
           </div>
         );
       default:
-        return (
-          <HeroSection 
-            onBookingClick={handleBookingClick}
-            onLearnMoreClick={handleLearnMoreClick}
-          />
-        );
+        return <ClientWebsite onBookingClick={handleBookingClick} />;
     }
   };
 
   return (
     <div className="min-h-screen w-full">
-      <Navigation currentView={currentView} onViewChange={setCurrentView} />
+      {currentView !== 'client' && (
+        <Navigation currentView={currentView} onViewChange={setCurrentView} />
+      )}
       {renderCurrentView()}
     </div>
   );

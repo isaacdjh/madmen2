@@ -5,8 +5,10 @@ import ClientHeroSection from './client/ClientHeroSection';
 import LocationsSection from './client/LocationsSection';
 import ServicesSection from './client/ServicesSection';
 import BarbersSection from './client/BarbersSection';
+import ProductsSection from './client/ProductsSection';
 import TestimonialsSection from './client/TestimonialsSection';
 import ContactSection from './client/ContactSection';
+import ClientNavigation from './client/ClientNavigation';
 
 interface ClientWebsiteProps {
   onBookingClick: () => void;
@@ -21,9 +23,11 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
 
   return (
     <div className="min-h-screen">
+      <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
       <LocationsSection />
       <ServicesSection />
+      <ProductsSection />
       <BarbersSection />
       <TestimonialsSection />
       <ContactSection onBookingClick={() => setShowBookingForm(true)} />

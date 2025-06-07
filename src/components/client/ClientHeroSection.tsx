@@ -9,7 +9,7 @@ interface ClientHeroSectionProps {
 
 const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
   return (
-    <section className="relative h-screen flex items-center justify-center">
+    <section id="inicio" className="relative h-screen flex items-center justify-center">
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
