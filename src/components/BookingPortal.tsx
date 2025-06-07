@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, Scissors, User, CheckCircle, Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const BookingPortal = () => {
   const [selectedDate, setSelectedDate] = useState('');
