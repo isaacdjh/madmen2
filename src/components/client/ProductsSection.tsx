@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bottle2, Coffee, Gift } from 'lucide-react';
+import { Package, Coffee, Gift } from 'lucide-react';
 
 const ProductsSection = () => {
   const products = [
@@ -57,7 +57,7 @@ const ProductsSection = () => {
                   <Card key={index} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="w-16 h-16 bg-barbershop-gold/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <Bottle2 className="w-8 h-8 text-barbershop-gold" />
+                        <Package className="w-8 h-8 text-barbershop-gold" />
                       </div>
                       <CardTitle className="text-center">{product.name}</CardTitle>
                     </CardHeader>
