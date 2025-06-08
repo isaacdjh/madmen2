@@ -29,8 +29,11 @@ const AdminIndex = () => {
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-bold mb-4">Sistema de Cobros</h2>
-            <p className="text-muted-foreground">Panel de gestión de pagos y facturación - En desarrollo</p>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Sistema de Cobros</h1>
+              <p className="text-muted-foreground">Panel completo de gestión de pagos y facturación</p>
+            </div>
+            <PaymentSystem />
           </div>
         );
       case 'analytics':
