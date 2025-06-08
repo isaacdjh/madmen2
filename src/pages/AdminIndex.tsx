@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
@@ -8,6 +7,7 @@ import StaffManagement from '@/components/StaffManagement';
 import ServicesManager from '@/components/ServicesManager';
 import MarketingDashboard from '@/components/MarketingDashboard';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
+import PaymentSystem from '@/components/PaymentSystem';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
