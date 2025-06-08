@@ -27,13 +27,22 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
       <nav className="bg-barbershop-dark text-white shadow-2xl relative z-50 border-b-2 border-barbershop-gold">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-barbershop-gold rounded-full flex items-center justify-center shadow-lg">
-                <Scissors className="w-6 h-6 text-barbershop-dark" />
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
+                  alt="Mad Men Logo" 
+                  className="h-12 w-auto object-contain"
+                />
+                <img 
+                  src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
+                  alt="Mad Men Text" 
+                  className="h-8 w-auto object-contain"
+                />
               </div>
-              <div>
-                <span className="font-bold text-2xl text-barbershop-gold">Mad Men</span>
-                <p className="text-xs text-white/70">Barbería Tradicional</p>
+              <div className="border-l border-barbershop-gold/30 pl-4 ml-4">
+                <span className="text-sm font-medium text-barbershop-gold">Panel Administrativo</span>
+                <p className="text-xs text-white/70">Sistema de Gestión</p>
               </div>
             </div>
 
