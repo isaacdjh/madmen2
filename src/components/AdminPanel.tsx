@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,10 +23,10 @@ const AdminPanel = () => {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [filter, setFilter] = useState<'all' | 'confirmada' | 'cancelada' | 'completada'>('all');
 
-  // Centros sincronizados con el sistema de reservas del cliente
+  // Centros actualizados con los nombres correctos
   const locations = [
-    { id: 'condesa', name: 'Mad Men Condesa' },
-    { id: 'polanco', name: 'Mad Men Polanco' }
+    { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
+    { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
   ];
 
   const services = [
@@ -38,23 +37,18 @@ const AdminPanel = () => {
     { id: 'treatments', name: 'Tratamientos Especiales', price: '$40' }
   ];
 
-  // Barberos sincronizados por centro
+  // Barberos actualizados por centro con los nuevos IDs
   const barbersByLocation = {
-    condesa: [
+    'cristobal-bordiu': [
       { id: 'carlos', name: 'Carlos Mendoza' },
       { id: 'miguel', name: 'Miguel Rodríguez' },
       { id: 'antonio', name: 'Antonio López' }
     ],
-    polanco: [
+    'general-pardinas': [
       { id: 'ricardo', name: 'Ricardo Herrera' },
       { id: 'fernando', name: 'Fernando Castillo' },
       { id: 'alejandro', name: 'Alejandro Morales' }
     ]
-  };
-
-  // Función para obtener todos los barberos
-  const getAllBarbers = () => {
-    return [...barbersByLocation.condesa, ...barbersByLocation.polanco];
   };
 
   useEffect(() => {
@@ -86,6 +80,10 @@ const AdminPanel = () => {
   const filteredAppointments = appointments.filter(apt => 
     filter === 'all' || apt.status === filter
   );
+
+  const getAllBarbers = () => {
+    return [...barbersByLocation['cristobal-bordiu'], ...barbersByLocation['general-pardinas']];
+  };
 
   const getLocationName = (id: string) => {
     const location = locations.find(l => l.id === id);

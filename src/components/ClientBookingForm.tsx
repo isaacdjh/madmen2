@@ -23,17 +23,17 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     customerEmail: ''
   });
 
-  // Centros sincronizados con el calendario administrativo
+  // Centros actualizados con los nombres correctos
   const locations = [
     { 
-      id: 'condesa', 
-      name: 'Mad Men Condesa', 
+      id: 'cristobal-bordiu', 
+      name: 'Mad Men Cristóbal Bordiú', 
       address: 'Cristóbal Bordiú 29, 28003 Madrid',
       phone: '+34 916 832 731'
     },
     { 
-      id: 'polanco', 
-      name: 'Mad Men Polanco', 
+      id: 'general-pardinas', 
+      name: 'Mad Men General Pardiñas', 
       address: 'General Pardiñas 101, 28006 Madrid',
       phone: '+34 910 597 766'
     }
@@ -47,14 +47,14 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     { id: 'treatments', name: 'Tratamientos Especiales', price: '25€', duration: '60 min' }
   ];
 
-  // Barberos sincronizados exactamente con el calendario administrativo
+  // Barberos actualizados por centro con los nuevos IDs
   const barbersByLocation = {
-    condesa: [
+    'cristobal-bordiu': [
       { id: 'carlos', name: 'Carlos Mendoza', specialty: 'Cortes Clásicos' },
       { id: 'miguel', name: 'Miguel Rodríguez', specialty: 'Barbas y Afeitado' },
       { id: 'antonio', name: 'Antonio López', specialty: 'Estilos Modernos' }
     ],
-    polanco: [
+    'general-pardinas': [
       { id: 'ricardo', name: 'Ricardo Herrera', specialty: 'Cortes Clásicos' },
       { id: 'fernando', name: 'Fernando Castillo', specialty: 'Barbas y Afeitado' },
       { id: 'alejandro', name: 'Alejandro Morales', specialty: 'Estilos Modernos' }
@@ -62,10 +62,9 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   };
 
   const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
-    '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'
+    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+    '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'
   ];
 
   const getAvailableBarbers = () => {
@@ -91,15 +90,13 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   };
 
   const handleSubmit = () => {
-    // Si se seleccionó "cualquier barbero", asignar uno aleatorio
     const finalBarber = bookingData.barber === 'any' || !bookingData.barber ? assignRandomBarber() : bookingData.barber;
     
-    // Crear la cita con el formato exacto para el calendario administrativo
     const appointment = {
       id: Date.now().toString(),
-      location: bookingData.location, // condesa o polanco
+      location: bookingData.location, // cristobal-bordiu o general-pardinas
       service: bookingData.service,
-      barber: finalBarber, // ID del barbero exacto
+      barber: finalBarber,
       date: bookingData.date,
       time: bookingData.time,
       customerName: bookingData.customerName,
@@ -109,17 +106,13 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
       createdAt: new Date().toISOString()
     };
     
-    console.log('Nueva cita creada:', appointment);
-    console.log('Centro:', bookingData.location, 'Barbero asignado:', finalBarber);
+    console.log('Cita creada para el calendario:', appointment);
     
-    // Guardar en localStorage para sincronizar con el calendario administrativo
     const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
     appointments.push(appointment);
     localStorage.setItem('appointments', JSON.stringify(appointments));
     
-    // Actualizar el estado para mostrar el barbero final asignado
     setBookingData(prev => ({ ...prev, barber: finalBarber }));
-    
     setStep(5);
   };
 
@@ -145,7 +138,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   const getSelectedBarberName = () => {
     if (bookingData.barber === 'any') return 'Cualquier barbero disponible';
     if (!bookingData.barber) return '';
-    const allBarbers = [...barbersByLocation.condesa, ...barbersByLocation.polanco];
+    const allBarbers = [...barbersByLocation['cristobal-bordiu'], ...barbersByLocation['general-pardinas']];
     const barber = allBarbers.find(b => b.id === bookingData.barber);
     return barber ? barber.name : '';
   };
@@ -153,7 +146,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   const getFinalBarberName = () => {
     if (bookingData.barber === 'any' || !bookingData.barber) {
       const assignedBarber = assignRandomBarber();
-      const allBarbers = [...barbersByLocation.condesa, ...barbersByLocation.polanco];
+      const allBarbers = [...barbersByLocation['cristobal-bordiu'], ...barbersByLocation['general-pardinas']];
       const barber = allBarbers.find(b => b.id === assignedBarber);
       return barber ? `${barber.name} (asignado automáticamente)` : 'Barbero disponible';
     }
@@ -258,7 +251,6 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                       )}
                       onClick={() => {
                         updateBookingData('location', location.id);
-                        // Reset barber selection when location changes
                         if (bookingData.barber) {
                           updateBookingData('barber', '');
                         }
@@ -317,7 +309,6 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                     <p className="text-muted-foreground">Primero selecciona una ubicación para ver los barberos disponibles.</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {/* Opción de cualquier barbero */}
                       <div
                         className={cn(
                           "p-3 border-2 rounded-lg cursor-pointer transition-all",
