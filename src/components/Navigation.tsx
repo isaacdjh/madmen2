@@ -1,8 +1,9 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays } from 'lucide-react';
+import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationProps {
   currentView: string;
@@ -11,9 +12,10 @@ interface NavigationProps {
 
 const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navItems = [
-    { id: 'home', label: 'Inicio', icon: Calendar },
+    { id: 'home', label: 'Inicio', icon: Home, isClientView: true },
     { id: 'calendar', label: 'Calendario', icon: CalendarDays },
     { id: 'booking', label: 'Reservas', icon: Calendar },
     { id: 'admin', label: 'Administración', icon: Users },
@@ -22,6 +24,14 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
     { id: 'clients', label: 'Clientes', icon: Users },
     { id: 'marketing', label: 'Marketing', icon: Settings },
   ];
+
+  const handleNavClick = (item: any) => {
+    if (item.isClientView) {
+      navigate('/');
+    } else {
+      onViewChange(item.id);
+    }
+  };
 
   return (
     <>
@@ -33,12 +43,12 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
                 <img 
                   src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
                   alt="Mad Men Logo" 
-                  className="h-16 w-auto object-contain"
+                  className="h-20 w-auto object-contain"
                 />
                 <img 
                   src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
                   alt="Mad Men Text" 
-                  className="h-12 w-auto object-contain"
+                  className="h-16 w-auto object-contain"
                 />
               </div>
               <div className="border-l border-barbershop-gold/30 pl-6 ml-6">
@@ -51,14 +61,15 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
             <div className="hidden lg:flex space-x-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = item.isClientView ? false : currentView === item.id;
                 return (
                   <Button
                     key={item.id}
-                    variant={currentView === item.id ? "secondary" : "ghost"}
-                    onClick={() => onViewChange(item.id)}
+                    variant={isActive ? "secondary" : "ghost"}
+                    onClick={() => handleNavClick(item)}
                     className={cn(
                       "text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold transition-all duration-300 font-medium px-4 py-2 rounded-lg",
-                      currentView === item.id && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 shadow-lg"
+                      isActive && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 shadow-lg"
                     )}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -86,17 +97,18 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
             <div className="px-4 py-4 space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = item.isClientView ? false : currentView === item.id;
                 return (
                   <Button
                     key={item.id}
-                    variant={currentView === item.id ? "secondary" : "ghost"}
+                    variant={isActive ? "secondary" : "ghost"}
                     onClick={() => {
-                      onViewChange(item.id);
+                      handleNavClick(item);
                       setIsMobileMenuOpen(false);
                     }}
                     className={cn(
                       "w-full justify-start text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold transition-all duration-300 py-3",
-                      currentView === item.id && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
+                      isActive && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
                     )}
                   >
                     <Icon className="w-5 h-5 mr-3" />
