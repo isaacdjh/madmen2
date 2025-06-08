@@ -1,472 +1,382 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Calendar, Clock, User, MapPin, ArrowLeft, CheckCircle, Shuffle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ArrowLeft, Calendar, Clock, MapPin, User, Phone, Mail, Scissors, CheckCircle } from 'lucide-react';
+
+interface Location {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+}
+
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+}
+
+interface Barber {
+  id: number;
+  name: string;
+}
+
+interface BookingData {
+  location: number | null;
+  service: number | null;
+  barber: number | null;
+  date: string;
+  time: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+}
 
 interface ClientBookingFormProps {
   onBack: () => void;
 }
 
 const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
-  const [step, setStep] = useState(1);
-  const [bookingData, setBookingData] = useState({
-    location: '',
-    service: '',
-    barber: '',
+  const [currentStep, setCurrentStep] = useState(1);
+  const [bookingData, setBookingData] = useState<BookingData>({
+    location: null,
+    service: null,
+    barber: null,
     date: '',
     time: '',
     customerName: '',
     customerPhone: '',
-    customerEmail: ''
+    customerEmail: '',
   });
 
-  const locations = [
-    { 
-      id: 'cristobal-bordiu', 
-      name: 'Mad Men Cristóbal Bordiú', 
-      address: 'Cristóbal Bordiú 29, 28003 Madrid',
-      phone: '+34 916 832 731'
-    },
-    { 
-      id: 'general-pardinas', 
-      name: 'Mad Men General Pardiñas', 
-      address: 'General Pardiñas 101, 28006 Madrid',
-      phone: '+34 910 597 766'
-    }
+  const locations: Location[] = [
+    { id: 1, name: 'Mad Men Chamberí', address: 'Calle de Sta Engracia, 131', phone: '+34 910 52 78 65' },
+    { id: 2, name: 'Mad Men Ríos Rosas', address: 'Calle de Bretón de los Herreros, 11', phone: '+34 91 442 37 85' },
+    { id: 3, name: 'Mad Men Arapiles', address: 'Calle de Arapiles, 7', phone: '+34 91 593 92 49' },
   ];
 
-  const services = [
-    { id: 'classic-cut', name: 'Corte Clásico', price: '30€', duration: '45 min' },
-    { id: 'beard-trim', name: 'Arreglo de Barba', price: '15€', duration: '30 min' },
-    { id: 'cut-beard', name: 'Corte + Barba', price: '40€', duration: '75 min' },
-    { id: 'shave', name: 'Afeitado Tradicional', price: '20€', duration: '45 min' },
-    { id: 'treatments', name: 'Tratamientos Especiales', price: '25€', duration: '60 min' }
+  const services: Service[] = [
+    { id: 1, name: 'Corte de pelo', price: 20 },
+    { id: 2, name: 'Arreglo de barba', price: 15 },
+    { id: 3, name: 'Afeitado clásico', price: 25 },
   ];
 
-  const barbersByLocation = {
-    'cristobal-bordiu': [
-      { id: 'luis-bracho', name: 'Luis Bracho', specialty: 'Cortes Clásicos' },
-      { id: 'jesus-hernandez', name: 'Jesús Hernández', specialty: 'Barbas y Afeitado' },
-      { id: 'luis-alfredo', name: 'Luis Alfredo', specialty: 'Estilos Modernos' },
-      { id: 'dionys-bracho', name: 'Dionys Bracho', specialty: 'Tratamientos Especiales' }
-    ],
-    'general-pardinas': [
-      { id: 'isaac-hernandez', name: 'Isaac Hernández', specialty: 'Cortes Clásicos' },
-      { id: 'carlos-lopez', name: 'Carlos López', specialty: 'Barbas y Afeitado' },
-      { id: 'luis-urbinez', name: 'Luis Urbiñez', specialty: 'Estilos Modernos' },
-      { id: 'randy-valdespino', name: 'Randy Valdespino', specialty: 'Tratamientos Especiales' }
-    ]
-  };
-
-  const timeSlots = [
-    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-    '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'
+  const barbers: Barber[] = [
+    { id: 1, name: 'Carlos' },
+    { id: 2, name: 'Miguel' },
+    { id: 3, name: 'David' },
   ];
 
-  const getAvailableBarbers = () => {
-    if (!bookingData.location) return [];
-    return barbersByLocation[bookingData.location as keyof typeof barbersByLocation] || [];
+  const updateBookingData = (key: keyof BookingData, value: any) => {
+    setBookingData({ ...bookingData, [key]: value });
   };
 
-  const assignRandomBarber = () => {
-    const availableBarbers = getAvailableBarbers();
-    if (availableBarbers.length > 0) {
-      const randomIndex = Math.floor(Math.random() * availableBarbers.length);
-      return availableBarbers[randomIndex].id;
-    }
-    return '';
+  const nextStep = () => {
+    setCurrentStep(currentStep + 1);
   };
 
-  const handleNext = () => {
-    if (step < 4) setStep(step + 1);
-  };
-
-  const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  const handleSubmit = () => {
-    // Si no se seleccionó barbero específico (o se seleccionó "cualquier barbero"), asignar uno aleatorio
-    const finalBarber = bookingData.barber === 'any' || !bookingData.barber ? assignRandomBarber() : bookingData.barber;
-    
-    // Simular guardado de cita
-    const appointment = {
-      id: Date.now().toString(),
-      ...bookingData,
-      barber: finalBarber,
-      status: 'confirmada',
-      createdAt: new Date().toISOString()
-    };
-    
-    console.log('Cita creada:', appointment);
-    
-    // Guardar en localStorage para simular base de datos
-    const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    appointments.push(appointment);
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-    
-    setStep(5);
-  };
-
-  const updateBookingData = (field: string, value: string) => {
-    setBookingData(prev => ({ ...prev, [field]: value }));
+  const prevStep = () => {
+    setCurrentStep(currentStep - 1);
   };
 
   const getSelectedLocationName = () => {
-    const location = locations.find(l => l.id === bookingData.location);
-    return location ? location.name : '';
+    const location = locations.find((loc) => loc.id === bookingData.location);
+    return location ? location.name : 'No seleccionado';
   };
 
   const getSelectedServiceName = () => {
-    const service = services.find(s => s.id === bookingData.service);
-    return service ? service.name : '';
+    const service = services.find((serv) => serv.id === bookingData.service);
+    return service ? service.name : 'No seleccionado';
   };
 
-  const getSelectedServicePrice = () => {
-    const service = services.find(s => s.id === bookingData.service);
-    return service ? service.price : '';
+    const getSelectedServicePrice = () => {
+    const service = services.find((serv) => serv.id === bookingData.service);
+    return service ? service.price + '€' : 'No seleccionado';
   };
 
   const getSelectedBarberName = () => {
-    if (bookingData.barber === 'any') return 'Cualquier barbero disponible';
-    if (!bookingData.barber) return '';
-    const barber = getAvailableBarbers().find(b => b.id === bookingData.barber);
-    return barber ? barber.name : '';
+    const barber = barbers.find((barb) => barb.id === bookingData.barber);
+    return barber ? barber.name : 'No seleccionado';
   };
 
-  if (step === 5) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            <Card className="text-center">
-              <CardContent className="p-12">
-                <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
-                <h2 className="text-3xl font-bold text-barbershop-dark mb-4">¡Cita Confirmada!</h2>
-                <p className="text-muted-foreground mb-8">
-                  Tu cita ha sido reservada exitosamente. Recibirás una confirmación por email y SMS.
-                </p>
-                <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-                  <h3 className="font-bold mb-4">Detalles de tu cita:</h3>
-                  <div className="space-y-2 text-sm">
+  const handleConfirmBooking = () => {
+    console.log('Reserva confirmada:', bookingData);
+    alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
+    onBack();
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Selecciona una ubicación
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {bookingData.location && (
+                <div className="bg-card border border-primary/20 rounded-lg p-6 mb-8 text-left">
+                  <h3 className="font-bold mb-4 text-primary">Detalles de tu cita:</h3>
+                  <div className="space-y-2 text-sm text-card-foreground">
                     <p><strong>Ubicación:</strong> {getSelectedLocationName()}</p>
                     <p><strong>Servicio:</strong> {getSelectedServiceName()}</p>
                     <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
                     <p><strong>Fecha:</strong> {bookingData.date}</p>
                     <p><strong>Hora:</strong> {bookingData.time}</p>
-                    <p><strong>Cliente:</strong> {bookingData.customerName}</p>
                   </div>
                 </div>
-                <Button onClick={onBack} className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90">
-                  Volver al Inicio
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
+              )}
+              
+              <div className="grid gap-4">
+                {locations.map((location) => (
+                  <div
+                    key={location.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      bookingData.location === location.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => updateBookingData('location', location.id)}
+                  >
+                    <h3 className="font-semibold">{location.name}</h3>
+                    <p className="text-sm text-muted-foreground">{location.address}</p>
+                    <p className="text-sm text-muted-foreground">{location.phone}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 2:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Scissors className="w-5 h-5" />
+                Selecciona un servicio
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {services.map((service) => (
+                  <div
+                    key={service.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      bookingData.service === service.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => updateBookingData('service', service.id)}
+                  >
+                    <h3 className="font-semibold">{service.name}</h3>
+                    <p className="text-sm text-muted-foreground">{service.price}€</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 3:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Selecciona un barbero
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {barbers.map((barber) => (
+                  <div
+                    key={barber.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      bookingData.barber === barber.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => updateBookingData('barber', barber.id)}
+                  >
+                    <h3 className="font-semibold">{barber.name}</h3>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6">
+                <label htmlFor="date" className="block text-sm font-medium text-muted-foreground">
+                  Fecha:
+                </label>
+                <input
+                  type="date"
+                  id="date"
+                  className="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring focus:ring-primary/50 focus:border-primary text-sm"
+                  value={bookingData.date}
+                  onChange={(e) => updateBookingData('date', e.target.value)}
+                />
+              </div>
+              <div className="mt-4">
+                <label htmlFor="time" className="block text-sm font-medium text-muted-foreground">
+                  Hora:
+                </label>
+                <select
+                  id="time"
+                  className="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring focus:ring-primary/50 focus:border-primary text-sm"
+                  value={bookingData.time}
+                  onChange={(e) => updateBookingData('time', e.target.value)}
+                >
+                  <option value="">Selecciona una hora</option>
+                  {[...Array(12)].map((_, i) => {
+                    const hour = i + 9;
+                    return (
+                      <>
+                        <option key={`${hour}:00`} value={`${hour}:00`}>{`${hour}:00`}</option>
+                        <option key={`${hour}:30`} value={`${hour}:30`}>{`${hour}:30`}</option>
+                      </>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="mt-4">
+                <label htmlFor="customerName" className="block text-sm font-medium text-muted-foreground">
+                  Nombre:
+                </label>
+                <input
+                  type="text"
+                  id="customerName"
+                  className="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring focus:ring-primary/50 focus:border-primary text-sm"
+                  value={bookingData.customerName}
+                  onChange={(e) => updateBookingData('customerName', e.target.value)}
+                />
+              </div>
+              <div className="mt-4">
+                <label htmlFor="customerPhone" className="block text-sm font-medium text-muted-foreground">
+                  Teléfono:
+                </label>
+                <input
+                  type="tel"
+                  id="customerPhone"
+                  className="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring focus:ring-primary/50 focus:border-primary text-sm"
+                  value={bookingData.customerPhone}
+                  onChange={(e) => updateBookingData('customerPhone', e.target.value)}
+                />
+              </div>
+              <div className="mt-4">
+                <label htmlFor="customerEmail" className="block text-sm font-medium text-muted-foreground">
+                  Email:
+                </label>
+                <input
+                  type="email"
+                  id="customerEmail"
+                  className="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring focus:ring-primary/50 focus:border-primary text-sm"
+                  value={bookingData.customerEmail}
+                  onChange={(e) => updateBookingData('customerEmail', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 4:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                Confirmar reserva
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-6 mb-6">
+                <h3 className="font-bold mb-4 text-primary">Resumen de tu cita:</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span><strong>Ubicación:</strong> {getSelectedLocationName()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Scissors className="w-4 h-4 text-primary" />
+                    <span><strong>Servicio:</strong> {getSelectedServiceName()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    <span><strong>Barbero:</strong> {getSelectedBarberName()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    <span><strong>Fecha:</strong> {bookingData.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span><strong>Hora:</strong> {bookingData.time}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    <span><strong>Cliente:</strong> {bookingData.customerName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <span><strong>Teléfono:</strong> {bookingData.customerPhone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-primary" />
+                    <span><strong>Email:</strong> {bookingData.customerEmail}</span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-primary/20">
+                    <span className="text-lg font-bold text-primary">Precio: {getSelectedServicePrice()}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-muted-foreground">
+                  Al confirmar esta reserva, recibirás un email de confirmación con todos los detalles. 
+                  Si necesitas hacer cambios, puedes contactarnos por teléfono.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center mb-8">
-            <Button variant="ghost" onClick={step === 1 ? onBack : handleBack} className="mr-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {step === 1 ? 'Volver' : 'Anterior'}
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-barbershop-dark">Reservar Cita</h1>
-              <p className="text-muted-foreground">Paso {step} de 4</p>
+    <div className="container mx-auto py-12">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-2xl font-bold">
+            <div className="flex items-center gap-4">
+              <Scissors className="w-6 h-6" />
+              <span>Nueva Reserva</span>
             </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center">
-              {[1, 2, 3, 4].map((stepNum) => (
-                <div key={stepNum} className="flex items-center">
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
-                    step >= stepNum 
-                      ? "bg-barbershop-gold text-barbershop-dark" 
-                      : "bg-gray-200 text-gray-500"
-                  )}>
-                    {stepNum}
-                  </div>
-                  {stepNum < 4 && (
-                    <div className={cn(
-                      "w-12 h-1 mx-2",
-                      step > stepNum ? "bg-barbershop-gold" : "bg-gray-200"
-                    )} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Step Content */}
-          {step === 1 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MapPin className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Selecciona Ubicación
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {locations.map((location) => (
-                    <div
-                      key={location.id}
-                      className={cn(
-                        "p-4 border-2 rounded-lg cursor-pointer transition-all",
-                        bookingData.location === location.id
-                          ? "border-barbershop-gold bg-barbershop-gold/10"
-                          : "border-gray-200 hover:border-barbershop-gold/50"
-                      )}
-                      onClick={() => {
-                        updateBookingData('location', location.id);
-                        // Reset barber selection when location changes
-                        if (bookingData.barber) {
-                          updateBookingData('barber', '');
-                        }
-                      }}
-                    >
-                      <h3 className="font-bold text-barbershop-dark">{location.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{location.address}</p>
-                      <p className="text-sm text-barbershop-gold font-medium">{location.phone}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {step === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Selecciona Servicio, Barbero y Horario
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                {/* Services */}
-                <div>
-                  <h3 className="font-bold mb-4">Servicios</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {services.map((service) => (
-                      <div
-                        key={service.id}
-                        className={cn(
-                          "p-3 border-2 rounded-lg cursor-pointer transition-all",
-                          bookingData.service === service.id
-                            ? "border-barbershop-gold bg-barbershop-gold/10"
-                            : "border-gray-200 hover:border-barbershop-gold/50"
-                        )}
-                        onClick={() => updateBookingData('service', service.id)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="font-bold">{service.name}</h4>
-                            <p className="text-sm text-muted-foreground">{service.duration}</p>
-                          </div>
-                          <span className="font-bold text-barbershop-gold">{service.price}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Barbers */}
-                <div>
-                  <h3 className="font-bold mb-4">Barberos</h3>
-                  {!bookingData.location ? (
-                    <p className="text-muted-foreground">Primero selecciona una ubicación para ver los barberos disponibles.</p>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {/* Opción de cualquier barbero */}
-                      <div
-                        className={cn(
-                          "p-3 border-2 rounded-lg cursor-pointer transition-all",
-                          bookingData.barber === 'any'
-                            ? "border-barbershop-gold bg-barbershop-gold/10"
-                            : "border-gray-200 hover:border-barbershop-gold/50"
-                        )}
-                        onClick={() => updateBookingData('barber', 'any')}
-                      >
-                        <div className="flex items-center">
-                          <Shuffle className="w-5 h-5 mr-3 text-barbershop-gold" />
-                          <div>
-                            <h4 className="font-bold">Cualquier barbero disponible</h4>
-                            <p className="text-sm text-muted-foreground">Te asignaremos un barbero experto</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {getAvailableBarbers().map((barber) => (
-                        <div
-                          key={barber.id}
-                          className={cn(
-                            "p-3 border-2 rounded-lg cursor-pointer transition-all",
-                            bookingData.barber === barber.id
-                              ? "border-barbershop-gold bg-barbershop-gold/10"
-                              : "border-gray-200 hover:border-barbershop-gold/50"
-                          )}
-                          onClick={() => updateBookingData('barber', barber.id)}
-                        >
-                          <h4 className="font-bold">{barber.name}</h4>
-                          <p className="text-sm text-muted-foreground">{barber.specialty}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Date and Time */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="font-bold mb-2 block">Fecha</Label>
-                    <Input
-                      type="date"
-                      value={bookingData.date}
-                      onChange={(e) => updateBookingData('date', e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                    />
-                  </div>
-                  <div>
-                    <Label className="font-bold mb-2 block">Hora</Label>
-                    <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                      {timeSlots.map((time) => (
-                        <Button
-                          key={time}
-                          variant={bookingData.time === time ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => updateBookingData('time', time)}
-                          className={cn(
-                            bookingData.time === time 
-                              ? "bg-barbershop-gold text-barbershop-dark" 
-                              : "border-barbershop-gold/50"
-                          )}
-                        >
-                          {time}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {step === 3 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Información de Contacto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="name" className="font-bold">Nombre Completo</Label>
-                    <Input
-                      id="name"
-                      value={bookingData.customerName}
-                      onChange={(e) => updateBookingData('customerName', e.target.value)}
-                      placeholder="Tu nombre completo"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone" className="font-bold">Teléfono</Label>
-                    <Input
-                      id="phone"
-                      value={bookingData.customerPhone}
-                      onChange={(e) => updateBookingData('customerPhone', e.target.value)}
-                      placeholder="+34 123 456 789"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label htmlFor="email" className="font-bold">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={bookingData.customerEmail}
-                      onChange={(e) => updateBookingData('customerEmail', e.target.value)}
-                      placeholder="tu@email.com"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {step === 4 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Confirmar Reserva
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                  <h3 className="font-bold mb-4">Resumen de tu cita:</h3>
-                  <div className="space-y-2">
-                    <p><strong>Ubicación:</strong> {getSelectedLocationName()}</p>
-                    <p><strong>Servicio:</strong> {getSelectedServiceName()}</p>
-                    <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
-                    <p><strong>Fecha:</strong> {bookingData.date}</p>
-                    <p><strong>Hora:</strong> {bookingData.time}</p>
-                    <p><strong>Cliente:</strong> {bookingData.customerName}</p>
-                    <p><strong>Teléfono:</strong> {bookingData.customerPhone}</p>
-                    <p><strong>Email:</strong> {bookingData.customerEmail}</p>
-                    <p><strong>Precio:</strong> {getSelectedServicePrice()}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Navigation Buttons */}
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver
+          </Button>
+        </CardHeader>
+        <CardContent className="pl-6 pt-0">
+          {renderStepContent()}
           <div className="flex justify-between mt-8">
-            <div></div>
-            <div className="space-x-4">
-              {step < 4 ? (
-                <Button 
-                  onClick={handleNext}
-                  disabled={
-                    (step === 1 && !bookingData.location) ||
-                    (step === 2 && (!bookingData.service || !bookingData.barber || !bookingData.date || !bookingData.time)) ||
-                    (step === 3 && (!bookingData.customerName || !bookingData.customerPhone || !bookingData.customerEmail))
-                  }
-                  className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-                >
-                  Siguiente
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleSubmit}
-                  className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-                >
-                  Confirmar Reserva
-                </Button>
-              )}
-            </div>
+            {currentStep > 1 && (
+              <Button variant="secondary" onClick={prevStep}>
+                Anterior
+              </Button>
+            )}
+            {currentStep < 4 ? (
+              <Button onClick={nextStep}>Siguiente</Button>
+            ) : (
+              <Button onClick={handleConfirmBooking}>Confirmar Reserva</Button>
+            )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
