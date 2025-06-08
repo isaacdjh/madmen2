@@ -23,7 +23,7 @@ const AdminPanel = () => {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [filter, setFilter] = useState<'all' | 'confirmada' | 'cancelada' | 'completada'>('all');
 
-  // Centros actualizados con los nombres correctos
+  // Centros con nombres actualizados
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
     { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
@@ -37,17 +37,19 @@ const AdminPanel = () => {
     { id: 'treatments', name: 'Tratamientos Especiales', price: '$40' }
   ];
 
-  // Barberos actualizados por centro con los nuevos IDs
+  // Barberos actualizados con los nombres reales de cada centro
   const barbersByLocation = {
     'cristobal-bordiu': [
-      { id: 'carlos', name: 'Carlos Mendoza' },
-      { id: 'miguel', name: 'Miguel Rodríguez' },
-      { id: 'antonio', name: 'Antonio López' }
+      { id: 'luis-bracho', name: 'Luis Bracho' },
+      { id: 'jesus-hernandez', name: 'Jesús Hernández' },
+      { id: 'luis-alfredo', name: 'Luis Alfredo' },
+      { id: 'dionys-bracho', name: 'Dionys Bracho' }
     ],
     'general-pardinas': [
-      { id: 'ricardo', name: 'Ricardo Herrera' },
-      { id: 'fernando', name: 'Fernando Castillo' },
-      { id: 'alejandro', name: 'Alejandro Morales' }
+      { id: 'isaac-hernandez', name: 'Isaac Hernández' },
+      { id: 'carlos-lopez', name: 'Carlos López' },
+      { id: 'luis-urbinez', name: 'Luis Urbiñez' },
+      { id: 'randy-valdespino', name: 'Randy Valdespino' }
     ]
   };
 

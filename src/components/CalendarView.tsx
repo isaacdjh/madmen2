@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,23 +22,27 @@ interface Appointment {
 const CalendarView = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedLocation, setSelectedLocation] = useState('condesa');
+  const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
 
+  // Centros actualizados con nombres correctos
   const locations = [
-    { id: 'condesa', name: 'Mad Men Condesa' },
-    { id: 'polanco', name: 'Mad Men Polanco' }
+    { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
+    { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
   ];
 
+  // Barberos actualizados con los nombres reales de cada centro
   const barbersByLocation = {
-    condesa: [
-      { id: 'carlos', name: 'Carlos Mendoza' },
-      { id: 'miguel', name: 'Miguel Rodríguez' },
-      { id: 'antonio', name: 'Antonio López' }
+    'cristobal-bordiu': [
+      { id: 'luis-bracho', name: 'Luis Bracho' },
+      { id: 'jesus-hernandez', name: 'Jesús Hernández' },
+      { id: 'luis-alfredo', name: 'Luis Alfredo' },
+      { id: 'dionys-bracho', name: 'Dionys Bracho' }
     ],
-    polanco: [
-      { id: 'ricardo', name: 'Ricardo Herrera' },
-      { id: 'fernando', name: 'Fernando Castillo' },
-      { id: 'alejandro', name: 'Alejandro Morales' }
+    'general-pardinas': [
+      { id: 'isaac-hernandez', name: 'Isaac Hernández' },
+      { id: 'carlos-lopez', name: 'Carlos López' },
+      { id: 'luis-urbinez', name: 'Luis Urbiñez' },
+      { id: 'randy-valdespino', name: 'Randy Valdespino' }
     ]
   };
 

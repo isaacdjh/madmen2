@@ -23,7 +23,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     customerEmail: ''
   });
 
-  // Centros actualizados con los nombres correctos
+  // Centros actualizados para coincidir con el sistema administrativo
   const locations = [
     { 
       id: 'cristobal-bordiu', 
@@ -47,17 +47,19 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     { id: 'treatments', name: 'Tratamientos Especiales', price: '25€', duration: '60 min' }
   ];
 
-  // Barberos actualizados por centro con los nuevos IDs
+  // Barberos actualizados con los nombres reales que coinciden con el sistema administrativo
   const barbersByLocation = {
     'cristobal-bordiu': [
-      { id: 'carlos', name: 'Carlos Mendoza', specialty: 'Cortes Clásicos' },
-      { id: 'miguel', name: 'Miguel Rodríguez', specialty: 'Barbas y Afeitado' },
-      { id: 'antonio', name: 'Antonio López', specialty: 'Estilos Modernos' }
+      { id: 'luis-bracho', name: 'Luis Bracho', specialty: 'Cortes Clásicos' },
+      { id: 'jesus-hernandez', name: 'Jesús Hernández', specialty: 'Barbas y Afeitado' },
+      { id: 'luis-alfredo', name: 'Luis Alfredo', specialty: 'Estilos Modernos' },
+      { id: 'dionys-bracho', name: 'Dionys Bracho', specialty: 'Tratamientos Especiales' }
     ],
     'general-pardinas': [
-      { id: 'ricardo', name: 'Ricardo Herrera', specialty: 'Cortes Clásicos' },
-      { id: 'fernando', name: 'Fernando Castillo', specialty: 'Barbas y Afeitado' },
-      { id: 'alejandro', name: 'Alejandro Morales', specialty: 'Estilos Modernos' }
+      { id: 'isaac-hernandez', name: 'Isaac Hernández', specialty: 'Cortes Clásicos' },
+      { id: 'carlos-lopez', name: 'Carlos López', specialty: 'Barbas y Afeitado' },
+      { id: 'luis-urbinez', name: 'Luis Urbiñez', specialty: 'Estilos Modernos' },
+      { id: 'randy-valdespino', name: 'Randy Valdespino', specialty: 'Tratamientos Especiales' }
     ]
   };
 
@@ -94,7 +96,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     
     const appointment = {
       id: Date.now().toString(),
-      location: bookingData.location, // cristobal-bordiu o general-pardinas
+      location: bookingData.location,
       service: bookingData.service,
       barber: finalBarber,
       date: bookingData.date,
