@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Mail, MapPin, Phone } from 'lucide-react';
+import { Calendar, Clock, Mail, MapPin, Phone, Instagram } from 'lucide-react';
 
 interface ContactSectionProps {
   onBookingClick: () => void;
@@ -14,19 +14,35 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
           <div>
             <h2 className="text-4xl font-bold mb-8">Contáctanos</h2>
             <div className="space-y-6">
-              <div className="flex items-center">
-                <MapPin className="w-6 h-6 mr-4 gold-accent" />
-                <div>
-                  <h4 className="font-semibold">Dirección</h4>
-                  <p className="opacity-90">Av. Principal 123, Centro Histórico</p>
+              <div>
+                <h3 className="text-xl font-semibold mb-4 gold-accent">Mad Men Río Rosa</h3>
+                <div className="space-y-3 ml-4">
+                  <div className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-3 gold-accent" />
+                    <p className="opacity-90">Cristóbal Bordiú 29, Barrio Río Rosa, Madrid</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="w-5 h-5 mr-3 gold-accent" />
+                    <a href="tel:+34916832731" className="opacity-90 hover:text-accent transition-colors">
+                      +34 916 832 731
+                    </a>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-center">
-                <Phone className="w-6 h-6 mr-4 gold-accent" />
-                <div>
-                  <h4 className="font-semibold">Teléfono</h4>
-                  <p className="opacity-90">+52 (55) 1234-5678</p>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-4 gold-accent">Mad Men Salamanca</h3>
+                <div className="space-y-3 ml-4">
+                  <div className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-3 gold-accent" />
+                    <p className="opacity-90">General Pardiñas 101, Barrio Salamanca, Madrid</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="w-5 h-5 mr-3 gold-accent" />
+                    <a href="tel:+34910597766" className="opacity-90 hover:text-accent transition-colors">
+                      +34 910 597 766
+                    </a>
+                  </div>
                 </div>
               </div>
               
@@ -34,7 +50,24 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
                 <Mail className="w-6 h-6 mr-4 gold-accent" />
                 <div>
                   <h4 className="font-semibold">Email</h4>
-                  <p className="opacity-90">info@madmenbarberia.com</p>
+                  <a href="mailto:madmenmadrid@outlook.es" className="opacity-90 hover:text-accent transition-colors">
+                    madmenmadrid@outlook.es
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <Instagram className="w-6 h-6 mr-4 gold-accent" />
+                <div>
+                  <h4 className="font-semibold">Instagram</h4>
+                  <a 
+                    href="https://www.instagram.com/madmenmadrid/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="opacity-90 hover:text-accent transition-colors"
+                  >
+                    @madmenmadrid
+                  </a>
                 </div>
               </div>
               
@@ -42,8 +75,9 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
                 <Clock className="w-6 h-6 mr-4 gold-accent" />
                 <div>
                   <h4 className="font-semibold">Horarios</h4>
-                  <p className="opacity-90">Lun-Sáb: 9:00 - 19:00</p>
-                  <p className="opacity-90">Dom: 10:00 - 16:00</p>
+                  <p className="opacity-90">Lun-Vie: 11:00 - 21:00</p>
+                  <p className="opacity-90">Sáb: 10:00 - 21:00</p>
+                  <p className="opacity-90">Dom: 10:00 - 17:00</p>
                 </div>
               </div>
             </div>

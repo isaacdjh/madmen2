@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Scissors, Gift } from 'lucide-react';
+import { Clock, Gift } from 'lucide-react';
 
 const ServicesSection = () => {
   const services = [
@@ -33,13 +33,19 @@ const ServicesSection = () => {
         </div>
 
         {/* Bonos Section */}
-        <div className="bg-barbershop-gold/10 border border-barbershop-gold/20 rounded-lg p-8 mb-12">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-8 mb-12">
           <div className="text-center">
             <div className="flex items-center justify-center mb-4">
-              <Gift className="w-12 h-12 text-barbershop-gold mr-4" />
-              <Scissors className="w-12 h-12 text-barbershop-gold" />
+              <Gift className="w-12 h-12 text-primary mr-4" />
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
+                  alt="Mad Men Service Logo" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-barbershop-dark mb-4">💈 ¡Descubre nuestros Bonos Exclusivos! 💳</h3>
+            <h3 className="text-2xl font-bold text-primary mb-4">💈 ¡Descubre nuestros Bonos Exclusivos! 💳</h3>
             <div className="text-muted-foreground space-y-2 max-w-3xl mx-auto">
               <p className="text-lg mb-4">Ahorra dinero y disfruta de tu look siempre perfecto con nuestros Bonos digitales:</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
@@ -58,7 +64,7 @@ const ServicesSection = () => {
               </div>
               <div className="mt-6 text-center">
                 <p className="font-semibold">¡Disponibles solo en nuestros centros físicos!</p>
-                <p className="text-barbershop-gold font-bold">👉 Pregunta a tu barbero de confianza por los bonos y empieza a disfrutar de los beneficios.</p>
+                <p className="text-primary font-bold">👉 Pregunta a tu barbero de confianza por los bonos y empieza a disfrutar de los beneficios.</p>
               </div>
             </div>
           </div>
@@ -66,21 +72,30 @@ const ServicesSection = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => (
-            <Card key={index} className="h-full hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-lg">
-                  <span>{service.name}</span>
-                  <Badge variant="secondary" className="gold-accent font-bold">
+            <Card key={index} className="service-card h-full">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <img 
+                      src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
+                      alt="Mad Men Service Logo" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary font-bold border border-primary/20">
                     {service.price}
                   </Badge>
+                </div>
+                <CardTitle className="text-lg text-primary">
+                  {service.name}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center text-muted-foreground mb-3">
-                  <Clock className="w-4 h-4 mr-2" />
+                  <Clock className="w-4 h-4 mr-2 text-primary" />
                   <span className="text-sm">{service.duration}</span>
                 </div>
-                <p className="text-muted-foreground text-sm">{service.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{service.description}</p>
               </CardContent>
             </Card>
           ))}

@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Barbershop Design System */
+/* Barbershop Design System - Verde Oscuro */
 
 @layer base {
   :root {
@@ -16,14 +16,14 @@
     --popover: 0 0% 100%;
     --popover-foreground: 20 10% 10%;
 
-    --primary: 220 25% 15%;
+    --primary: 140 50% 20%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 35 100% 95%;
     --secondary-foreground: 20 10% 15%;
 
-    --muted: 220 13% 95%;
-    --muted-foreground: 220 8% 46%;
+    --muted: 140 15% 95%;
+    --muted-foreground: 140 8% 46%;
 
     --accent: 45 100% 60%;
     --accent-foreground: 20 10% 10%;
@@ -31,63 +31,63 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 220 70% 45%;
+    --border: 140 13% 91%;
+    --input: 140 13% 91%;
+    --ring: 140 70% 45%;
 
     --radius: 0.75rem;
 
     --barbershop-gold: 45 100% 60%;
-    --barbershop-dark: 220 25% 15%;
-    --barbershop-navy: 220 70% 25%;
+    --barbershop-dark: 140 50% 20%;
+    --barbershop-navy: 140 70% 25%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 140 50% 20%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 140 13% 91%;
+    --sidebar-ring: 140 70% 45%;
   }
 
   .dark {
-    --background: 220 25% 10%;
+    --background: 140 50% 10%;
     --foreground: 0 0% 95%;
 
-    --card: 220 25% 12%;
+    --card: 140 50% 12%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 220 25% 12%;
+    --popover: 140 50% 12%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 220 70% 55%;
-    --primary-foreground: 220 25% 10%;
+    --primary: 140 70% 55%;
+    --primary-foreground: 140 50% 10%;
 
     --secondary: 45 100% 20%;
     --secondary-foreground: 0 0% 95%;
 
-    --muted: 220 25% 20%;
-    --muted-foreground: 220 8% 65%;
+    --muted: 140 50% 20%;
+    --muted-foreground: 140 8% 65%;
 
     --accent: 45 100% 60%;
-    --accent-foreground: 220 25% 10%;
+    --accent-foreground: 140 50% 10%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 220 25% 20%;
-    --input: 220 25% 20%;
-    --ring: 220 70% 55%;
+    --border: 140 50% 20%;
+    --input: 140 50% 20%;
+    --ring: 140 70% 55%;
 
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 140 50% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 140 70% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 140 70% 55%;
   }
 }
 
@@ -137,5 +137,16 @@
   .btn-primary:hover {
     background: hsl(var(--barbershop-gold));
     color: hsl(var(--barbershop-dark));
+  }
+
+  .service-card {
+    transition: all 0.3s ease;
+    border: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  .service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary) / 0.3);
   }
 }
