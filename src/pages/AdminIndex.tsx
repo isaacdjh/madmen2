@@ -6,6 +6,7 @@ import BookingPortal from '@/components/BookingPortal';
 import CalendarView from '@/components/CalendarView';
 import StaffManagement from '@/components/StaffManagement';
 import ServicesManager from '@/components/ServicesManager';
+import MarketingDashboard from '@/components/MarketingDashboard';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
@@ -22,6 +23,8 @@ const AdminIndex = () => {
         return <StaffManagement />;
       case 'services':
         return <ServicesManager />;
+      case 'marketing':
+        return <MarketingDashboard />;
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-8">
@@ -41,13 +44,6 @@ const AdminIndex = () => {
           <div className="container mx-auto px-4 py-8">
             <h2 className="text-3xl font-bold mb-4">Gestión de Clientes</h2>
             <p className="text-muted-foreground">Base de datos de clientes y historial - En desarrollo</p>
-          </div>
-        );
-      case 'marketing':
-        return (
-          <div className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-bold mb-4">Herramientas de Marketing</h2>
-            <p className="text-muted-foreground">Campañas y promociones - En desarrollo</p>
           </div>
         );
       default:
