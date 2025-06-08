@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package, Coffee, Gift } from 'lucide-react';
+import { Package } from 'lucide-react';
 
 const ProductsSection = () => {
   const products = [
@@ -58,19 +58,6 @@ const ProductsSection = () => {
           <h2 className="text-4xl font-bold text-primary mb-4">Productos STMNT</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Productos premium STMNT para el cuidado masculino. Llévate a casa la experiencia Mad Men.
-          </p>
-        </div>
-
-        {/* Bebida de Cortesía - Movida al inicio */}
-        <div className="bg-barbershop-gold/10 border border-barbershop-gold/20 rounded-lg p-8 mb-12 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <Coffee className="w-12 h-12 text-barbershop-gold mr-4" />
-            <Gift className="w-12 h-12 text-barbershop-gold" />
-          </div>
-          <h3 className="text-2xl font-bold text-barbershop-dark mb-2">Bebida de Cortesía</h3>
-          <p className="text-muted-foreground">
-            Con cada servicio, disfruta de una bebida de cortesía: café premium, agua, refrescos o cerveza. 
-            Porque en Mad Men, tu comodidad es nuestra prioridad.
           </p>
         </div>
         
