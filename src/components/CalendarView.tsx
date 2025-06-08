@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChevronLeft, ChevronRight, Calendar, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface Appointment {
@@ -22,12 +23,25 @@ interface Appointment {
 const CalendarView = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedLocation, setSelectedLocation] = useState('condesa');
 
-  const barbers = [
-    { id: 'carlos', name: 'Carlos Mendoza' },
-    { id: 'miguel', name: 'Miguel Rodríguez' },
-    { id: 'antonio', name: 'Antonio López' }
+  const locations = [
+    { id: 'condesa', name: 'Mad Men Condesa' },
+    { id: 'polanco', name: 'Mad Men Polanco' }
   ];
+
+  const barbersByLocation = {
+    condesa: [
+      { id: 'carlos', name: 'Carlos Mendoza' },
+      { id: 'miguel', name: 'Miguel Rodríguez' },
+      { id: 'antonio', name: 'Antonio López' }
+    ],
+    polanco: [
+      { id: 'ricardo', name: 'Ricardo Herrera' },
+      { id: 'fernando', name: 'Fernando Castillo' },
+      { id: 'alejandro', name: 'Alejandro Morales' }
+    ]
+  };
 
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -91,6 +105,7 @@ const CalendarView = () => {
       apt => apt.barber === barberId && 
              apt.time === timeSlot && 
              apt.date === formatDate(selectedDate) &&
+             apt.location === selectedLocation &&
              apt.status !== 'cancelada'
     );
   };
@@ -107,17 +122,40 @@ const CalendarView = () => {
     }
   };
 
+  const currentBarbers = barbersByLocation[selectedLocation as keyof typeof barbersByLocation] || [];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Vista de Calendario</h1>
-        <p className="text-muted-foreground">Programación diaria por barbero</p>
+        <p className="text-muted-foreground">Programación diaria por barbero y centro</p>
       </div>
 
-      {/* Date Navigation */}
+      {/* Location and Date Navigation */}
       <Card className="mb-6">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Location Selector */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <MapPin className="w-5 h-5 text-barbershop-gold" />
+                <span className="font-medium">Centro:</span>
+              </div>
+              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="Seleccionar centro" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date Navigation */}
             <div className="flex items-center space-x-4">
               <Button variant="outline" onClick={goToPreviousDay}>
                 <ChevronLeft className="w-4 h-4" />
@@ -130,14 +168,14 @@ const CalendarView = () => {
               <Button variant="outline" onClick={goToNextDay}>
                 <ChevronRight className="w-4 h-4" />
               </Button>
+              <Button 
+                onClick={goToToday}
+                className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Hoy
+              </Button>
             </div>
-            <Button 
-              onClick={goToToday}
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Hoy
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -145,17 +183,22 @@ const CalendarView = () => {
       {/* Calendar Grid */}
       <Card>
         <CardHeader>
-          <CardTitle>Agenda del Día</CardTitle>
+          <CardTitle className="flex items-center space-x-2">
+            <span>Agenda del Día</span>
+            <Badge variant="outline" className="bg-barbershop-gold/10 text-barbershop-dark">
+              {locations.find(l => l.id === selectedLocation)?.name}
+            </Badge>
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <div className="min-w-full">
               {/* Header */}
-              <div className="grid grid-cols-4 border-b bg-gray-50">
+              <div className={`grid border-b bg-gray-50`} style={{ gridTemplateColumns: `120px repeat(${currentBarbers.length}, 1fr)` }}>
                 <div className="p-4 font-semibold text-gray-600 border-r">
                   Horario
                 </div>
-                {barbers.map((barber) => (
+                {currentBarbers.map((barber) => (
                   <div key={barber.id} className="p-4 font-semibold text-center text-barbershop-dark border-r last:border-r-0">
                     {barber.name}
                   </div>
@@ -165,11 +208,11 @@ const CalendarView = () => {
               {/* Time Slots */}
               <div className="max-h-96 overflow-y-auto">
                 {timeSlots.map((timeSlot) => (
-                  <div key={timeSlot} className="grid grid-cols-4 border-b hover:bg-gray-50/50 min-h-16">
+                  <div key={timeSlot} className={`grid border-b hover:bg-gray-50/50 min-h-16`} style={{ gridTemplateColumns: `120px repeat(${currentBarbers.length}, 1fr)` }}>
                     <div className="p-3 font-medium text-gray-600 border-r bg-gray-50/50 flex items-center">
                       {timeSlot}
                     </div>
-                    {barbers.map((barber) => {
+                    {currentBarbers.map((barber) => {
                       const appointment = getAppointmentForSlot(barber.id, timeSlot);
                       return (
                         <div key={`${barber.id}-${timeSlot}`} className="p-2 border-r last:border-r-0 min-h-16">
