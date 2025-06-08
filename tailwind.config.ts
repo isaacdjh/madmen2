@@ -65,7 +65,8 @@ export default {
 				},
 				'barbershop-gold': 'hsl(var(--barbershop-gold))',
 				'barbershop-dark': 'hsl(var(--barbershop-dark))',
-				'barbershop-navy': 'hsl(var(--barbershop-navy))'
+				'barbershop-navy': 'hsl(var(--barbershop-navy))',
+				'barbershop-bg': 'hsl(var(--barbershop-bg))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
