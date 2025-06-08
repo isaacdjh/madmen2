@@ -10,6 +10,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Users, Plus, Edit, Trash2, Calendar, Clock, MapPin, UserCheck, UserX } from 'lucide-react';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
+
+interface DaySchedule {
+  isWorking: boolean;
+  start: string;
+  end: string;
+  breakStart: string;
+  breakEnd: string;
+}
+
+interface WeekSchedule {
+  monday: DaySchedule;
+  tuesday: DaySchedule;
+  wednesday: DaySchedule;
+  thursday: DaySchedule;
+  friday: DaySchedule;
+  saturday: DaySchedule;
+  sunday: DaySchedule;
+}
 
 interface Barber {
   id: string;
@@ -18,13 +37,7 @@ interface Barber {
   username: string;
   phone: string;
   email: string;
-  workHours: {
-    start: string;
-    end: string;
-    breakStart: string;
-    breakEnd: string;
-  };
-  workDays: string[];
+  weekSchedule: WeekSchedule;
   status: 'active' | 'vacation' | 'sick' | 'inactive';
   vacationDates?: { start: string; end: string; reason: string }[];
 }
@@ -34,14 +47,32 @@ const StaffManagement = () => {
   const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
   const [isAddingBarber, setIsAddingBarber] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const defaultDaySchedule: DaySchedule = {
+    isWorking: true,
+    start: '09:00',
+    end: '20:00',
+    breakStart: '13:00',
+    breakEnd: '14:00'
+  };
+
+  const defaultWeekSchedule: WeekSchedule = {
+    monday: { ...defaultDaySchedule },
+    tuesday: { ...defaultDaySchedule },
+    wednesday: { ...defaultDaySchedule },
+    thursday: { ...defaultDaySchedule },
+    friday: { ...defaultDaySchedule },
+    saturday: { ...defaultDaySchedule },
+    sunday: { ...defaultDaySchedule, isWorking: false }
+  };
+
   const [newBarber, setNewBarber] = useState<Partial<Barber>>({
     name: '',
     location: 'cristobal-bordiu',
     username: '',
     phone: '',
     email: '',
-    workHours: { start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
-    workDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+    weekSchedule: defaultWeekSchedule,
     status: 'active'
   });
 
@@ -67,9 +98,30 @@ const StaffManagement = () => {
   const loadBarbers = () => {
     const stored = localStorage.getItem('barbers');
     if (stored) {
-      setBarbers(JSON.parse(stored));
+      const storedBarbers = JSON.parse(stored);
+      // Migrar datos antiguos al nuevo formato si es necesario
+      const migratedBarbers = storedBarbers.map((barber: any) => {
+        if (barber.workHours && !barber.weekSchedule) {
+          // Migrar formato antiguo al nuevo
+          return {
+            ...barber,
+            weekSchedule: {
+              monday: { isWorking: true, ...barber.workHours },
+              tuesday: { isWorking: true, ...barber.workHours },
+              wednesday: { isWorking: true, ...barber.workHours },
+              thursday: { isWorking: true, ...barber.workHours },
+              friday: { isWorking: true, ...barber.workHours },
+              saturday: { isWorking: true, ...barber.workHours },
+              sunday: { isWorking: false, ...barber.workHours }
+            }
+          };
+        }
+        return barber;
+      });
+      setBarbers(migratedBarbers);
+      localStorage.setItem('barbers', JSON.stringify(migratedBarbers));
     } else {
-      // Datos iniciales
+      // Datos iniciales con el nuevo formato
       const initialBarbers: Barber[] = [
         {
           id: 'luis-bracho',
@@ -78,8 +130,15 @@ const StaffManagement = () => {
           username: 'luis.bracho',
           phone: '+34 600 123 456',
           email: 'luis.bracho@madmen.es',
-          workHours: { start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
-          workDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+          weekSchedule: {
+            monday: { isWorking: true, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
+            tuesday: { isWorking: true, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
+            wednesday: { isWorking: true, start: '10:00', end: '21:00', breakStart: '14:00', breakEnd: '15:00' },
+            thursday: { isWorking: true, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
+            friday: { isWorking: true, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
+            saturday: { isWorking: true, start: '10:00', end: '19:00', breakStart: '13:30', breakEnd: '14:30' },
+            sunday: { isWorking: false, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' }
+          },
           status: 'active'
         },
         {
@@ -89,8 +148,15 @@ const StaffManagement = () => {
           username: 'isaac.hernandez',
           phone: '+34 600 789 012',
           email: 'isaac.hernandez@madmen.es',
-          workHours: { start: '10:00', end: '21:00', breakStart: '14:00', breakEnd: '15:00' },
-          workDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+          weekSchedule: {
+            monday: { isWorking: true, start: '10:00', end: '21:00', breakStart: '14:00', breakEnd: '15:00' },
+            tuesday: { isWorking: true, start: '10:00', end: '21:00', breakStart: '14:00', breakEnd: '15:00' },
+            wednesday: { isWorking: true, start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
+            thursday: { isWorking: true, start: '10:00', end: '21:00', breakStart: '14:00', breakEnd: '15:00' },
+            friday: { isWorking: true, start: '10:00', end: '21:00', breakStart: '14:00', breakEnd: '15:00' },
+            saturday: { isWorking: true, start: '09:00', end: '19:00', breakStart: '13:00', breakEnd: '14:00' },
+            sunday: { isWorking: false, start: '10:00', end: '21:00', breakStart: '14:00', breakEnd: '15:00' }
+          },
           status: 'active'
         }
       ];
@@ -117,8 +183,7 @@ const StaffManagement = () => {
       username: newBarber.username!,
       phone: newBarber.phone || '',
       email: newBarber.email || '',
-      workHours: newBarber.workHours!,
-      workDays: newBarber.workDays!,
+      weekSchedule: newBarber.weekSchedule!,
       status: 'active'
     };
 
@@ -131,8 +196,7 @@ const StaffManagement = () => {
       username: '',
       phone: '',
       email: '',
-      workHours: { start: '09:00', end: '20:00', breakStart: '13:00', breakEnd: '14:00' },
-      workDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      weekSchedule: defaultWeekSchedule,
       status: 'active'
     });
     toast.success('Barbero agregado correctamente');
@@ -153,6 +217,31 @@ const StaffManagement = () => {
     const updatedBarbers = barbers.filter(b => b.id !== barberId);
     saveBarbers(updatedBarbers);
     toast.success('Barbero eliminado correctamente');
+  };
+
+  const updateDaySchedule = (
+    barber: Barber, 
+    day: keyof WeekSchedule, 
+    field: keyof DaySchedule, 
+    value: string | boolean
+  ) => {
+    return {
+      ...barber,
+      weekSchedule: {
+        ...barber.weekSchedule,
+        [day]: {
+          ...barber.weekSchedule[day],
+          [field]: value
+        }
+      }
+    };
+  };
+
+  const getWorkingDays = (weekSchedule: WeekSchedule) => {
+    return Object.entries(weekSchedule)
+      .filter(([_, schedule]) => schedule.isWorking)
+      .map(([day, _]) => weekDays.find(wd => wd.id === day)?.name)
+      .join(', ');
   };
 
   const getStatusColor = (status: string) => {
@@ -179,7 +268,7 @@ const StaffManagement = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Gestión de Empleados</h1>
-        <p className="text-muted-foreground">Administrar barberos, horarios y disponibilidad</p>
+        <p className="text-muted-foreground">Administrar barberos, horarios por día y disponibilidad</p>
       </div>
 
       {/* Stats */}
@@ -248,113 +337,193 @@ const StaffManagement = () => {
               Agregar Barbero
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Agregar Nuevo Barbero</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Nombre Completo</Label>
-                <Input
-                  id="name"
-                  value={newBarber.name}
-                  onChange={(e) => setNewBarber({...newBarber, name: e.target.value})}
-                  placeholder="Ej: Luis Bracho"
-                />
-              </div>
-              <div>
-                <Label htmlFor="username">Usuario</Label>
-                <Input
-                  id="username"
-                  value={newBarber.username}
-                  onChange={(e) => setNewBarber({...newBarber, username: e.target.value})}
-                  placeholder="Ej: luis.bracho"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Teléfono</Label>
-                <Input
-                  id="phone"
-                  value={newBarber.phone}
-                  onChange={(e) => setNewBarber({...newBarber, phone: e.target.value})}
-                  placeholder="+34 600 123 456"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  value={newBarber.email}
-                  onChange={(e) => setNewBarber({...newBarber, email: e.target.value})}
-                  placeholder="barbero@madmen.es"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label htmlFor="location">Centro</Label>
-                <Select 
-                  value={newBarber.location} 
-                  onValueChange={(value) => setNewBarber({...newBarber, location: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations.map(location => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2 grid grid-cols-4 gap-2">
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Hora Inicio</Label>
+                  <Label htmlFor="name">Nombre Completo</Label>
                   <Input
-                    type="time"
-                    value={newBarber.workHours?.start}
-                    onChange={(e) => setNewBarber({
-                      ...newBarber, 
-                      workHours: {...newBarber.workHours!, start: e.target.value}
-                    })}
+                    id="name"
+                    value={newBarber.name}
+                    onChange={(e) => setNewBarber({...newBarber, name: e.target.value})}
+                    placeholder="Ej: Luis Bracho"
                   />
                 </div>
                 <div>
-                  <Label>Hora Fin</Label>
+                  <Label htmlFor="username">Usuario</Label>
                   <Input
-                    type="time"
-                    value={newBarber.workHours?.end}
-                    onChange={(e) => setNewBarber({
-                      ...newBarber, 
-                      workHours: {...newBarber.workHours!, end: e.target.value}
-                    })}
+                    id="username"
+                    value={newBarber.username}
+                    onChange={(e) => setNewBarber({...newBarber, username: e.target.value})}
+                    placeholder="Ej: luis.bracho"
                   />
                 </div>
                 <div>
-                  <Label>Descanso Inicio</Label>
+                  <Label htmlFor="phone">Teléfono</Label>
                   <Input
-                    type="time"
-                    value={newBarber.workHours?.breakStart}
-                    onChange={(e) => setNewBarber({
-                      ...newBarber, 
-                      workHours: {...newBarber.workHours!, breakStart: e.target.value}
-                    })}
+                    id="phone"
+                    value={newBarber.phone}
+                    onChange={(e) => setNewBarber({...newBarber, phone: e.target.value})}
+                    placeholder="+34 600 123 456"
                   />
                 </div>
                 <div>
-                  <Label>Descanso Fin</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    type="time"
-                    value={newBarber.workHours?.breakEnd}
-                    onChange={(e) => setNewBarber({
-                      ...newBarber, 
-                      workHours: {...newBarber.workHours!, breakEnd: e.target.value}
-                    })}
+                    id="email"
+                    value={newBarber.email}
+                    onChange={(e) => setNewBarber({...newBarber, email: e.target.value})}
+                    placeholder="barbero@madmen.es"
                   />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="location">Centro</Label>
+                  <Select 
+                    value={newBarber.location} 
+                    onValueChange={(value) => setNewBarber({...newBarber, location: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map(location => (
+                        <SelectItem key={location.id} value={location.id}>
+                          {location.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Weekly Schedule */}
+              <div>
+                <Label className="text-lg font-semibold">Horarios por Día</Label>
+                <div className="mt-4 space-y-4">
+                  {weekDays.map((day) => (
+                    <div key={day.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-medium">{day.name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`working-${day.id}`}
+                            checked={newBarber.weekSchedule?.[day.id as keyof WeekSchedule]?.isWorking || false}
+                            onCheckedChange={(checked) => {
+                              if (newBarber.weekSchedule) {
+                                setNewBarber({
+                                  ...newBarber,
+                                  weekSchedule: {
+                                    ...newBarber.weekSchedule,
+                                    [day.id]: {
+                                      ...newBarber.weekSchedule[day.id as keyof WeekSchedule],
+                                      isWorking: checked as boolean
+                                    }
+                                  }
+                                });
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`working-${day.id}`}>Trabaja</Label>
+                        </div>
+                      </div>
+                      
+                      {newBarber.weekSchedule?.[day.id as keyof WeekSchedule]?.isWorking && (
+                        <div className="grid grid-cols-4 gap-2">
+                          <div>
+                            <Label className="text-xs">Inicio</Label>
+                            <Input
+                              type="time"
+                              value={newBarber.weekSchedule[day.id as keyof WeekSchedule]?.start || '09:00'}
+                              onChange={(e) => {
+                                if (newBarber.weekSchedule) {
+                                  setNewBarber({
+                                    ...newBarber,
+                                    weekSchedule: {
+                                      ...newBarber.weekSchedule,
+                                      [day.id]: {
+                                        ...newBarber.weekSchedule[day.id as keyof WeekSchedule],
+                                        start: e.target.value
+                                      }
+                                    }
+                                  });
+                                }
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Fin</Label>
+                            <Input
+                              type="time"
+                              value={newBarber.weekSchedule[day.id as keyof WeekSchedule]?.end || '20:00'}
+                              onChange={(e) => {
+                                if (newBarber.weekSchedule) {
+                                  setNewBarber({
+                                    ...newBarber,
+                                    weekSchedule: {
+                                      ...newBarber.weekSchedule,
+                                      [day.id]: {
+                                        ...newBarber.weekSchedule[day.id as keyof WeekSchedule],
+                                        end: e.target.value
+                                      }
+                                    }
+                                  });
+                                }
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Descanso Inicio</Label>
+                            <Input
+                              type="time"
+                              value={newBarber.weekSchedule[day.id as keyof WeekSchedule]?.breakStart || '13:00'}
+                              onChange={(e) => {
+                                if (newBarber.weekSchedule) {
+                                  setNewBarber({
+                                    ...newBarber,
+                                    weekSchedule: {
+                                      ...newBarber.weekSchedule,
+                                      [day.id]: {
+                                        ...newBarber.weekSchedule[day.id as keyof WeekSchedule],
+                                        breakStart: e.target.value
+                                      }
+                                    }
+                                  });
+                                }
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Descanso Fin</Label>
+                            <Input
+                              type="time"
+                              value={newBarber.weekSchedule[day.id as keyof WeekSchedule]?.breakEnd || '14:00'}
+                              onChange={(e) => {
+                                if (newBarber.weekSchedule) {
+                                  setNewBarber({
+                                    ...newBarber,
+                                    weekSchedule: {
+                                      ...newBarber.weekSchedule,
+                                      [day.id]: {
+                                        ...newBarber.weekSchedule[day.id as keyof WeekSchedule],
+                                        breakEnd: e.target.value
+                                      }
+                                    }
+                                  });
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-2 mt-6">
               <Button variant="outline" onClick={() => setIsAddingBarber(false)}>
                 Cancelar
               </Button>
@@ -388,11 +557,7 @@ const StaffManagement = () => {
               </div>
               <div className="flex items-center text-sm">
                 <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-                {barber.workHours.start} - {barber.workHours.end}
-              </div>
-              <div className="text-sm">
-                <p className="text-muted-foreground mb-1">Descanso:</p>
-                <p>{barber.workHours.breakStart} - {barber.workHours.breakEnd}</p>
+                Días de trabajo: {getWorkingDays(barber.weekSchedule)}
               </div>
               <div className="flex gap-2 mt-4">
                 <Button 
@@ -422,12 +587,12 @@ const StaffManagement = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Barbero: {selectedBarber?.name}</DialogTitle>
           </DialogHeader>
           {selectedBarber && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-name">Nombre</Label>
@@ -456,50 +621,64 @@ const StaffManagement = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-4 gap-2">
-                <div>
-                  <Label>Hora Inicio</Label>
-                  <Input
-                    type="time"
-                    value={selectedBarber.workHours.start}
-                    onChange={(e) => setSelectedBarber({
-                      ...selectedBarber, 
-                      workHours: {...selectedBarber.workHours, start: e.target.value}
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Hora Fin</Label>
-                  <Input
-                    type="time"
-                    value={selectedBarber.workHours.end}
-                    onChange={(e) => setSelectedBarber({
-                      ...selectedBarber, 
-                      workHours: {...selectedBarber.workHours, end: e.target.value}
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Descanso Inicio</Label>
-                  <Input
-                    type="time"
-                    value={selectedBarber.workHours.breakStart}
-                    onChange={(e) => setSelectedBarber({
-                      ...selectedBarber, 
-                      workHours: {...selectedBarber.workHours, breakStart: e.target.value}
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Descanso Fin</Label>
-                  <Input
-                    type="time"
-                    value={selectedBarber.workHours.breakEnd}
-                    onChange={(e) => setSelectedBarber({
-                      ...selectedBarber, 
-                      workHours: {...selectedBarber.workHours, breakEnd: e.target.value}
-                    })}
-                  />
+              {/* Weekly Schedule Editor */}
+              <div>
+                <Label className="text-lg font-semibold">Horarios por Día</Label>
+                <div className="mt-4 space-y-4">
+                  {weekDays.map((day) => (
+                    <div key={day.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-medium">{day.name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`edit-working-${day.id}`}
+                            checked={selectedBarber.weekSchedule[day.id as keyof WeekSchedule]?.isWorking || false}
+                            onCheckedChange={(checked) => {
+                              setSelectedBarber(updateDaySchedule(selectedBarber, day.id as keyof WeekSchedule, 'isWorking', checked as boolean));
+                            }}
+                          />
+                          <Label htmlFor={`edit-working-${day.id}`}>Trabaja</Label>
+                        </div>
+                      </div>
+                      
+                      {selectedBarber.weekSchedule[day.id as keyof WeekSchedule]?.isWorking && (
+                        <div className="grid grid-cols-4 gap-2">
+                          <div>
+                            <Label className="text-xs">Inicio</Label>
+                            <Input
+                              type="time"
+                              value={selectedBarber.weekSchedule[day.id as keyof WeekSchedule]?.start || '09:00'}
+                              onChange={(e) => setSelectedBarber(updateDaySchedule(selectedBarber, day.id as keyof WeekSchedule, 'start', e.target.value))}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Fin</Label>
+                            <Input
+                              type="time"
+                              value={selectedBarber.weekSchedule[day.id as keyof WeekSchedule]?.end || '20:00'}
+                              onChange={(e) => setSelectedBarber(updateDaySchedule(selectedBarber, day.id as keyof WeekSchedule, 'end', e.target.value))}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Descanso Inicio</Label>
+                            <Input
+                              type="time"
+                              value={selectedBarber.weekSchedule[day.id as keyof WeekSchedule]?.breakStart || '13:00'}
+                              onChange={(e) => setSelectedBarber(updateDaySchedule(selectedBarber, day.id as keyof WeekSchedule, 'breakStart', e.target.value))}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Descanso Fin</Label>
+                            <Input
+                              type="time"
+                              value={selectedBarber.weekSchedule[day.id as keyof WeekSchedule]?.breakEnd || '14:00'}
+                              onChange={(e) => setSelectedBarber(updateDaySchedule(selectedBarber, day.id as keyof WeekSchedule, 'breakEnd', e.target.value))}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
