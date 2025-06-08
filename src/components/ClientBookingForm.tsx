@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,6 +66,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     { id: 1, name: 'Carlos' },
     { id: 2, name: 'Miguel' },
     { id: 3, name: 'David' },
+    { id: 0, name: 'Cualquier barbero disponible' },
   ];
 
   const updateBookingData = (key: keyof BookingData, value: any) => {
@@ -95,12 +97,29 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   };
 
   const getSelectedBarberName = () => {
+    if (bookingData.barber === 0) {
+      return 'Cualquier barbero disponible';
+    }
     const barber = barbers.find((barb) => barb.id === bookingData.barber);
     return barber ? barber.name : 'No seleccionado';
   };
 
+  const getAssignedBarberName = () => {
+    // Si no hay barbero seleccionado o es "cualquier barbero", asignar uno al azar
+    if (!bookingData.barber || bookingData.barber === 0) {
+      const availableBarbers = barbers.filter(barber => barber.id !== 0);
+      const randomBarber = availableBarbers[Math.floor(Math.random() * availableBarbers.length)];
+      return randomBarber.name;
+    }
+    return getSelectedBarberName();
+  };
+
   const handleConfirmBooking = () => {
-    console.log('Reserva confirmada:', bookingData);
+    const finalBookingData = {
+      ...bookingData,
+      assignedBarber: getAssignedBarberName()
+    };
+    console.log('Reserva confirmada:', finalBookingData);
     alert('¡Reserva confirmada! Te enviaremos un email de confirmación.');
     onBack();
   };
@@ -303,7 +322,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-primary" />
-                    <span><strong>Barbero:</strong> {getSelectedBarberName()}</span>
+                    <span><strong>Barbero:</strong> {getAssignedBarberName()}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-primary" />
