@@ -61,7 +61,7 @@ const ProductsSection = () => {
           </p>
         </div>
 
-        {/* Bebida de Cortesía */}
+        {/* Bebida de Cortesía - Movida al inicio */}
         <div className="bg-barbershop-gold/10 border border-barbershop-gold/20 rounded-lg p-8 mb-12 text-center">
           <div className="flex items-center justify-center mb-4">
             <Coffee className="w-12 h-12 text-barbershop-gold mr-4" />
