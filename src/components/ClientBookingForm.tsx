@@ -25,15 +25,15 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
 
   const locations = [
     { 
-      id: 'rio-rosa', 
-      name: 'Mad Men Río Rosa', 
-      address: 'Cristóbal Bordiú 29, Barrio Río Rosa, Madrid',
+      id: 'cristobal-bordiu', 
+      name: 'Mad Men Cristóbal Bordiú', 
+      address: 'Cristóbal Bordiú 29, 28003 Madrid',
       phone: '+34 916 832 731'
     },
     { 
-      id: 'salamanca', 
-      name: 'Mad Men Salamanca', 
-      address: 'General Pardiñas 101, Barrio Salamanca, Madrid',
+      id: 'general-pardinas', 
+      name: 'Mad Men General Pardiñas', 
+      address: 'General Pardiñas 101, 28006 Madrid',
       phone: '+34 910 597 766'
     }
   ];
@@ -47,13 +47,13 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   ];
 
   const barbersByLocation = {
-    'rio-rosa': [
+    'cristobal-bordiu': [
       { id: 'luis-bracho', name: 'Luis Bracho', specialty: 'Cortes Clásicos' },
       { id: 'jesus-hernandez', name: 'Jesús Hernández', specialty: 'Barbas y Afeitado' },
       { id: 'luis-alfredo', name: 'Luis Alfredo', specialty: 'Estilos Modernos' },
       { id: 'dionys-bracho', name: 'Dionys Bracho', specialty: 'Tratamientos Especiales' }
     ],
-    'salamanca': [
+    'general-pardinas': [
       { id: 'isaac-hernandez', name: 'Isaac Hernández', specialty: 'Cortes Clásicos' },
       { id: 'carlos-lopez', name: 'Carlos López', specialty: 'Barbas y Afeitado' },
       { id: 'luis-urbinez', name: 'Luis Urbiñez', specialty: 'Estilos Modernos' },
@@ -116,6 +116,21 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     setBookingData(prev => ({ ...prev, [field]: value }));
   };
 
+  const getSelectedLocationName = () => {
+    const location = locations.find(l => l.id === bookingData.location);
+    return location ? location.name : '';
+  };
+
+  const getSelectedServiceName = () => {
+    const service = services.find(s => s.id === bookingData.service);
+    return service ? service.name : '';
+  };
+
+  const getSelectedServicePrice = () => {
+    const service = services.find(s => s.id === bookingData.service);
+    return service ? service.price : '';
+  };
+
   const getSelectedBarberName = () => {
     if (bookingData.barber === 'any') return 'Cualquier barbero disponible';
     if (!bookingData.barber) return '';
@@ -140,8 +155,8 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
                   <h3 className="font-bold mb-4">Detalles de tu cita:</h3>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Ubicación:</strong> {locations.find(l => l.id === bookingData.location)?.name}</p>
-                    <p><strong>Servicio:</strong> {services.find(s => s.id === bookingData.service)?.name}</p>
+                    <p><strong>Ubicación:</strong> {getSelectedLocationName()}</p>
+                    <p><strong>Servicio:</strong> {getSelectedServiceName()}</p>
                     <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
                     <p><strong>Fecha:</strong> {bookingData.date}</p>
                     <p><strong>Hora:</strong> {bookingData.time}</p>
@@ -409,15 +424,15 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 <div className="bg-gray-50 rounded-lg p-6 mb-6">
                   <h3 className="font-bold mb-4">Resumen de tu cita:</h3>
                   <div className="space-y-2">
-                    <p><strong>Ubicación:</strong> {locations.find(l => l.id === bookingData.location)?.name}</p>
-                    <p><strong>Servicio:</strong> {services.find(s => s.id === bookingData.service)?.name}</p>
+                    <p><strong>Ubicación:</strong> {getSelectedLocationName()}</p>
+                    <p><strong>Servicio:</strong> {getSelectedServiceName()}</p>
                     <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
                     <p><strong>Fecha:</strong> {bookingData.date}</p>
                     <p><strong>Hora:</strong> {bookingData.time}</p>
                     <p><strong>Cliente:</strong> {bookingData.customerName}</p>
                     <p><strong>Teléfono:</strong> {bookingData.customerPhone}</p>
                     <p><strong>Email:</strong> {bookingData.customerEmail}</p>
-                    <p><strong>Precio:</strong> {services.find(s => s.id === bookingData.service)?.price}</p>
+                    <p><strong>Precio:</strong> {getSelectedServicePrice()}</p>
                   </div>
                 </div>
               </CardContent>
