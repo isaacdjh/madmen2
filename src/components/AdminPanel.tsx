@@ -24,8 +24,9 @@ const AdminPanel = () => {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [filter, setFilter] = useState<'all' | 'confirmada' | 'cancelada' | 'completada'>('all');
 
+  // Centros sincronizados con el sistema de reservas del cliente
   const locations = [
-    { id: 'centro', name: 'Mad Men Centro' },
+    { id: 'condesa', name: 'Mad Men Condesa' },
     { id: 'polanco', name: 'Mad Men Polanco' }
   ];
 
@@ -37,18 +38,33 @@ const AdminPanel = () => {
     { id: 'treatments', name: 'Tratamientos Especiales', price: '$40' }
   ];
 
-  const barbers = [
-    { id: 'carlos', name: 'Carlos Mendoza' },
-    { id: 'miguel', name: 'Miguel Rodríguez' },
-    { id: 'antonio', name: 'Antonio López' }
-  ];
+  // Barberos sincronizados por centro
+  const barbersByLocation = {
+    condesa: [
+      { id: 'carlos', name: 'Carlos Mendoza' },
+      { id: 'miguel', name: 'Miguel Rodríguez' },
+      { id: 'antonio', name: 'Antonio López' }
+    ],
+    polanco: [
+      { id: 'ricardo', name: 'Ricardo Herrera' },
+      { id: 'fernando', name: 'Fernando Castillo' },
+      { id: 'alejandro', name: 'Alejandro Morales' }
+    ]
+  };
+
+  // Función para obtener todos los barberos
+  const getAllBarbers = () => {
+    return [...barbersByLocation.condesa, ...barbersByLocation.polanco];
+  };
 
   useEffect(() => {
     // Cargar citas del localStorage
     const loadAppointments = () => {
       const stored = localStorage.getItem('appointments');
       if (stored) {
-        setAppointments(JSON.parse(stored));
+        const loadedAppointments = JSON.parse(stored);
+        console.log('Citas cargadas desde localStorage:', loadedAppointments);
+        setAppointments(loadedAppointments);
       }
     };
 
@@ -71,10 +87,25 @@ const AdminPanel = () => {
     filter === 'all' || apt.status === filter
   );
 
-  const getLocationName = (id: string) => locations.find(l => l.id === id)?.name || id;
-  const getServiceName = (id: string) => services.find(s => s.id === id)?.name || id;
-  const getBarberName = (id: string) => barbers.find(b => b.id === id)?.name || id;
-  const getServicePrice = (id: string) => services.find(s => s.id === id)?.price || '';
+  const getLocationName = (id: string) => {
+    const location = locations.find(l => l.id === id);
+    return location ? location.name : id;
+  };
+
+  const getServiceName = (id: string) => {
+    const service = services.find(s => s.id === id);
+    return service ? service.name : id;
+  };
+
+  const getBarberName = (id: string) => {
+    const barber = getAllBarbers().find(b => b.id === id);
+    return barber ? barber.name : id;
+  };
+
+  const getServicePrice = (id: string) => {
+    const service = services.find(s => s.id === id);
+    return service ? service.price : '';
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
