@@ -16,28 +16,41 @@ const BarberLogin = ({ onLogin }: BarberLoginProps) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Credenciales de barberos (en producción esto estaría en una base de datos)
-  const barberCredentials = {
-    // Cristóbal Bordiú
-    'luis.bracho': { password: 'madmen2024', id: 'luis-bracho', name: 'Luis Bracho', location: 'cristobal-bordiu' },
-    'jesus.hernandez': { password: 'madmen2024', id: 'jesus-hernandez', name: 'Jesús Hernández', location: 'cristobal-bordiu' },
-    'luis.alfredo': { password: 'madmen2024', id: 'luis-alfredo', name: 'Luis Alfredo', location: 'cristobal-bordiu' },
-    'dionys.bracho': { password: 'madmen2024', id: 'dionys-bracho', name: 'Dionys Bracho', location: 'cristobal-bordiu' },
-    // General Pardiñas
-    'isaac.hernandez': { password: 'madmen2024', id: 'isaac-hernandez', name: 'Isaac Hernández', location: 'general-pardinas' },
-    'carlos.lopez': { password: 'madmen2024', id: 'carlos-lopez', name: 'Carlos López', location: 'general-pardinas' },
-    'luis.urbinez': { password: 'madmen2024', id: 'luis-urbinez', name: 'Luis Urbiñez', location: 'general-pardinas' },
-    'randy.valdespino': { password: 'madmen2024', id: 'randy-valdespino', name: 'Randy Valdespino', location: 'general-pardinas' }
-  };
-
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    const barber = barberCredentials[username as keyof typeof barberCredentials];
+    // Cargar barberos del localStorage
+    const storedBarbers = localStorage.getItem('barbers');
+    let barberCredentials: any = {};
+
+    if (storedBarbers) {
+      const barbers = JSON.parse(storedBarbers);
+      barbers.forEach((barber: any) => {
+        barberCredentials[barber.username] = {
+          password: 'madmen2024', // Contraseña por defecto
+          id: barber.id,
+          name: barber.name,
+          location: barber.location
+        };
+      });
+    } else {
+      // Credenciales por defecto si no hay barberos en localStorage
+      barberCredentials = {
+        'luis.bracho': { password: 'madmen2024', id: 'luis-bracho', name: 'Luis Bracho', location: 'cristobal-bordiu' },
+        'jesus.hernandez': { password: 'madmen2024', id: 'jesus-hernandez', name: 'Jesús Hernández', location: 'cristobal-bordiu' },
+        'luis.alfredo': { password: 'madmen2024', id: 'luis-alfredo', name: 'Luis Alfredo', location: 'cristobal-bordiu' },
+        'dionys.bracho': { password: 'madmen2024', id: 'dionys-bracho', name: 'Dionys Bracho', location: 'cristobal-bordiu' },
+        'isaac.hernandez': { password: 'madmen2024', id: 'isaac-hernandez', name: 'Isaac Hernández', location: 'general-pardinas' },
+        'carlos.lopez': { password: 'madmen2024', id: 'carlos-lopez', name: 'Carlos López', location: 'general-pardinas' },
+        'luis.urbinez': { password: 'madmen2024', id: 'luis-urbinez', name: 'Luis Urbiñez', location: 'general-pardinas' },
+        'randy.valdespino': { password: 'madmen2024', id: 'randy-valdespino', name: 'Randy Valdespino', location: 'general-pardinas' }
+      };
+    }
+
+    const barber = barberCredentials[username];
     
     if (barber && barber.password === password) {
-      // Guardar sesión del barbero
       localStorage.setItem('barberSession', JSON.stringify({
         id: barber.id,
         name: barber.name,

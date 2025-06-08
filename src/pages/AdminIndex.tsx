@@ -4,6 +4,8 @@ import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
 import BookingPortal from '@/components/BookingPortal';
 import CalendarView from '@/components/CalendarView';
+import StaffManagement from '@/components/StaffManagement';
+import ServicesManager from '@/components/ServicesManager';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
@@ -16,6 +18,10 @@ const AdminIndex = () => {
         return <CalendarView />;
       case 'booking':
         return <BookingPortal />;
+      case 'staff':
+        return <StaffManagement />;
+      case 'services':
+        return <ServicesManager />;
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-8">
