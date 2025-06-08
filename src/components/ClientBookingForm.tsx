@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, User, MapPin, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, ArrowLeft, CheckCircle, Shuffle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ClientBookingFormProps {
@@ -72,6 +72,15 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     return barbersByLocation[bookingData.location as keyof typeof barbersByLocation] || [];
   };
 
+  const assignRandomBarber = () => {
+    const availableBarbers = getAvailableBarbers();
+    if (availableBarbers.length > 0) {
+      const randomIndex = Math.floor(Math.random() * availableBarbers.length);
+      return availableBarbers[randomIndex].id;
+    }
+    return '';
+  };
+
   const handleNext = () => {
     if (step < 4) setStep(step + 1);
   };
@@ -81,13 +90,19 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   };
 
   const handleSubmit = () => {
+    // Si no se seleccionó barbero específico (o se seleccionó "cualquier barbero"), asignar uno aleatorio
+    const finalBarber = bookingData.barber === 'any' || !bookingData.barber ? assignRandomBarber() : bookingData.barber;
+    
     // Simular guardado de cita
     const appointment = {
       id: Date.now().toString(),
       ...bookingData,
+      barber: finalBarber,
       status: 'confirmada',
       createdAt: new Date().toISOString()
     };
+    
+    console.log('Cita creada:', appointment);
     
     // Guardar en localStorage para simular base de datos
     const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
@@ -99,6 +114,13 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
 
   const updateBookingData = (field: string, value: string) => {
     setBookingData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const getSelectedBarberName = () => {
+    if (bookingData.barber === 'any') return 'Cualquier barbero disponible';
+    if (!bookingData.barber) return '';
+    const barber = getAvailableBarbers().find(b => b.id === bookingData.barber);
+    return barber ? barber.name : '';
   };
 
   if (step === 5) {
@@ -120,7 +142,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   <div className="space-y-2 text-sm">
                     <p><strong>Ubicación:</strong> {locations.find(l => l.id === bookingData.location)?.name}</p>
                     <p><strong>Servicio:</strong> {services.find(s => s.id === bookingData.service)?.name}</p>
-                    <p><strong>Barbero:</strong> {getAvailableBarbers().find(b => b.id === bookingData.barber)?.name}</p>
+                    <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
                     <p><strong>Fecha:</strong> {bookingData.date}</p>
                     <p><strong>Hora:</strong> {bookingData.time}</p>
                     <p><strong>Cliente:</strong> {bookingData.customerName}</p>
@@ -258,6 +280,25 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                     <p className="text-muted-foreground">Primero selecciona una ubicación para ver los barberos disponibles.</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {/* Opción de cualquier barbero */}
+                      <div
+                        className={cn(
+                          "p-3 border-2 rounded-lg cursor-pointer transition-all",
+                          bookingData.barber === 'any'
+                            ? "border-barbershop-gold bg-barbershop-gold/10"
+                            : "border-gray-200 hover:border-barbershop-gold/50"
+                        )}
+                        onClick={() => updateBookingData('barber', 'any')}
+                      >
+                        <div className="flex items-center">
+                          <Shuffle className="w-5 h-5 mr-3 text-barbershop-gold" />
+                          <div>
+                            <h4 className="font-bold">Cualquier barbero disponible</h4>
+                            <p className="text-sm text-muted-foreground">Te asignaremos un barbero experto</p>
+                          </div>
+                        </div>
+                      </div>
+                      
                       {getAvailableBarbers().map((barber) => (
                         <div
                           key={barber.id}
@@ -338,7 +379,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                       id="phone"
                       value={bookingData.customerPhone}
                       onChange={(e) => updateBookingData('customerPhone', e.target.value)}
-                      placeholder="+52 (55) 1234-5678"
+                      placeholder="+34 123 456 789"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -370,7 +411,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   <div className="space-y-2">
                     <p><strong>Ubicación:</strong> {locations.find(l => l.id === bookingData.location)?.name}</p>
                     <p><strong>Servicio:</strong> {services.find(s => s.id === bookingData.service)?.name}</p>
-                    <p><strong>Barbero:</strong> {getAvailableBarbers().find(b => b.id === bookingData.barber)?.name}</p>
+                    <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
                     <p><strong>Fecha:</strong> {bookingData.date}</p>
                     <p><strong>Hora:</strong> {bookingData.time}</p>
                     <p><strong>Cliente:</strong> {bookingData.customerName}</p>
