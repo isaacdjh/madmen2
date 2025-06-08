@@ -1,28 +1,30 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scissors } from 'lucide-react';
+import { Scissors, MapPin } from 'lucide-react';
 
 const BarbersSection = () => {
-  const barbers = [
-    { 
-      name: 'Carlos Mendoza', 
-      specialty: 'Cortes Clásicos', 
-      experience: '8 años',
-      description: 'Especialista en cortes tradicionales y estilos vintage'
+  const locations = [
+    {
+      name: 'Mad Men Río Rosa',
+      address: 'Cristóbal Bordiú 29',
+      barbers: [
+        { name: 'Luis Bracho', specialty: 'Cortes Clásicos y Modernos' },
+        { name: 'Jesús Hernández', specialty: 'Especialista en Barbas' },
+        { name: 'Luis Alfredo', specialty: 'Cortes de Tendencia' },
+        { name: 'Dionys Bracho', specialty: 'Afeitado Tradicional' }
+      ]
     },
-    { 
-      name: 'Miguel Rodríguez', 
-      specialty: 'Barbas y Afeitado', 
-      experience: '12 años',
-      description: 'Maestro en afeitado tradicional con navaja'
-    },
-    { 
-      name: 'Antonio López', 
-      specialty: 'Estilos Modernos', 
-      experience: '6 años',
-      description: 'Experto en tendencias contemporáneas y fade cuts'
-    },
+    {
+      name: 'Mad Men Salamanca',
+      address: 'General Pardiñas 101',
+      barbers: [
+        { name: 'Isaac Hernández', specialty: 'Master Barber' },
+        { name: 'Carlos López', specialty: 'Estilos Clásicos' },
+        { name: 'Luis Urbiñez', specialty: 'Cortes y Barbas' },
+        { name: 'Randy Valdespino', specialty: 'Técnicas Modernas' }
+      ]
+    }
   ];
 
   return (
@@ -35,21 +37,35 @@ const BarbersSection = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {barbers.map((barber, index) => (
-            <Card key={index} className="text-center">
-              <CardHeader>
-                <div className="w-24 h-24 bg-primary/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Scissors className="w-12 h-12 text-primary" />
+        <div className="space-y-12">
+          {locations.map((location, locationIndex) => (
+            <div key={locationIndex}>
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-barbershop-dark mb-2">{location.name}</h3>
+                <div className="flex items-center justify-center text-muted-foreground">
+                  <MapPin className="w-4 h-4 mr-2" />
+                  <span>{location.address}</span>
                 </div>
-                <CardTitle>{barber.name}</CardTitle>
-                <p className="text-accent font-semibold">{barber.specialty}</p>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">{barber.description}</p>
-                <Badge variant="outline">{barber.experience} de experiencia</Badge>
-              </CardContent>
-            </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {location.barbers.map((barber, index) => (
+                  <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="w-20 h-20 bg-primary/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <Scissors className="w-10 h-10 text-primary" />
+                      </div>
+                      <CardTitle className="text-lg">{barber.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Badge variant="outline" className="text-xs">
+                        {barber.specialty}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>

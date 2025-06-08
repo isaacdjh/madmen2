@@ -1,15 +1,25 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock } from 'lucide-react';
+import { Clock, Scissors, Gift } from 'lucide-react';
 
 const ServicesSection = () => {
   const services = [
-    { name: 'Corte Clásico', price: '$45', duration: '45 min', description: 'Corte tradicional con tijeras y máquina' },
-    { name: 'Arreglo de Barba', price: '$25', duration: '30 min', description: 'Perfilado y mantenimiento de barba' },
-    { name: 'Corte + Barba', price: '$65', duration: '75 min', description: 'Servicio completo de corte y barba' },
-    { name: 'Afeitado Tradicional', price: '$35', duration: '45 min', description: 'Afeitado con navaja y toallas calientes' },
-    { name: 'Tratamientos', price: '$40', duration: '60 min', description: 'Tratamientos capilares y faciales' },
+    { name: 'Corte', price: '19€', duration: '30-45 min', description: 'Corte tradicional con tijeras y máquina' },
+    { name: 'Arreglo de Barba', price: '16€', duration: '20-30 min', description: 'Perfilado y mantenimiento de barba' },
+    { name: 'Corte + Barba', price: '32€', duration: '45-60 min', description: 'Servicio completo de corte y barba' },
+    { name: 'Corte de Niño', price: '13€', duration: '30 min', description: 'Hasta los 12 años' },
+    { name: 'Corte Jubilado', price: '13€', duration: '30-45 min', description: 'Precio especial para jubilados' },
+    { name: 'Rapado', price: '16€', duration: '20-30 min', description: 'Rapado completo con máquina' },
+    { name: 'Rapado + Barba', price: '27€', duration: '40-50 min', description: 'Rapado completo con arreglo de barba' },
+    { name: 'Cejas con Cuchillas', price: '5€', duration: '10 min', description: 'Perfilado de cejas' },
+    { name: 'Depilación Nariz', price: '5€', duration: '10 min', description: 'Depilación de vello nasal' },
+    { name: 'Depilación Orejas', price: '5€', duration: '10 min', description: 'Depilación de vello de orejas' },
+    { name: 'Mascarilla Puntos Negros', price: '12€', duration: '30 min', description: 'Tratamiento facial para puntos negros' },
+    { name: 'Mascarilla Facial VIP', price: '20€', duration: '45 min', description: 'Tratamiento facial premium' },
+    { name: 'Tinte de Pelo Oscuro', price: '35€', duration: '60 min', description: 'Tinte profesional tonos oscuros' },
+    { name: 'Lavar + Peinado', price: '11€', duration: '20 min', description: 'Lavado y peinado profesional' },
+    { name: 'Mascarilla Hidratante', price: '8€', duration: '20 min', description: 'Tratamiento hidratante para el cabello' },
   ];
 
   return (
@@ -18,15 +28,47 @@ const ServicesSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-primary mb-4">Nuestros Servicios</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Servicios profesionales de barbería con técnicas tradicionales y herramientas de primera calidad
+            Servicios profesionales de barbería tradicional con técnicas clásicas y herramientas de primera calidad
           </p>
         </div>
+
+        {/* Bonos Section */}
+        <div className="bg-barbershop-gold/10 border border-barbershop-gold/20 rounded-lg p-8 mb-12">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-4">
+              <Gift className="w-12 h-12 text-barbershop-gold mr-4" />
+              <Scissors className="w-12 h-12 text-barbershop-gold" />
+            </div>
+            <h3 className="text-2xl font-bold text-barbershop-dark mb-4">💈 ¡Descubre nuestros Bonos Exclusivos! 💳</h3>
+            <div className="text-muted-foreground space-y-2 max-w-3xl mx-auto">
+              <p className="text-lg mb-4">Ahorra dinero y disfruta de tu look siempre perfecto con nuestros Bonos digitales:</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                <div className="flex items-center">
+                  <span className="mr-2">✅</span>
+                  <span>Packs de servicios de corte a precio especial</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-2">✅</span>
+                  <span>Sin fecha de caducidad: ¡úsalos cuando quieras!</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-2">✅</span>
+                  <span>100% digitales: fáciles de guardar y canjear</span>
+                </div>
+              </div>
+              <div className="mt-6 text-center">
+                <p className="font-semibold">¡Disponibles solo en nuestros centros físicos!</p>
+                <p className="text-barbershop-gold font-bold">👉 Pregunta a tu barbero de confianza por los bonos y empieza a disfrutar de los beneficios.</p>
+              </div>
+            </div>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => (
             <Card key={index} className="h-full hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-lg">
                   <span>{service.name}</span>
                   <Badge variant="secondary" className="gold-accent font-bold">
                     {service.price}
@@ -34,11 +76,11 @@ const ServicesSection = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center text-muted-foreground mb-4">
+                <div className="flex items-center text-muted-foreground mb-3">
                   <Clock className="w-4 h-4 mr-2" />
-                  <span>{service.duration}</span>
+                  <span className="text-sm">{service.duration}</span>
                 </div>
-                <p className="text-muted-foreground">{service.description}</p>
+                <p className="text-muted-foreground text-sm">{service.description}</p>
               </CardContent>
             </Card>
           ))}

@@ -5,16 +5,18 @@ import { MapPin, Phone, Clock } from 'lucide-react';
 const LocationsSection = () => {
   const locations = [
     {
-      name: 'Mad Men Centro',
-      address: 'Av. Principal 123, Centro Histórico',
-      phone: '+52 (55) 1234-5678',
-      hours: 'Lun-Sáb: 9:00 - 19:00, Dom: 10:00 - 16:00'
+      name: 'Mad Men Río Rosa',
+      address: 'Cristóbal Bordiú 29, Barrio Río Rosa, Madrid',
+      phone: '+34 91 xxx-xxxx',
+      hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
+      barbers: ['Luis Bracho', 'Jesús Hernández', 'Luis Alfredo', 'Dionys Bracho']
     },
     {
-      name: 'Mad Men Polanco',
-      address: 'Av. Presidente Masaryk 456, Polanco',
-      phone: '+52 (55) 8765-4321',
-      hours: 'Lun-Sáb: 10:00 - 20:00, Dom: 11:00 - 17:00'
+      name: 'Mad Men Salamanca',
+      address: 'General Pardiñas 101, Barrio Salamanca, Madrid',
+      phone: '+34 91 xxx-xxxx',
+      hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
+      barbers: ['Isaac Hernández', 'Carlos López', 'Luis Urbiñez', 'Randy Valdespino']
     }
   ];
 
@@ -24,7 +26,7 @@ const LocationsSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-primary mb-4">Nuestras Ubicaciones</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Dos ubicaciones estratégicas para brindarte el mejor servicio
+            Dos ubicaciones estratégicas en Madrid para brindarte el mejor servicio
           </p>
         </div>
         
@@ -49,7 +51,17 @@ const LocationsSection = () => {
                   </div>
                   <div className="flex items-start">
                     <Clock className="w-5 h-5 mr-3 text-muted-foreground mt-0.5" />
-                    <p className="text-muted-foreground">{location.hours}</p>
+                    <p className="text-muted-foreground whitespace-pre-line">{location.hours}</p>
+                  </div>
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-sm mb-2">Barberos:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {location.barbers.map((barber, i) => (
+                        <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                          {barber}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
