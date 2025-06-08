@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home } from 'lucide-react';
+import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home, Scissors } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
 
   const navItems = [
     { id: 'home', label: 'Inicio', icon: Home, isClientView: true },
+    { id: 'barber-portal', label: 'Portal Barberos', icon: Scissors, isBarberPortal: true },
     { id: 'calendar', label: 'Calendario', icon: CalendarDays },
     { id: 'booking', label: 'Reservas', icon: Calendar },
     { id: 'admin', label: 'Administración', icon: Users },
@@ -28,6 +29,8 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
   const handleNavClick = (item: any) => {
     if (item.isClientView) {
       navigate('/');
+    } else if (item.isBarberPortal) {
+      navigate('/barber');
     } else {
       onViewChange(item.id);
     }
@@ -61,7 +64,7 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
             <div className="hidden lg:flex space-x-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.isClientView ? false : currentView === item.id;
+                const isActive = item.isClientView || item.isBarberPortal ? false : currentView === item.id;
                 return (
                   <Button
                     key={item.id}
@@ -97,7 +100,7 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
             <div className="px-4 py-4 space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.isClientView ? false : currentView === item.id;
+                const isActive = item.isClientView || item.isBarberPortal ? false : currentView === item.id;
                 return (
                   <Button
                     key={item.id}
