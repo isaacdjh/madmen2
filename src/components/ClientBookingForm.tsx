@@ -152,15 +152,15 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 <p className="text-muted-foreground mb-8">
                   Tu cita ha sido reservada exitosamente. Recibirás una confirmación por email y SMS.
                 </p>
-                <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-                  <h3 className="font-bold mb-4">Detalles de tu cita:</h3>
+                <div className="bg-barbershop-dark rounded-lg p-6 mb-8 text-left">
+                  <h3 className="font-bold mb-4 text-barbershop-gold">Detalles de tu cita:</h3>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Ubicación:</strong> {getSelectedLocationName()}</p>
-                    <p><strong>Servicio:</strong> {getSelectedServiceName()}</p>
-                    <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
-                    <p><strong>Fecha:</strong> {bookingData.date}</p>
-                    <p><strong>Hora:</strong> {bookingData.time}</p>
-                    <p><strong>Cliente:</strong> {bookingData.customerName}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Ubicación:</strong> {getSelectedLocationName()}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Servicio:</strong> {getSelectedServiceName()}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Barbero:</strong> {getSelectedBarberName()}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Fecha:</strong> {bookingData.date}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Hora:</strong> {bookingData.time}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Cliente:</strong> {bookingData.customerName}</p>
                   </div>
                 </div>
                 <Button onClick={onBack} className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90">
