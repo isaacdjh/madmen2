@@ -7,6 +7,7 @@ import CalendarView from '@/components/CalendarView';
 import StaffManagement from '@/components/StaffManagement';
 import ServicesManager from '@/components/ServicesManager';
 import MarketingDashboard from '@/components/MarketingDashboard';
+import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
@@ -35,8 +36,11 @@ const AdminIndex = () => {
       case 'analytics':
         return (
           <div className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-bold mb-4">Estadísticas y Análisis</h2>
-            <p className="text-muted-foreground">Dashboard con métricas de negocio - En desarrollo</p>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Estadísticas y Análisis</h1>
+              <p className="text-muted-foreground">Dashboard completo con métricas avanzadas del negocio</p>
+            </div>
+            <AdvancedAnalytics />
           </div>
         );
       case 'clients':
