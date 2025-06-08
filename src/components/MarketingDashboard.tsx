@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import AdvancedAnalytics from './AdvancedAnalytics';
 import { 
   TrendingUp, 
   Users, 
@@ -263,11 +263,12 @@ const MarketingDashboard = () => {
       </div>
 
       <Tabs defaultValue="promotions" className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="promotions">Promociones</TabsTrigger>
           <TabsTrigger value="campaigns">Campañas</TabsTrigger>
-          <TabsTrigger value="analytics">Análisis</TabsTrigger>
+          <TabsTrigger value="analytics">Estadísticas</TabsTrigger>
           <TabsTrigger value="segments">Segmentación</TabsTrigger>
+          <TabsTrigger value="advanced">Análisis Avanzado</TabsTrigger>
         </TabsList>
 
         {/* Promociones */}
@@ -502,7 +503,7 @@ const MarketingDashboard = () => {
           </div>
         </TabsContent>
 
-        {/* Análisis */}
+        {/* Estadísticas */}
         <TabsContent value="analytics" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
@@ -587,6 +588,11 @@ const MarketingDashboard = () => {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        {/* Análisis Avanzado */}
+        <TabsContent value="advanced" className="space-y-6">
+          <AdvancedAnalytics />
         </TabsContent>
       </Tabs>
     </div>
