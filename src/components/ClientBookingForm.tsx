@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,29 +24,53 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   });
 
   const locations = [
-    { id: 'centro', name: 'Mad Men Centro', address: 'Av. Principal 123, Centro Histórico' },
-    { id: 'polanco', name: 'Mad Men Polanco', address: 'Av. Presidente Masaryk 456, Polanco' }
+    { 
+      id: 'rio-rosa', 
+      name: 'Mad Men Río Rosa', 
+      address: 'Cristóbal Bordiú 29, Barrio Río Rosa, Madrid',
+      phone: '+34 916 832 731'
+    },
+    { 
+      id: 'salamanca', 
+      name: 'Mad Men Salamanca', 
+      address: 'General Pardiñas 101, Barrio Salamanca, Madrid',
+      phone: '+34 910 597 766'
+    }
   ];
 
   const services = [
-    { id: 'classic-cut', name: 'Corte Clásico', price: '$45', duration: '45 min' },
-    { id: 'beard-trim', name: 'Arreglo de Barba', price: '$25', duration: '30 min' },
-    { id: 'cut-beard', name: 'Corte + Barba', price: '$65', duration: '75 min' },
-    { id: 'shave', name: 'Afeitado Tradicional', price: '$35', duration: '45 min' },
-    { id: 'treatments', name: 'Tratamientos Especiales', price: '$40', duration: '60 min' }
+    { id: 'classic-cut', name: 'Corte Clásico', price: '30€', duration: '45 min' },
+    { id: 'beard-trim', name: 'Arreglo de Barba', price: '15€', duration: '30 min' },
+    { id: 'cut-beard', name: 'Corte + Barba', price: '40€', duration: '75 min' },
+    { id: 'shave', name: 'Afeitado Tradicional', price: '20€', duration: '45 min' },
+    { id: 'treatments', name: 'Tratamientos Especiales', price: '25€', duration: '60 min' }
   ];
 
-  const barbers = [
-    { id: 'carlos', name: 'Carlos Mendoza', specialty: 'Cortes Clásicos' },
-    { id: 'miguel', name: 'Miguel Rodríguez', specialty: 'Barbas y Afeitado' },
-    { id: 'antonio', name: 'Antonio López', specialty: 'Estilos Modernos' }
-  ];
+  const barbersByLocation = {
+    'rio-rosa': [
+      { id: 'luis-bracho', name: 'Luis Bracho', specialty: 'Cortes Clásicos' },
+      { id: 'jesus-hernandez', name: 'Jesús Hernández', specialty: 'Barbas y Afeitado' },
+      { id: 'luis-alfredo', name: 'Luis Alfredo', specialty: 'Estilos Modernos' },
+      { id: 'dionys-bracho', name: 'Dionys Bracho', specialty: 'Tratamientos Especiales' }
+    ],
+    'salamanca': [
+      { id: 'isaac-hernandez', name: 'Isaac Hernández', specialty: 'Cortes Clásicos' },
+      { id: 'carlos-lopez', name: 'Carlos López', specialty: 'Barbas y Afeitado' },
+      { id: 'luis-urbinez', name: 'Luis Urbiñez', specialty: 'Estilos Modernos' },
+      { id: 'randy-valdespino', name: 'Randy Valdespino', specialty: 'Tratamientos Especiales' }
+    ]
+  };
 
   const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'
+    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+    '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'
   ];
+
+  const getAvailableBarbers = () => {
+    if (!bookingData.location) return [];
+    return barbersByLocation[bookingData.location as keyof typeof barbersByLocation] || [];
+  };
 
   const handleNext = () => {
     if (step < 4) setStep(step + 1);
@@ -97,7 +120,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   <div className="space-y-2 text-sm">
                     <p><strong>Ubicación:</strong> {locations.find(l => l.id === bookingData.location)?.name}</p>
                     <p><strong>Servicio:</strong> {services.find(s => s.id === bookingData.service)?.name}</p>
-                    <p><strong>Barbero:</strong> {barbers.find(b => b.id === bookingData.barber)?.name}</p>
+                    <p><strong>Barbero:</strong> {getAvailableBarbers().find(b => b.id === bookingData.barber)?.name}</p>
                     <p><strong>Fecha:</strong> {bookingData.date}</p>
                     <p><strong>Hora:</strong> {bookingData.time}</p>
                     <p><strong>Cliente:</strong> {bookingData.customerName}</p>
@@ -174,10 +197,17 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                           ? "border-barbershop-gold bg-barbershop-gold/10"
                           : "border-gray-200 hover:border-barbershop-gold/50"
                       )}
-                      onClick={() => updateBookingData('location', location.id)}
+                      onClick={() => {
+                        updateBookingData('location', location.id);
+                        // Reset barber selection when location changes
+                        if (bookingData.barber) {
+                          updateBookingData('barber', '');
+                        }
+                      }}
                     >
                       <h3 className="font-bold text-barbershop-dark">{location.name}</h3>
-                      <p className="text-sm text-muted-foreground">{location.address}</p>
+                      <p className="text-sm text-muted-foreground mb-2">{location.address}</p>
+                      <p className="text-sm text-barbershop-gold font-medium">{location.phone}</p>
                     </div>
                   ))}
                 </div>
@@ -224,23 +254,27 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 {/* Barbers */}
                 <div>
                   <h3 className="font-bold mb-4">Barberos</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {barbers.map((barber) => (
-                      <div
-                        key={barber.id}
-                        className={cn(
-                          "p-3 border-2 rounded-lg cursor-pointer transition-all",
-                          bookingData.barber === barber.id
-                            ? "border-barbershop-gold bg-barbershop-gold/10"
-                            : "border-gray-200 hover:border-barbershop-gold/50"
-                        )}
-                        onClick={() => updateBookingData('barber', barber.id)}
-                      >
-                        <h4 className="font-bold">{barber.name}</h4>
-                        <p className="text-sm text-muted-foreground">{barber.specialty}</p>
-                      </div>
-                    ))}
-                  </div>
+                  {!bookingData.location ? (
+                    <p className="text-muted-foreground">Primero selecciona una ubicación para ver los barberos disponibles.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {getAvailableBarbers().map((barber) => (
+                        <div
+                          key={barber.id}
+                          className={cn(
+                            "p-3 border-2 rounded-lg cursor-pointer transition-all",
+                            bookingData.barber === barber.id
+                              ? "border-barbershop-gold bg-barbershop-gold/10"
+                              : "border-gray-200 hover:border-barbershop-gold/50"
+                          )}
+                          onClick={() => updateBookingData('barber', barber.id)}
+                        >
+                          <h4 className="font-bold">{barber.name}</h4>
+                          <p className="text-sm text-muted-foreground">{barber.specialty}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Date and Time */}
@@ -256,8 +290,8 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   </div>
                   <div>
                     <Label className="font-bold mb-2 block">Hora</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {timeSlots.slice(0, 6).map((time) => (
+                    <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                      {timeSlots.map((time) => (
                         <Button
                           key={time}
                           variant={bookingData.time === time ? "default" : "outline"}
@@ -336,7 +370,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   <div className="space-y-2">
                     <p><strong>Ubicación:</strong> {locations.find(l => l.id === bookingData.location)?.name}</p>
                     <p><strong>Servicio:</strong> {services.find(s => s.id === bookingData.service)?.name}</p>
-                    <p><strong>Barbero:</strong> {barbers.find(b => b.id === bookingData.barber)?.name}</p>
+                    <p><strong>Barbero:</strong> {getAvailableBarbers().find(b => b.id === bookingData.barber)?.name}</p>
                     <p><strong>Fecha:</strong> {bookingData.date}</p>
                     <p><strong>Hora:</strong> {bookingData.time}</p>
                     <p><strong>Cliente:</strong> {bookingData.customerName}</p>
