@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
 import BookingPortal from '@/components/BookingPortal';
+import CalendarView from '@/components/CalendarView';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
@@ -11,6 +12,8 @@ const AdminIndex = () => {
     switch (currentView) {
       case 'admin':
         return <AdminPanel />;
+      case 'calendar':
+        return <CalendarView />;
       case 'booking':
         return <BookingPortal />;
       case 'payments':
