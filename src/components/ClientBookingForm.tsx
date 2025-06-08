@@ -421,18 +421,18 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                  <h3 className="font-bold mb-4">Resumen de tu cita:</h3>
+                <div className="bg-barbershop-dark rounded-lg p-6 mb-6">
+                  <h3 className="font-bold mb-4 text-barbershop-gold">Resumen de tu cita:</h3>
                   <div className="space-y-2">
-                    <p><strong>Ubicación:</strong> {getSelectedLocationName()}</p>
-                    <p><strong>Servicio:</strong> {getSelectedServiceName()}</p>
-                    <p><strong>Barbero:</strong> {getSelectedBarberName()}</p>
-                    <p><strong>Fecha:</strong> {bookingData.date}</p>
-                    <p><strong>Hora:</strong> {bookingData.time}</p>
-                    <p><strong>Cliente:</strong> {bookingData.customerName}</p>
-                    <p><strong>Teléfono:</strong> {bookingData.customerPhone}</p>
-                    <p><strong>Email:</strong> {bookingData.customerEmail}</p>
-                    <p><strong>Precio:</strong> {getSelectedServicePrice()}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Ubicación:</strong> {getSelectedLocationName()}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Servicio:</strong> {getSelectedServiceName()}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Barbero:</strong> {getSelectedBarberName()}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Fecha:</strong> {bookingData.date}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Hora:</strong> {bookingData.time}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Cliente:</strong> {bookingData.customerName}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Teléfono:</strong> {bookingData.customerPhone}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Email:</strong> {bookingData.customerEmail}</p>
+                    <p className="text-foreground"><strong className="text-barbershop-gold">Precio:</strong> {getSelectedServicePrice()}</p>
                   </div>
                 </div>
               </CardContent>
