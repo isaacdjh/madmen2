@@ -9,13 +9,25 @@ import { Calendar, Clock, User, Phone, Mail, MapPin, DollarSign, Gift, ChevronLe
 import { format, addDays, subDays, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { getAllAppointments, updateAppointmentStatus, getClientCompleteData, type Appointment, type Client, type ClientBonus, type Payment } from '@/lib/supabase-helpers';
+import { 
+  getAllAppointments, 
+  updateAppointmentStatus, 
+  getClientCompleteData, 
+  getBarbersWithSchedules,
+  createBlockedSlot,
+  deleteBlockedSlot,
+  getBlockedSlots,
+  type Appointment, 
+  type Client, 
+  type ClientBonus, 
+  type Payment,
+  type Barber,
+  type BarberSchedule,
+  type BlockedSlot
+} from '@/lib/supabase-helpers';
 
-interface BlockedSlot {
-  barber: string;
-  date: string;
-  time: string;
-  reason?: string;
+interface BarberWithSchedules extends Barber {
+  schedules: BarberSchedule[];
 }
 
 const CalendarGridView = () => {
@@ -32,7 +44,7 @@ const CalendarGridView = () => {
   }>({ client: null, appointments: [], bonuses: [], payments: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isClientDataLoading, setIsClientDataLoading] = useState(false);
-  const [barbers, setBarbers] = useState<any[]>([]);
+  const [barbers, setBarbers] = useState<BarberWithSchedules[]>([]);
 
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
@@ -47,80 +59,71 @@ const CalendarGridView = () => {
     { id: 'treatments', name: 'Tratamientos Especiales', price: 40 }
   ];
 
-  // Obtener barberos del localStorage (del área de empleados)
-  const getStoredBarbers = () => {
-    const stored = localStorage.getItem('barbers');
-    if (stored) {
-      return JSON.parse(stored);
-    }
-    return [];
-  };
-
-  // Cargar barberos al inicio
   useEffect(() => {
-    const storedBarbers = getStoredBarbers();
-    setBarbers(storedBarbers);
-    
-    // Listener para cambios en localStorage
-    const handleStorageChange = () => {
-      const updatedBarbers = getStoredBarbers();
-      setBarbers(updatedBarbers);
-    };
+    loadData();
+  }, [selectedDate]);
 
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También escuchar cambios locales
-    const interval = setInterval(() => {
-      const currentBarbers = getStoredBarbers();
-      const currentBarbersStr = JSON.stringify(currentBarbers);
-      const stateBarbersStr = JSON.stringify(barbers);
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const [appointmentsData, barbersData, blockedSlotsData] = await Promise.all([
+        getAllAppointments(),
+        getBarbersWithSchedules(),
+        getBlockedSlots()
+      ]);
       
-      if (currentBarbersStr !== stateBarbersStr) {
-        setBarbers(currentBarbers);
-      }
-    }, 1000);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, [barbers]);
+      setAppointments(appointmentsData);
+      setBarbers(barbersData.filter(barber => barber.status === 'active'));
+      setBlockedSlots(blockedSlotsData);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      toast.error('Error al cargar los datos del calendario');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Obtener horario de trabajo para un barbero en un día específico
   const getBarberWorkHours = (barberId: string, date: Date) => {
-    const barber = barbers.find((b: any) => b.id === barberId);
+    const barber = barbers.find(b => b.id === barberId);
     
-    if (!barber) return null;
+    if (!barber || barber.status !== 'active') return null;
 
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const dayName = dayNames[getDay(date)];
-    const daySchedule = barber.weekSchedule?.[dayName];
+    const daySchedule = barber.schedules.find(s => s.day_of_week === dayName);
 
-    return daySchedule?.isWorking ? daySchedule : null;
+    return daySchedule?.is_working ? daySchedule : null;
   };
 
   // Generar slots de tiempo basados en el horario del barbero
   const generateTimeSlotsForBarber = (barberId: string, date: Date) => {
     const workHours = getBarberWorkHours(barberId, date);
-    if (!workHours) return [];
+    if (!workHours || !workHours.start_time || !workHours.end_time) return [];
 
     const slots = [];
-    const [startHour, startMinute] = workHours.start.split(':').map(Number);
-    const [endHour, endMinute] = workHours.end.split(':').map(Number);
-    const [breakStartHour, breakStartMinute] = workHours.breakStart.split(':').map(Number);
-    const [breakEndHour, breakEndMinute] = workHours.breakEnd.split(':').map(Number);
+    const [startHour, startMinute] = workHours.start_time.split(':').map(Number);
+    const [endHour, endMinute] = workHours.end_time.split(':').map(Number);
+    
+    let breakStartHour = 0, breakStartMinute = 0, breakEndHour = 0, breakEndMinute = 0;
+    if (workHours.break_start && workHours.break_end) {
+      [breakStartHour, breakStartMinute] = workHours.break_start.split(':').map(Number);
+      [breakEndHour, breakEndMinute] = workHours.break_end.split(':').map(Number);
+    }
 
     // Generar slots de 30 minutos
     for (let hour = startHour; hour < endHour || (hour === endHour && startMinute < endMinute); hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         if (hour === endHour && minute >= endMinute) break;
         
-        // Saltar horario de descanso
-        const currentTime = hour * 60 + minute;
-        const breakStart = breakStartHour * 60 + breakStartMinute;
-        const breakEnd = breakEndHour * 60 + breakEndMinute;
-        
-        if (currentTime >= breakStart && currentTime < breakEnd) continue;
+        // Saltar horario de descanso si existe
+        if (workHours.break_start && workHours.break_end) {
+          const currentTime = hour * 60 + minute;
+          const breakStart = breakStartHour * 60 + breakStartMinute;
+          const breakEnd = breakEndHour * 60 + breakEndMinute;
+          
+          if (currentTime >= breakStart && currentTime < breakEnd) continue;
+        }
 
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         slots.push(timeString);
@@ -144,35 +147,6 @@ const CalendarGridView = () => {
 
   const timeSlots = getAllTimeSlots();
 
-  useEffect(() => {
-    loadAppointments();
-    loadBlockedSlots();
-  }, []);
-
-  const loadAppointments = async () => {
-    try {
-      const data = await getAllAppointments();
-      setAppointments(data);
-    } catch (error) {
-      console.error('Error al cargar citas:', error);
-      toast.error('Error al cargar las citas');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadBlockedSlots = () => {
-    const stored = localStorage.getItem('blockedSlots');
-    if (stored) {
-      setBlockedSlots(JSON.parse(stored));
-    }
-  };
-
-  const saveBlockedSlots = (slots: BlockedSlot[]) => {
-    setBlockedSlots(slots);
-    localStorage.setItem('blockedSlots', JSON.stringify(slots));
-  };
-
   const getAppointmentForSlot = (barber: string, time: string) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     return appointments.find(apt => 
@@ -186,9 +160,9 @@ const CalendarGridView = () => {
   const isSlotBlocked = (barber: string, time: string) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     return blockedSlots.some(slot =>
-      slot.barber === barber &&
-      slot.date === dateStr &&
-      slot.time === time
+      slot.barber_id === barber &&
+      slot.blocked_date === dateStr &&
+      slot.blocked_time === time
     );
   };
 
@@ -200,29 +174,36 @@ const CalendarGridView = () => {
     return barberSlots.includes(time);
   };
 
-  const toggleSlotBlock = (barber: string, time: string) => {
+  const toggleSlotBlock = async (barber: string, time: string) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     const existingBlock = blockedSlots.find(slot =>
-      slot.barber === barber &&
-      slot.date === dateStr &&
-      slot.time === time
+      slot.barber_id === barber &&
+      slot.blocked_date === dateStr &&
+      slot.blocked_time === time
     );
 
-    if (existingBlock) {
-      // Desbloquear
-      const newSlots = blockedSlots.filter(slot => slot !== existingBlock);
-      saveBlockedSlots(newSlots);
-      toast.success('Horario desbloqueado');
-    } else {
-      // Bloquear
-      const newBlock: BlockedSlot = {
-        barber,
-        date: dateStr,
-        time,
-        reason: 'Bloqueado manualmente'
-      };
-      saveBlockedSlots([...blockedSlots, newBlock]);
-      toast.success('Horario bloqueado');
+    try {
+      if (existingBlock) {
+        // Desbloquear
+        await deleteBlockedSlot(barber, dateStr, time);
+        toast.success('Horario desbloqueado');
+      } else {
+        // Bloquear
+        await createBlockedSlot({
+          barber_id: barber,
+          blocked_date: dateStr,
+          blocked_time: time,
+          reason: 'Bloqueado manualmente'
+        });
+        toast.success('Horario bloqueado');
+      }
+      
+      // Recargar slots bloqueados
+      const updatedBlockedSlots = await getBlockedSlots();
+      setBlockedSlots(updatedBlockedSlots);
+    } catch (error) {
+      console.error('Error al modificar bloqueo:', error);
+      toast.error('Error al modificar el bloqueo del horario');
     }
   };
 
@@ -231,7 +212,7 @@ const CalendarGridView = () => {
     setIsClientDataLoading(true);
 
     try {
-      const data = await getClientCompleteData(appointment.client_id);
+      const data = await getClientCompleteData(appointment.client_id!);
       setClientData(data);
     } catch (error) {
       console.error('Error al cargar datos del cliente:', error);
@@ -244,7 +225,7 @@ const CalendarGridView = () => {
   const handleStatusChange = async (appointmentId: string, newStatus: string) => {
     try {
       await updateAppointmentStatus(appointmentId, newStatus);
-      await loadAppointments();
+      await loadData();
       toast.success('Estado actualizado correctamente');
       
       if (selectedAppointment && selectedAppointment.id === appointmentId) {
@@ -286,8 +267,8 @@ const CalendarGridView = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos configurados</h3>
-          <p className="text-gray-500">Ve al área de empleados para agregar barberos al sistema</p>
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos activos</h3>
+          <p className="text-gray-500">Ve al área de empleados para agregar barberos activos al sistema</p>
         </div>
       </div>
     );

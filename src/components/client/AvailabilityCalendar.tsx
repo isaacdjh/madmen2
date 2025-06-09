@@ -6,98 +6,101 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, Clock, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { format, addDays, subDays, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { getAllAppointments, type Appointment } from '@/lib/supabase-helpers';
+import { 
+  getAllAppointments, 
+  getBarbersWithSchedules,
+  getBlockedSlots,
+  type Appointment,
+  type Barber,
+  type BarberSchedule,
+  type BlockedSlot
+} from '@/lib/supabase-helpers';
 
 interface AvailabilityCalendarProps {
   onSlotSelect?: (barber: string, date: string, time: string, location: string) => void;
 }
 
+interface BarberWithSchedules extends Barber {
+  schedules: BarberSchedule[];
+}
+
 const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
   const [isLoading, setIsLoading] = useState(true);
-  const [barbers, setBarbers] = useState<any[]>([]);
+  const [barbers, setBarbers] = useState<BarberWithSchedules[]>([]);
 
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
     { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
   ];
 
-  // Obtener barberos del localStorage (del área de empleados)
-  const getStoredBarbers = () => {
-    const stored = localStorage.getItem('barbers');
-    if (stored) {
-      return JSON.parse(stored);
-    }
-    return [];
-  };
-
-  // Cargar barberos al inicio
   useEffect(() => {
-    const storedBarbers = getStoredBarbers();
-    setBarbers(storedBarbers);
-    
-    // Listener para cambios en localStorage
-    const handleStorageChange = () => {
-      const updatedBarbers = getStoredBarbers();
-      setBarbers(updatedBarbers);
-    };
+    loadData();
+  }, []);
 
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También escuchar cambios locales
-    const interval = setInterval(() => {
-      const currentBarbers = getStoredBarbers();
-      const currentBarbersStr = JSON.stringify(currentBarbers);
-      const stateBarbersStr = JSON.stringify(barbers);
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const [appointmentsData, barbersData, blockedSlotsData] = await Promise.all([
+        getAllAppointments(),
+        getBarbersWithSchedules(),
+        getBlockedSlots()
+      ]);
       
-      if (currentBarbersStr !== stateBarbersStr) {
-        setBarbers(currentBarbers);
-      }
-    }, 1000);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, [barbers]);
+      setAppointments(appointmentsData);
+      setBarbers(barbersData.filter(barber => barber.status === 'active'));
+      setBlockedSlots(blockedSlotsData);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Obtener horario de trabajo para un barbero en un día específico
   const getBarberWorkHours = (barberId: string, date: Date) => {
-    const barber = barbers.find((b: any) => b.id === barberId);
+    const barber = barbers.find(b => b.id === barberId);
     
     if (!barber || barber.status !== 'active') return null;
 
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const dayName = dayNames[getDay(date)];
-    const daySchedule = barber.weekSchedule?.[dayName];
+    const daySchedule = barber.schedules.find(s => s.day_of_week === dayName);
 
-    return daySchedule?.isWorking ? daySchedule : null;
+    return daySchedule?.is_working ? daySchedule : null;
   };
 
   // Generar slots de tiempo basados en el horario del barbero
   const generateTimeSlotsForBarber = (barberId: string, date: Date) => {
     const workHours = getBarberWorkHours(barberId, date);
-    if (!workHours) return [];
+    if (!workHours || !workHours.start_time || !workHours.end_time) return [];
 
     const slots = [];
-    const [startHour, startMinute] = workHours.start.split(':').map(Number);
-    const [endHour, endMinute] = workHours.end.split(':').map(Number);
-    const [breakStartHour, breakStartMinute] = workHours.breakStart.split(':').map(Number);
-    const [breakEndHour, breakEndMinute] = workHours.breakEnd.split(':').map(Number);
+    const [startHour, startMinute] = workHours.start_time.split(':').map(Number);
+    const [endHour, endMinute] = workHours.end_time.split(':').map(Number);
+    
+    let breakStartHour = 0, breakStartMinute = 0, breakEndHour = 0, breakEndMinute = 0;
+    if (workHours.break_start && workHours.break_end) {
+      [breakStartHour, breakStartMinute] = workHours.break_start.split(':').map(Number);
+      [breakEndHour, breakEndMinute] = workHours.break_end.split(':').map(Number);
+    }
 
     // Generar slots de 30 minutos
     for (let hour = startHour; hour < endHour || (hour === endHour && startMinute < endMinute); hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         if (hour === endHour && minute >= endMinute) break;
         
-        // Saltar horario de descanso
-        const currentTime = hour * 60 + minute;
-        const breakStart = breakStartHour * 60 + breakStartMinute;
-        const breakEnd = breakEndHour * 60 + breakEndMinute;
-        
-        if (currentTime >= breakStart && currentTime < breakEnd) continue;
+        // Saltar horario de descanso si existe
+        if (workHours.break_start && workHours.break_end) {
+          const currentTime = hour * 60 + minute;
+          const breakStart = breakStartHour * 60 + breakStartMinute;
+          const breakEnd = breakEndHour * 60 + breakEndMinute;
+          
+          if (currentTime >= breakStart && currentTime < breakEnd) continue;
+        }
 
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         slots.push(timeString);
@@ -121,21 +124,6 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
 
   const timeSlots = getAllTimeSlots();
 
-  useEffect(() => {
-    loadAppointments();
-  }, []);
-
-  const loadAppointments = async () => {
-    try {
-      const data = await getAllAppointments();
-      setAppointments(data);
-    } catch (error) {
-      console.error('Error al cargar citas:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const isSlotAvailable = (barber: string, time: string) => {
     // Verificar si el barbero trabaja en este horario
     if (!generateTimeSlotsForBarber(barber, selectedDate).includes(time)) {
@@ -153,11 +141,10 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     );
 
     // Verificar si está bloqueado
-    const blockedSlots = JSON.parse(localStorage.getItem('blockedSlots') || '[]');
-    const isBlocked = blockedSlots.some((slot: any) =>
-      slot.barber === barber &&
-      slot.date === dateStr &&
-      slot.time === time
+    const isBlocked = blockedSlots.some(slot =>
+      slot.barber_id === barber &&
+      slot.blocked_date === dateStr &&
+      slot.blocked_time === time
     );
 
     return !appointment && !isBlocked;
@@ -266,7 +253,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
                         {barber.name}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {workHours ? `${workHours.start} - ${workHours.end}` : 'No disponible'}
+                        {workHours ? `${workHours.start_time} - ${workHours.end_time}` : 'No disponible'}
                       </div>
                     </div>
                   );

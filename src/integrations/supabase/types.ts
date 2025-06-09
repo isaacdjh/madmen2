@@ -59,6 +59,118 @@ export type Database = {
           },
         ]
       }
+      barber_schedules: {
+        Row: {
+          barber_id: string
+          break_end: string | null
+          break_start: string | null
+          created_at: string
+          day_of_week: string
+          end_time: string | null
+          id: string
+          is_working: boolean
+          start_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          barber_id: string
+          break_end?: string | null
+          break_start?: string | null
+          created_at?: string
+          day_of_week: string
+          end_time?: string | null
+          id?: string
+          is_working?: boolean
+          start_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          barber_id?: string
+          break_end?: string | null
+          break_start?: string | null
+          created_at?: string
+          day_of_week?: string
+          end_time?: string | null
+          id?: string
+          is_working?: boolean
+          start_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_schedules_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      barbers: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blocked_slots: {
+        Row: {
+          barber_id: string
+          blocked_date: string
+          blocked_time: string
+          created_at: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          barber_id: string
+          blocked_date: string
+          blocked_time: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          barber_id?: string
+          blocked_date?: string
+          blocked_time?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_slots_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bonus_packages: {
         Row: {
           active: boolean
