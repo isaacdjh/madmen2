@@ -49,10 +49,14 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
     }
   };
 
+  const handleDirectNavClick = (item: { id: string; label: string; icon: any }) => {
+    onViewChange(item.id);
+  };
+
   const getCurrentViewLabel = () => {
     const allItems = [...directNavItems, ...dropdownItems];
     const currentItem = allItems.find(item => {
-      if (item.isClientView || item.isBarberPortal) return false;
+      if ('isClientView' in item || 'isBarberPortal' in item) return false;
       return currentView === item.id;
     });
     return currentItem?.label || 'Panel Administrativo';
@@ -91,7 +95,7 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
                   <Button
                     key={item.id}
                     variant={isActive ? "default" : "ghost"}
-                    onClick={() => handleNavClick(item)}
+                    onClick={() => handleDirectNavClick(item)}
                     className={cn(
                       "text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold transition-colors",
                       isActive && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
@@ -135,7 +139,7 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
                     return (
                       <DropdownMenuItem
                         key={item.id}
-                        onClick={() => handleNavClick(item)}
+                        onClick={() => handleDirectNavClick(item)}
                         className={cn(
                           "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
                           isActive && "bg-barbershop-gold/20"
