@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
@@ -27,6 +28,8 @@ const AdminIndex = () => {
         return <ServicesManager />;
       case 'marketing':
         return <MarketingDashboard />;
+      case 'bonus':
+        return <BonusManager />;
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-8">
@@ -47,8 +50,6 @@ const AdminIndex = () => {
             <AdvancedAnalytics />
           </div>
         );
-      case 'bonus':
-        return <BonusManager />;
       case 'clients':
         return (
           <div className="container mx-auto px-4 py-8">

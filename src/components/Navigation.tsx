@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home, Scissors, UserCog, Package } from 'lucide-react';
+import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home, Scissors, UserCog, Package, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +22,7 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
     { id: 'admin', label: 'Administración', icon: Users },
     { id: 'staff', label: 'Empleados', icon: UserCog },
     { id: 'services', label: 'Servicios', icon: Package },
+    { id: 'bonus', label: 'Bonos', icon: Gift },
     { id: 'payments', label: 'Cobros', icon: CreditCard },
     { id: 'analytics', label: 'Estadísticas', icon: BarChart3 },
     { id: 'clients', label: 'Clientes', icon: Users },
