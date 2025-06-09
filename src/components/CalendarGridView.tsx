@@ -155,8 +155,11 @@ const CalendarGridView = () => {
     console.log('Buscando cita para:', { barber, time, dateStr, location: selectedLocation });
     
     const appointment = appointments.find(apt => {
+      // Normalizar el tiempo de la cita para comparar (quitar segundos)
+      const aptTime = apt.appointment_time.substring(0, 5); // "09:00:00" -> "09:00"
+      
       const matches = apt.appointment_date === dateStr &&
-                     apt.appointment_time === time &&
+                     aptTime === time &&
                      apt.barber === barber &&
                      apt.location === selectedLocation;
       
