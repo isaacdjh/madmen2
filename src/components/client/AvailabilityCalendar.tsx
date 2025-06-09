@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,6 +48,9 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
         getBarbersWithSchedules(selectedLocation), // Filtrar barberos por ubicación
         getBlockedSlots()
       ]);
+      
+      console.log('Citas cargadas:', appointmentsData);
+      console.log('Barberos cargados para', selectedLocation, ':', barbersData);
       
       setAppointments(appointmentsData);
       setBarbers(barbersData.filter(barber => barber.status === 'active'));
@@ -130,24 +132,53 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
       return false;
     }
 
-    // Verificar si hay una cita
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    const appointment = appointments.find(apt => 
-      apt.appointment_date === dateStr &&
-      apt.appointment_time === time &&
-      apt.barber === barber &&
-      apt.location === selectedLocation &&
-      apt.status !== 'cancelada'
-    );
+    
+    console.log('Verificando disponibilidad para:', { 
+      barber, 
+      time, 
+      dateStr, 
+      location: selectedLocation 
+    });
 
-    // Verificar si está bloqueado
+    // Verificar si hay una cita confirmada en este horario
+    const existingAppointment = appointments.find(apt => {
+      // Normalizar el tiempo de la cita para comparar (quitar segundos si existen)
+      const aptTime = apt.appointment_time.includes(':') 
+        ? apt.appointment_time.substring(0, 5) 
+        : apt.appointment_time;
+      
+      const matches = apt.appointment_date === dateStr &&
+                     aptTime === time &&
+                     apt.barber === barber &&
+                     apt.location === selectedLocation &&
+                     (apt.status === 'confirmada' || apt.status === 'completada');
+      
+      if (matches) {
+        console.log('Cita encontrada que bloquea el horario:', apt);
+      }
+      
+      return matches;
+    });
+
+    // Verificar si está bloqueado manualmente
     const isBlocked = blockedSlots.some(slot =>
       slot.barber_id === barber &&
       slot.blocked_date === dateStr &&
       slot.blocked_time === time
     );
 
-    return !appointment && !isBlocked;
+    const available = !existingAppointment && !isBlocked;
+    
+    console.log('Resultado disponibilidad:', {
+      barber,
+      time,
+      available,
+      existingAppointment: !!existingAppointment,
+      isBlocked
+    });
+
+    return available;
   };
 
   const handleSlotClick = (barber: string, time: string) => {
