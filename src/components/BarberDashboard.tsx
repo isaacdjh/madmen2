@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Calendar, Euro, Clock, User, LogOut, TrendingUp, Gift, DollarSign, Package, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import CalendarGridView from './CalendarGridView';
+import RevenueReports from './RevenueReports';
 import { 
   getAllAppointments, 
   getAllBonusPackages,
@@ -245,9 +246,10 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="calendar">Calendario</TabsTrigger>
+            <TabsTrigger value="reports">Reportes</TabsTrigger>
             <TabsTrigger value="bonuses">Gestión de Bonos</TabsTrigger>
             <TabsTrigger value="history">Historial Bonos</TabsTrigger>
           </TabsList>
@@ -433,6 +435,13 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
             </div>
             
             <CalendarGridView />
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
+            <RevenueReports 
+              barberId={barberSession?.id} 
+              barberName={barberSession?.name} 
+            />
           </TabsContent>
 
           <TabsContent value="bonuses" className="space-y-6">

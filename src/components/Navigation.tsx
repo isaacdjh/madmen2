@@ -1,16 +1,5 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home, Scissors, UserCog, Package, Gift } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
+import React from 'react';
+import { Home, Calendar, Clock, Users, Scissors, Gift, CreditCard, TrendingUp, BarChart3, Megaphone, UserCircle } from 'lucide-react';
 
 interface NavigationProps {
   currentView: string;
@@ -18,274 +7,41 @@ interface NavigationProps {
 }
 
 const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
-  const navigate = useNavigate();
-
-  const directNavItems = [
-    { id: 'calendar', label: 'Calendario', icon: CalendarDays },
-    { id: 'booking', label: 'Reservas', icon: Calendar },
-    { id: 'clients', label: 'Clientes', icon: Users },
+  const navItems = [
+    { id: 'admin', label: 'Admin Panel', icon: Home },
+    { id: 'calendar', label: 'Calendario', icon: Calendar },
+    { id: 'booking', label: 'Reservas', icon: Clock },
+    { id: 'staff', label: 'Personal', icon: Users },
+    { id: 'services', label: 'Servicios', icon: Scissors },
     { id: 'bonus', label: 'Bonos', icon: Gift },
-  ];
-
-  const dropdownItems = [
-    { id: 'home', label: 'Inicio', icon: Home, isClientView: true },
-    { id: 'barber-portal', label: 'Portal Barberos', icon: Scissors, isBarberPortal: true },
-    { id: 'admin', label: 'Administración', icon: Users },
-    { id: 'staff', label: 'Empleados', icon: UserCog },
-    { id: 'services', label: 'Servicios', icon: Package },
     { id: 'payments', label: 'Cobros', icon: CreditCard },
+    { id: 'reports', label: 'Reportes', icon: TrendingUp },
     { id: 'analytics', label: 'Estadísticas', icon: BarChart3 },
-    { id: 'marketing', label: 'Marketing', icon: Settings },
+    { id: 'marketing', label: 'Marketing', icon: Megaphone },
+    { id: 'clients', label: 'Clientes', icon: UserCircle },
   ];
-
-  const handleNavClick = (item: any) => {
-    if (item.isClientView) {
-      navigate('/');
-    } else if (item.isBarberPortal) {
-      navigate('/barber');
-    } else {
-      onViewChange(item.id);
-    }
-  };
-
-  const handleDirectNavClick = (item: { id: string; label: string; icon: any }) => {
-    onViewChange(item.id);
-  };
-
-  const getCurrentViewLabel = () => {
-    // Check direct nav items first (they don't have isClientView/isBarberPortal)
-    const directItem = directNavItems.find(item => currentView === item.id);
-    if (directItem) {
-      return directItem.label;
-    }
-    
-    // Then check dropdown items (excluding the ones that navigate away)
-    const dropdownItem = dropdownItems.find(item => {
-      if (item.isClientView || item.isBarberPortal) return false;
-      return currentView === item.id;
-    });
-    
-    return dropdownItem?.label || 'Panel Administrativo';
-  };
 
   return (
-    <nav className="bg-barbershop-dark text-white shadow-2xl relative z-50 border-b-2 border-barbershop-gold">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-24">
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-4">
-              <img 
-                src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
-                alt="Mad Men Logo" 
-                className="h-20 w-auto object-contain"
-              />
-              <img 
-                src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
-                alt="Mad Men Text" 
-                className="h-16 w-auto object-contain"
-              />
-            </div>
-            <div className="border-l border-barbershop-gold/30 pl-6 ml-6">
-              <span className="text-lg font-semibold text-barbershop-gold">{getCurrentViewLabel()}</span>
-              <p className="text-sm text-white/80">Sistema de Gestión</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {/* Botones de navegación directa */}
-            <div className="hidden lg:flex items-center space-x-2">
-              {directNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentView === item.id;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? "default" : "ghost"}
-                    onClick={() => handleDirectNavClick(item)}
-                    className={cn(
-                      "text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold transition-colors",
-                      isActive && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-                    )}
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* Menú Hamburguesa */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold"
-                >
-                  <Menu className="w-6 h-6" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="end" 
-                className="w-64 bg-white border border-gray-200 shadow-lg z-50"
+    <nav className="bg-gray-100 border-b">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <span className="text-lg font-bold text-barbershop-dark">Panel de Administración</span>
+        <ul className="flex space-x-4">
+          {navItems.map((item) => (
+            <li key={item.id}>
+              <button
+                onClick={() => onViewChange(item.id)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium ${
+                  currentView === item.id
+                    ? 'bg-barbershop-gold text-white'
+                    : 'text-gray-700 hover:bg-gray-200'
+                }`}
               >
-                <DropdownMenuLabel className="text-barbershop-dark font-semibold">
-                  Navegación
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                
-                {/* Navegación rápida móvil */}
-                <div className="lg:hidden">
-                  <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
-                    Navegación Rápida
-                  </DropdownMenuLabel>
-                  {directNavItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = currentView === item.id;
-                    return (
-                      <DropdownMenuItem
-                        key={item.id}
-                        onClick={() => handleDirectNavClick(item)}
-                        className={cn(
-                          "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
-                          isActive && "bg-barbershop-gold/20"
-                        )}
-                      >
-                        <Icon className={cn(
-                          "w-4 h-4 mr-3",
-                          isActive ? "text-barbershop-gold" : "text-gray-600"
-                        )} />
-                        <span className={cn(
-                          isActive ? "text-barbershop-gold font-medium" : "text-barbershop-dark"
-                        )}>
-                          {item.label}
-                        </span>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  <DropdownMenuSeparator />
-                </div>
-                
-                {/* Navegación Principal */}
-                <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
-                  Principal
-                </DropdownMenuLabel>
-                {dropdownItems.filter(item => item.isClientView || item.isBarberPortal).map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <DropdownMenuItem
-                      key={item.id}
-                      onClick={() => handleNavClick(item)}
-                      className="cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10"
-                    >
-                      <Icon className="w-4 h-4 mr-3 text-barbershop-gold" />
-                      <span className="text-barbershop-dark">{item.label}</span>
-                    </DropdownMenuItem>
-                  );
-                })}
-                
-                <DropdownMenuSeparator />
-                
-                {/* Gestión */}
-                <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
-                  Gestión
-                </DropdownMenuLabel>
-                {dropdownItems.filter(item => 
-                  ['admin'].includes(item.id)
-                ).map((item) => {
-                  const Icon = item.icon;
-                  const isActive = currentView === item.id;
-                  return (
-                    <DropdownMenuItem
-                      key={item.id}
-                      onClick={() => handleNavClick(item)}
-                      className={cn(
-                        "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
-                        isActive && "bg-barbershop-gold/20"
-                      )}
-                    >
-                      <Icon className={cn(
-                        "w-4 h-4 mr-3",
-                        isActive ? "text-barbershop-gold" : "text-gray-600"
-                      )} />
-                      <span className={cn(
-                        isActive ? "text-barbershop-gold font-medium" : "text-barbershop-dark"
-                      )}>
-                        {item.label}
-                      </span>
-                    </DropdownMenuItem>
-                  );
-                })}
-                
-                <DropdownMenuSeparator />
-                
-                {/* Servicios y Ventas */}
-                <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
-                  Servicios y Ventas
-                </DropdownMenuLabel>
-                {dropdownItems.filter(item => 
-                  ['staff', 'services', 'payments'].includes(item.id)
-                ).map((item) => {
-                  const Icon = item.icon;
-                  const isActive = currentView === item.id;
-                  return (
-                    <DropdownMenuItem
-                      key={item.id}
-                      onClick={() => handleNavClick(item)}
-                      className={cn(
-                        "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
-                        isActive && "bg-barbershop-gold/20"
-                      )}
-                    >
-                      <Icon className={cn(
-                        "w-4 h-4 mr-3",
-                        isActive ? "text-barbershop-gold" : "text-gray-600"
-                      )} />
-                      <span className={cn(
-                        isActive ? "text-barbershop-gold font-medium" : "text-barbershop-dark"
-                      )}>
-                        {item.label}
-                      </span>
-                    </DropdownMenuItem>
-                  );
-                })}
-                
-                <DropdownMenuSeparator />
-                
-                {/* Análisis */}
-                <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
-                  Análisis
-                </DropdownMenuLabel>
-                {dropdownItems.filter(item => 
-                  ['analytics', 'marketing'].includes(item.id)
-                ).map((item) => {
-                  const Icon = item.icon;
-                  const isActive = currentView === item.id;
-                  return (
-                    <DropdownMenuItem
-                      key={item.id}
-                      onClick={() => handleNavClick(item)}
-                      className={cn(
-                        "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
-                        isActive && "bg-barbershop-gold/20"
-                      )}
-                    >
-                      <Icon className={cn(
-                        "w-4 h-4 mr-3",
-                        isActive ? "text-barbershop-gold" : "text-gray-600"
-                      )} />
-                      <span className={cn(
-                        isActive ? "text-barbershop-gold font-medium" : "text-barbershop-dark"
-                      )}>
-                        {item.label}
-                      </span>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     </nav>
   );

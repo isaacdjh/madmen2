@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
@@ -10,6 +9,7 @@ import MarketingDashboard from '@/components/MarketingDashboard';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import PaymentSystem from '@/components/PaymentSystem';
 import BonusManager from '@/components/BonusManager';
+import RevenueReports from '@/components/RevenueReports';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
@@ -48,6 +48,12 @@ const AdminIndex = () => {
               <p className="text-muted-foreground">Dashboard completo con métricas avanzadas del negocio</p>
             </div>
             <AdvancedAnalytics />
+          </div>
+        );
+      case 'reports':
+        return (
+          <div className="container mx-auto px-4 py-8">
+            <RevenueReports />
           </div>
         );
       case 'clients':
