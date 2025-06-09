@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Appointment {
@@ -108,7 +109,10 @@ export const getAllAppointments = async (): Promise<Appointment[]> => {
     throw error;
   }
 
-  return data || [];
+  return (data || []).map(appointment => ({
+    ...appointment,
+    status: appointment.status as 'confirmada' | 'completada' | 'cancelada'
+  }));
 };
 
 export const getAllBonusPackages = async (): Promise<BonusPackage[]> => {
@@ -136,7 +140,10 @@ export const getClientBonuses = async (): Promise<ClientBonus[]> => {
     throw error;
   }
 
-  return data || [];
+  return (data || []).map(bonus => ({
+    ...bonus,
+    status: bonus.status as 'activo' | 'agotado' | 'vencido'
+  }));
 };
 
 export const getAllClients = async (): Promise<Client[]> => {
@@ -151,6 +158,23 @@ export const getAllClients = async (): Promise<Client[]> => {
   }
 
   return data || [];
+};
+
+export const getAllBarbers = async (): Promise<Barber[]> => {
+  const { data, error } = await supabase
+    .from('barbers')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching barbers:', error);
+    throw error;
+  }
+
+  return (data || []).map(barber => ({
+    ...barber,
+    status: barber.status as 'active' | 'inactive'
+  }));
 };
 
 export const getBarbersWithSchedules = async (location?: string): Promise<(Barber & { schedules: BarberSchedule[] })[]> => {
@@ -172,7 +196,10 @@ export const getBarbersWithSchedules = async (location?: string): Promise<(Barbe
     throw error;
   }
 
-  return data || [];
+  return (data || []).map(barber => ({
+    ...barber,
+    status: barber.status as 'active' | 'inactive'
+  }));
 };
 
 export const getBlockedSlots = async (): Promise<BlockedSlot[]> => {
@@ -227,6 +254,94 @@ export const updateAppointmentStatus = async (appointmentId: string, status: str
   }
 };
 
+export const createAppointment = async (appointmentData: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>): Promise<Appointment> => {
+  const { data, error } = await supabase
+    .from('appointments')
+    .insert(appointmentData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating appointment:', error);
+    throw error;
+  }
+
+  return {
+    ...data,
+    status: data.status as 'confirmada' | 'completada' | 'cancelada'
+  };
+};
+
+export const createBarber = async (barberData: Omit<Barber, 'id' | 'created_at' | 'updated_at'>): Promise<Barber> => {
+  const { data, error } = await supabase
+    .from('barbers')
+    .insert(barberData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating barber:', error);
+    throw error;
+  }
+
+  return {
+    ...data,
+    status: data.status as 'active' | 'inactive'
+  };
+};
+
+export const updateBarber = async (id: string, barberData: Partial<Omit<Barber, 'id' | 'created_at' | 'updated_at'>>): Promise<void> => {
+  const { error } = await supabase
+    .from('barbers')
+    .update(barberData)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating barber:', error);
+    throw error;
+  }
+};
+
+export const deleteBarber = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('barbers')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting barber:', error);
+    throw error;
+  }
+};
+
+export const upsertBarberSchedule = async (scheduleData: Omit<BarberSchedule, 'id' | 'created_at' | 'updated_at'>): Promise<void> => {
+  const { error } = await supabase
+    .from('barber_schedules')
+    .upsert(scheduleData, {
+      onConflict: 'barber_id,day_of_week'
+    });
+
+  if (error) {
+    console.error('Error upserting barber schedule:', error);
+    throw error;
+  }
+};
+
+export const createBonusPackage = async (packageData: Omit<BonusPackage, 'id' | 'created_at'>): Promise<BonusPackage> => {
+  const { data, error } = await supabase
+    .from('bonus_packages')
+    .insert(packageData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating bonus package:', error);
+    throw error;
+  }
+
+  return data;
+};
+
 export const getClientCompleteData = async (clientId: string) => {
   try {
     // Obtener datos del cliente
@@ -268,8 +383,14 @@ export const getClientCompleteData = async (clientId: string) => {
 
     return {
       client,
-      appointments: appointments || [],
-      bonuses: bonuses || [],
+      appointments: (appointments || []).map(appointment => ({
+        ...appointment,
+        status: appointment.status as 'confirmada' | 'completada' | 'cancelada'
+      })),
+      bonuses: (bonuses || []).map(bonus => ({
+        ...bonus,
+        status: bonus.status as 'activo' | 'agotado' | 'vencido'
+      })),
       payments: payments || []
     };
   } catch (error) {
@@ -309,7 +430,7 @@ export const createOrGetClient = async (name: string, phone: string, email: stri
   return newClient;
 };
 
-export const sellBonus = async (bonusData: Omit<ClientBonus, 'id' | 'purchase_date'>): Promise<void> => {
+export const sellBonus = async (bonusData: Omit<ClientBonus, 'id' | 'purchase_date'> & { status: 'activo' | 'agotado' | 'vencido' }): Promise<void> => {
   const { error } = await supabase
     .from('client_bonuses')
     .insert(bonusData);
