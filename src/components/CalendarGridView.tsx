@@ -5,14 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Clock, User, Phone, Mail, MapPin, DollarSign, Gift, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, addDays, subDays, startOfDay } from 'date-fns';
+import { Calendar, Clock, User, Phone, Mail, MapPin, DollarSign, Gift, ChevronLeft, ChevronRight, Lock, Unlock } from 'lucide-react';
+import { format, addDays, subDays, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { getAllAppointments, updateAppointmentStatus, getClientCompleteData, type Appointment, type Client, type ClientBonus, type Payment } from '@/lib/supabase-helpers';
 
+interface BlockedSlot {
+  barber: string;
+  date: string;
+  time: string;
+  reason?: string;
+}
+
 const CalendarGridView = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -45,22 +53,77 @@ const CalendarGridView = () => {
     { id: 'treatments', name: 'Tratamientos Especiales', price: 40 }
   ];
 
-  // Generar horas de trabajo (9:00 AM a 8:00 PM)
-  const generateTimeSlots = () => {
+  // Obtener barberos del localStorage (del área de empleados)
+  const getStoredBarbers = () => {
+    const stored = localStorage.getItem('barbers');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return [];
+  };
+
+  // Obtener horario de trabajo para un barbero en un día específico
+  const getBarberWorkHours = (barberId: string, date: Date) => {
+    const storedBarbers = getStoredBarbers();
+    const barber = storedBarbers.find((b: any) => b.id === barberId);
+    
+    if (!barber) return null;
+
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = dayNames[getDay(date)];
+    const daySchedule = barber.weekSchedule?.[dayName];
+
+    return daySchedule?.isWorking ? daySchedule : null;
+  };
+
+  // Generar slots de tiempo basados en el horario del barbero
+  const generateTimeSlotsForBarber = (barberId: string, date: Date) => {
+    const workHours = getBarberWorkHours(barberId, date);
+    if (!workHours) return [];
+
     const slots = [];
-    for (let hour = 9; hour <= 20; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
-      if (hour < 20) {
-        slots.push(`${hour.toString().padStart(2, '0')}:30`);
+    const [startHour, startMinute] = workHours.start.split(':').map(Number);
+    const [endHour, endMinute] = workHours.end.split(':').map(Number);
+    const [breakStartHour, breakStartMinute] = workHours.breakStart.split(':').map(Number);
+    const [breakEndHour, breakEndMinute] = workHours.breakEnd.split(':').map(Number);
+
+    // Generar slots de 30 minutos
+    for (let hour = startHour; hour < endHour || (hour === endHour && startMinute < endMinute); hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === endHour && minute >= endMinute) break;
+        
+        // Saltar horario de descanso
+        const currentTime = hour * 60 + minute;
+        const breakStart = breakStartHour * 60 + breakStartMinute;
+        const breakEnd = breakEndHour * 60 + breakEndMinute;
+        
+        if (currentTime >= breakStart && currentTime < breakEnd) continue;
+
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(timeString);
       }
     }
+
     return slots;
   };
 
-  const timeSlots = generateTimeSlots();
+  // Obtener todos los slots únicos para mostrar en el calendario
+  const getAllTimeSlots = () => {
+    const allSlots = new Set<string>();
+    
+    barbers.forEach(barber => {
+      const slots = generateTimeSlotsForBarber(barber.id, selectedDate);
+      slots.forEach(slot => allSlots.add(slot));
+    });
+
+    return Array.from(allSlots).sort();
+  };
+
+  const timeSlots = getAllTimeSlots();
 
   useEffect(() => {
     loadAppointments();
+    loadBlockedSlots();
   }, []);
 
   const loadAppointments = async () => {
@@ -75,6 +138,18 @@ const CalendarGridView = () => {
     }
   };
 
+  const loadBlockedSlots = () => {
+    const stored = localStorage.getItem('blockedSlots');
+    if (stored) {
+      setBlockedSlots(JSON.parse(stored));
+    }
+  };
+
+  const saveBlockedSlots = (slots: BlockedSlot[]) => {
+    setBlockedSlots(slots);
+    localStorage.setItem('blockedSlots', JSON.stringify(slots));
+  };
+
   const getAppointmentForSlot = (barber: string, time: string) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     return appointments.find(apt => 
@@ -83,6 +158,49 @@ const CalendarGridView = () => {
       apt.barber === barber &&
       apt.location === selectedLocation
     );
+  };
+
+  const isSlotBlocked = (barber: string, time: string) => {
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    return blockedSlots.some(slot =>
+      slot.barber === barber &&
+      slot.date === dateStr &&
+      slot.time === time
+    );
+  };
+
+  const isBarberWorking = (barberId: string, time: string) => {
+    const workHours = getBarberWorkHours(barberId, selectedDate);
+    if (!workHours) return false;
+
+    const barberSlots = generateTimeSlotsForBarber(barberId, selectedDate);
+    return barberSlots.includes(time);
+  };
+
+  const toggleSlotBlock = (barber: string, time: string) => {
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    const existingBlock = blockedSlots.find(slot =>
+      slot.barber === barber &&
+      slot.date === dateStr &&
+      slot.time === time
+    );
+
+    if (existingBlock) {
+      // Desbloquear
+      const newSlots = blockedSlots.filter(slot => slot !== existingBlock);
+      saveBlockedSlots(newSlots);
+      toast.success('Horario desbloqueado');
+    } else {
+      // Bloquear
+      const newBlock: BlockedSlot = {
+        barber,
+        date: dateStr,
+        time,
+        reason: 'Bloqueado manualmente'
+      };
+      saveBlockedSlots([...blockedSlots, newBlock]);
+      toast.success('Horario bloqueado');
+    }
   };
 
   const handleAppointmentClick = async (appointment: Appointment) => {
@@ -121,136 +239,192 @@ const CalendarGridView = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmada': return 'bg-green-100 text-green-800';
-      case 'completada': return 'bg-blue-100 text-blue-800';
-      case 'cancelada': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'confirmada': return 'bg-green-100 text-green-800 border-green-200';
+      case 'completada': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'cancelada': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
-  };
-
-  const isSlotAvailable = (barber: string, time: string) => {
-    return !getAppointmentForSlot(barber, time);
   };
 
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Cargando calendario...</div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-barbershop-gold"></div>
+          <span className="ml-3 text-gray-600">Cargando calendario...</span>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-barbershop-dark mb-4">Calendario de Citas</h1>
-        
-        {/* Controles */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      {/* Header mejorado */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-barbershop-dark mb-2">Calendario de Citas</h1>
+        <p className="text-gray-600">Gestiona las citas y horarios de los barberos</p>
+      </div>
+
+      {/* Controles mejorados */}
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
           <div className="flex items-center gap-4">
-            {/* Navegación de fecha */}
-            <div className="flex items-center gap-2">
+            {/* Navegación de fecha mejorada */}
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+                className="hover:bg-gray-50"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <div className="text-lg font-semibold min-w-[200px] text-center">
-                {format(selectedDate, 'EEEE, dd \'de\' MMMM', { locale: es })}
+              <div className="bg-barbershop-gold/10 px-4 py-2 rounded-lg">
+                <div className="text-lg font-bold text-barbershop-dark min-w-[220px] text-center">
+                  {format(selectedDate, 'EEEE, dd \'de\' MMMM', { locale: es })}
+                </div>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+                className="hover:bg-gray-50"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
 
-            {/* Botón hoy */}
+            {/* Botón hoy mejorado */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSelectedDate(new Date())}
-              className="text-barbershop-gold"
+              className="text-barbershop-gold hover:bg-barbershop-gold/10 font-medium"
             >
+              <Calendar className="w-4 h-4 mr-2" />
               Hoy
             </Button>
           </div>
 
-          {/* Selector de ubicación */}
-          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-            <SelectTrigger className="w-[250px]">
-              <SelectValue placeholder="Seleccionar centro" />
-            </SelectTrigger>
-            <SelectContent>
-              {locations.map((location) => (
-                <SelectItem key={location.id} value={location.id}>
-                  {location.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Selector de ubicación mejorado */}
+          <div className="flex items-center gap-3">
+            <MapPin className="w-5 h-5 text-gray-500" />
+            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+              <SelectTrigger className="w-[280px] bg-white border-gray-200">
+                <SelectValue placeholder="Seleccionar centro" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                {locations.map((location) => (
+                  <SelectItem key={location.id} value={location.id}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
-      {/* Calendario Grid */}
-      <Card>
+      {/* Calendario Grid mejorado */}
+      <Card className="shadow-lg border-0">
+        <CardHeader className="bg-gradient-to-r from-barbershop-gold/10 to-barbershop-gold/5 border-b">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Calendar className="w-6 h-6 text-barbershop-gold" />
+            Horarios y Disponibilidad
+            <Badge variant="outline" className="ml-auto">
+              {timeSlots.length} franjas horarias
+            </Badge>
+          </CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              {/* Header con barberos */}
-              <div className="grid grid-cols-5 border-b">
-                <div className="p-4 bg-gray-50 font-semibold border-r">Hora</div>
+            <div className="min-w-[900px]">
+              {/* Header con barberos mejorado */}
+              <div className="grid grid-cols-5 border-b bg-gray-50">
+                <div className="p-4 font-bold text-gray-700 border-r bg-gray-100 flex items-center">
+                  <Clock className="w-5 h-5 mr-2 text-barbershop-gold" />
+                  Horario
+                </div>
                 {barbers.map((barber) => (
-                  <div key={barber.id} className="p-4 bg-gray-50 font-semibold text-center border-r last:border-r-0">
-                    {barber.name}
+                  <div key={barber.id} className="p-4 font-bold text-center border-r last:border-r-0 bg-white">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <User className="w-4 h-4 text-barbershop-gold" />
+                      <span className="text-barbershop-dark">{barber.name}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {getBarberWorkHours(barber.id, selectedDate) ? 'Disponible' : 'No trabaja'}
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Filas de tiempo */}
-              {timeSlots.map((time) => (
-                <div key={time} className="grid grid-cols-5 border-b last:border-b-0">
-                  <div className="p-3 bg-gray-50 font-medium border-r flex items-center">
-                    <Clock className="w-4 h-4 mr-2 text-barbershop-gold" />
-                    {time}
+              {/* Filas de tiempo mejoradas */}
+              {timeSlots.map((time, index) => (
+                <div key={time} className={`grid grid-cols-5 border-b last:border-b-0 hover:bg-gray-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                  <div className="p-4 bg-gray-50 font-semibold border-r flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-barbershop-dark">{time}</div>
+                      <div className="text-xs text-gray-500">
+                        {parseInt(time.split(':')[0]) < 12 ? 'AM' : 'PM'}
+                      </div>
+                    </div>
                   </div>
                   {barbers.map((barber) => {
                     const appointment = getAppointmentForSlot(barber.id, time);
-                    const available = isSlotAvailable(barber.id, time);
+                    const isBlocked = isSlotBlocked(barber.id, time);
+                    const isWorking = isBarberWorking(barber.id, time);
                     
                     return (
                       <div 
                         key={`${barber.id}-${time}`} 
-                        className={`p-2 border-r last:border-r-0 min-h-[60px] ${
-                          available ? 'bg-green-50 hover:bg-green-100' : ''
-                        }`}
+                        className="p-2 border-r last:border-r-0 min-h-[70px] relative"
                       >
-                        {appointment ? (
+                        {!isWorking ? (
+                          <div className="h-full flex items-center justify-center bg-gray-100 rounded text-gray-400 text-sm">
+                            No disponible
+                          </div>
+                        ) : appointment ? (
                           <div 
-                            className="bg-barbershop-gold/20 border border-barbershop-gold/40 rounded p-2 cursor-pointer hover:bg-barbershop-gold/30 transition-colors h-full"
+                            className="bg-gradient-to-br from-barbershop-gold/20 to-barbershop-gold/10 border-2 border-barbershop-gold/40 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all h-full"
                             onClick={() => handleAppointmentClick(appointment)}
                           >
-                            <div className="text-xs font-medium truncate">
+                            <div className="text-sm font-bold text-barbershop-dark truncate mb-1">
                               {getServiceName(appointment.service)}
                             </div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {appointment.price && `${appointment.price}€`}
-                            </div>
+                            {appointment.price && (
+                              <div className="text-sm font-semibold text-green-600 mb-1">
+                                {appointment.price}€
+                              </div>
+                            )}
                             <Badge 
-                              className={`${getStatusColor(appointment.status)} text-xs mt-1`}
+                              className={`${getStatusColor(appointment.status)} text-xs px-2 py-1`}
                               variant="secondary"
                             >
                               {appointment.status}
                             </Badge>
                           </div>
+                        ) : isBlocked ? (
+                          <div 
+                            className="bg-red-100 border-2 border-red-300 rounded-lg p-3 cursor-pointer hover:bg-red-200 transition-colors h-full flex items-center justify-center"
+                            onClick={() => toggleSlotBlock(barber.id, time)}
+                          >
+                            <div className="text-center">
+                              <Lock className="w-5 h-5 text-red-600 mx-auto mb-1" />
+                              <span className="text-xs font-medium text-red-700">Bloqueado</span>
+                            </div>
+                          </div>
                         ) : (
-                          <div className="h-full flex items-center justify-center text-xs text-gray-400">
-                            Disponible
+                          <div 
+                            className="bg-green-50 border-2 border-green-200 rounded-lg p-3 cursor-pointer hover:bg-green-100 transition-colors h-full flex items-center justify-center group"
+                            onClick={() => toggleSlotBlock(barber.id, time)}
+                          >
+                            <div className="text-center">
+                              <Unlock className="w-5 h-5 text-green-600 mx-auto mb-1 group-hover:scale-110 transition-transform" />
+                              <span className="text-xs font-medium text-green-700">Disponible</span>
+                              <div className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                Click para bloquear
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -263,7 +437,30 @@ const CalendarGridView = () => {
         </CardContent>
       </Card>
 
-      {/* Dialog de detalles del cliente - reutilizando el código existente */}
+      {/* Leyenda */}
+      <div className="mt-6 bg-white rounded-lg border p-4">
+        <h3 className="font-semibold text-gray-700 mb-3">Leyenda</h3>
+        <div className="flex flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-50 border-2 border-green-200 rounded"></div>
+            <span className="text-sm text-gray-600">Disponible</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-barbershop-gold/20 border-2 border-barbershop-gold/40 rounded"></div>
+            <span className="text-sm text-gray-600">Con cita</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-red-100 border-2 border-red-300 rounded"></div>
+            <span className="text-sm text-gray-600">Bloqueado</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-100 rounded"></div>
+            <span className="text-sm text-gray-600">No disponible</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Dialog de detalles del cliente */}
       <Dialog open={!!selectedAppointment} onOpenChange={() => setSelectedAppointment(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -274,7 +471,10 @@ const CalendarGridView = () => {
           </DialogHeader>
 
           {isClientDataLoading ? (
-            <div className="text-center py-8">Cargando datos del cliente...</div>
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-barbershop-gold mx-auto"></div>
+              <p className="mt-2 text-gray-600">Cargando datos del cliente...</p>
+            </div>
           ) : clientData.client ? (
             <div className="space-y-6">
               {/* Datos del cliente */}

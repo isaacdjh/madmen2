@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Clock, ChevronLeft, ChevronRight, User } from 'lucide-react';
-import { format, addDays, subDays } from 'date-fns';
+import { format, addDays, subDays, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getAllAppointments, type Appointment } from '@/lib/supabase-helpers';
 
@@ -30,19 +30,73 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     { id: 'david', name: 'David' }
   ];
 
-  // Generar horas de trabajo (9:00 AM a 8:00 PM)
-  const generateTimeSlots = () => {
+  // Obtener barberos del localStorage (del área de empleados)
+  const getStoredBarbers = () => {
+    const stored = localStorage.getItem('barbers');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return [];
+  };
+
+  // Obtener horario de trabajo para un barbero en un día específico
+  const getBarberWorkHours = (barberId: string, date: Date) => {
+    const storedBarbers = getStoredBarbers();
+    const barber = storedBarbers.find((b: any) => b.id === barberId);
+    
+    if (!barber || barber.status !== 'active') return null;
+
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = dayNames[getDay(date)];
+    const daySchedule = barber.weekSchedule?.[dayName];
+
+    return daySchedule?.isWorking ? daySchedule : null;
+  };
+
+  // Generar slots de tiempo basados en el horario del barbero
+  const generateTimeSlotsForBarber = (barberId: string, date: Date) => {
+    const workHours = getBarberWorkHours(barberId, date);
+    if (!workHours) return [];
+
     const slots = [];
-    for (let hour = 9; hour <= 20; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
-      if (hour < 20) {
-        slots.push(`${hour.toString().padStart(2, '0')}:30`);
+    const [startHour, startMinute] = workHours.start.split(':').map(Number);
+    const [endHour, endMinute] = workHours.end.split(':').map(Number);
+    const [breakStartHour, breakStartMinute] = workHours.breakStart.split(':').map(Number);
+    const [breakEndHour, breakEndMinute] = workHours.breakEnd.split(':').map(Number);
+
+    // Generar slots de 30 minutos
+    for (let hour = startHour; hour < endHour || (hour === endHour && startMinute < endMinute); hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === endHour && minute >= endMinute) break;
+        
+        // Saltar horario de descanso
+        const currentTime = hour * 60 + minute;
+        const breakStart = breakStartHour * 60 + breakStartMinute;
+        const breakEnd = breakEndHour * 60 + breakEndMinute;
+        
+        if (currentTime >= breakStart && currentTime < breakEnd) continue;
+
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(timeString);
       }
     }
+
     return slots;
   };
 
-  const timeSlots = generateTimeSlots();
+  // Obtener todos los slots únicos para mostrar en el calendario
+  const getAllTimeSlots = () => {
+    const allSlots = new Set<string>();
+    
+    barbers.forEach(barber => {
+      const slots = generateTimeSlotsForBarber(barber.id, selectedDate);
+      slots.forEach(slot => allSlots.add(slot));
+    });
+
+    return Array.from(allSlots).sort();
+  };
+
+  const timeSlots = getAllTimeSlots();
 
   useEffect(() => {
     loadAppointments();
@@ -60,6 +114,12 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   };
 
   const isSlotAvailable = (barber: string, time: string) => {
+    // Verificar si el barbero trabaja en este horario
+    if (!generateTimeSlotsForBarber(barber, selectedDate).includes(time)) {
+      return false;
+    }
+
+    // Verificar si hay una cita
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     const appointment = appointments.find(apt => 
       apt.appointment_date === dateStr &&
@@ -68,7 +128,16 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
       apt.location === selectedLocation &&
       apt.status !== 'cancelada'
     );
-    return !appointment;
+
+    // Verificar si está bloqueado
+    const blockedSlots = JSON.parse(localStorage.getItem('blockedSlots') || '[]');
+    const isBlocked = blockedSlots.some((slot: any) =>
+      slot.barber === barber &&
+      slot.date === dateStr &&
+      slot.time === time
+    );
+
+    return !appointment && !isBlocked;
   };
 
   const handleSlotClick = (barber: string, time: string) => {
@@ -140,7 +209,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
         </Select>
       </div>
 
-      {/* Calendario Grid */}
+      {/* Calendario Grid mejorado */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -154,12 +223,20 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
               {/* Header con barberos */}
               <div className="grid grid-cols-5 border-b">
                 <div className="p-4 bg-gray-50 font-semibold border-r">Hora</div>
-                {barbers.map((barber) => (
-                  <div key={barber.id} className="p-4 bg-gray-50 font-semibold text-center border-r last:border-r-0 flex items-center justify-center gap-2">
-                    <User className="w-4 h-4 text-barbershop-gold" />
-                    {barber.name}
-                  </div>
-                ))}
+                {barbers.map((barber) => {
+                  const workHours = getBarberWorkHours(barber.id, selectedDate);
+                  return (
+                    <div key={barber.id} className="p-4 bg-gray-50 font-semibold text-center border-r last:border-r-0 flex flex-col items-center justify-center gap-1">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-barbershop-gold" />
+                        {barber.name}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {workHours ? `${workHours.start} - ${workHours.end}` : 'No disponible'}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Filas de tiempo */}
@@ -171,19 +248,26 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
                   </div>
                   {barbers.map((barber) => {
                     const available = isSlotAvailable(barber.id, time);
+                    const isWorking = generateTimeSlotsForBarber(barber.id, selectedDate).includes(time);
                     
                     return (
                       <div 
                         key={`${barber.id}-${time}`} 
                         className={`p-2 border-r last:border-r-0 min-h-[50px] ${
-                          available 
-                            ? 'bg-green-50 hover:bg-green-100 cursor-pointer' 
-                            : 'bg-red-50'
+                          !isWorking 
+                            ? 'bg-gray-100' 
+                            : available 
+                              ? 'bg-green-50 hover:bg-green-100 cursor-pointer' 
+                              : 'bg-red-50'
                         }`}
                         onClick={() => available && handleSlotClick(barber.id, time)}
                       >
                         <div className="h-full flex items-center justify-center">
-                          {available ? (
+                          {!isWorking ? (
+                            <span className="text-gray-400 text-sm">
+                              No disponible
+                            </span>
+                          ) : available ? (
                             <span className="text-green-600 font-medium text-sm">
                               Disponible
                             </span>
