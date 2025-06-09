@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Appointment {
@@ -430,7 +429,7 @@ export const createOrGetClient = async (name: string, phone: string, email: stri
   return newClient;
 };
 
-export const sellBonus = async (bonusData: Omit<ClientBonus, 'id' | 'purchase_date'> & { status: 'activo' | 'agotado' | 'vencido' }): Promise<void> => {
+export const sellBonus = async (bonusData: Omit<ClientBonus, 'id' | 'purchase_date'>): Promise<void> => {
   const { error } = await supabase
     .from('client_bonuses')
     .insert(bonusData);

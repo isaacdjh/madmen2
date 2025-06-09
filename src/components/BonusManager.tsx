@@ -76,7 +76,10 @@ const BonusManager = () => {
     }
 
     try {
-      await createBonusPackage(newPackage);
+      await createBonusPackage({
+        ...newPackage,
+        active: true
+      });
       await loadAllData();
       setIsAddingPackage(false);
       setNewPackage({
@@ -111,7 +114,8 @@ const BonusManager = () => {
         client_id: client.id,
         bonus_package_id: saleData.packageId,
         services_remaining: selectedPackage.services_included,
-        sold_by_barber: saleData.soldByBarber
+        sold_by_barber: saleData.soldByBarber,
+        status: 'activo'
       });
 
       await loadAllData();

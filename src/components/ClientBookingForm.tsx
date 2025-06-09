@@ -88,7 +88,8 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
         barber: formData.barber,
         appointment_date: formData.date,
         appointment_time: formData.time,
-        price: selectedService?.price
+        price: selectedService?.price,
+        status: 'confirmada' as const
       };
       
       console.log('Datos de la cita a crear:', appointmentData);

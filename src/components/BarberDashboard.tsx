@@ -133,7 +133,8 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
         client_id: client.id,
         bonus_package_id: saleData.packageId,
         services_remaining: selectedPackage.services_included,
-        sold_by_barber: barberSession?.name || 'Barbero'
+        sold_by_barber: barberSession?.name || 'Barbero',
+        status: 'activo'
       });
 
       await loadAllData();
