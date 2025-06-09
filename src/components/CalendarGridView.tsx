@@ -8,6 +8,7 @@ import { Calendar, Clock, User, Phone, Mail, MapPin, DollarSign, Gift, ChevronLe
 import { format, addDays, subDays, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
+import PaymentModal from './PaymentModal';
 import { 
   getAllAppointments, 
   updateAppointmentStatus, 
@@ -35,6 +36,7 @@ const CalendarGridView = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [paymentAppointment, setPaymentAppointment] = useState<Appointment | null>(null);
   const [clientData, setClientData] = useState<{
     client: Client | null;
     appointments: Appointment[];
@@ -86,7 +88,6 @@ const CalendarGridView = () => {
     }
   };
 
-  // Obtener horario de trabajo para un barbero en un día específico
   const getBarberWorkHours = (barberId: string, date: Date) => {
     const barber = barbers.find(b => b.id === barberId);
     
@@ -99,7 +100,6 @@ const CalendarGridView = () => {
     return daySchedule?.is_working ? daySchedule : null;
   };
 
-  // Generar slots de tiempo basados en el horario del barbero
   const generateTimeSlotsForBarber = (barberId: string, date: Date) => {
     const workHours = getBarberWorkHours(barberId, date);
     if (!workHours || !workHours.start_time || !workHours.end_time) return [];
@@ -114,12 +114,10 @@ const CalendarGridView = () => {
       [breakEndHour, breakEndMinute] = workHours.break_end.split(':').map(Number);
     }
 
-    // Generar slots de 30 minutos
     for (let hour = startHour; hour < endHour || (hour === endHour && startMinute < endMinute); hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         if (hour === endHour && minute >= endMinute) break;
         
-        // Saltar horario de descanso si existe
         if (workHours.break_start && workHours.break_end) {
           const currentTime = hour * 60 + minute;
           const breakStart = breakStartHour * 60 + breakStartMinute;
@@ -136,7 +134,6 @@ const CalendarGridView = () => {
     return slots;
   };
 
-  // Obtener todos los slots únicos para mostrar en el calendario
   const getAllTimeSlots = () => {
     const allSlots = new Set<string>();
     
@@ -155,8 +152,7 @@ const CalendarGridView = () => {
     console.log('Buscando cita para:', { barber, time, dateStr, location: selectedLocation });
     
     const appointment = appointments.find(apt => {
-      // Normalizar el tiempo de la cita para comparar (quitar segundos)
-      const aptTime = apt.appointment_time.substring(0, 5); // "09:00:00" -> "09:00"
+      const aptTime = apt.appointment_time.substring(0, 5);
       
       const matches = apt.appointment_date === dateStr &&
                      aptTime === time &&
@@ -207,11 +203,9 @@ const CalendarGridView = () => {
 
     try {
       if (existingBlock) {
-        // Desbloquear
         await deleteBlockedSlot(barber, dateStr, time);
         toast.success('Horario desbloqueado');
       } else {
-        // Bloquear
         await createBlockedSlot({
           barber_id: barber,
           blocked_date: dateStr,
@@ -221,7 +215,6 @@ const CalendarGridView = () => {
         toast.success('Horario bloqueado');
       }
       
-      // Recargar slots bloqueados
       const updatedBlockedSlots = await getBlockedSlots();
       setBlockedSlots(updatedBlockedSlots);
     } catch (error) {
@@ -243,6 +236,11 @@ const CalendarGridView = () => {
     } finally {
       setIsClientDataLoading(false);
     }
+  };
+
+  const handlePaymentClick = (appointment: Appointment) => {
+    setPaymentAppointment(appointment);
+    setSelectedAppointment(null);
   };
 
   const handleStatusChange = async (appointmentId: string, newStatus: string) => {
@@ -273,6 +271,10 @@ const CalendarGridView = () => {
     }
   };
 
+  const getBarberName = (barberId: string) => {
+    return barbers.find(b => b.id === barberId)?.name || 'Barbero';
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -284,7 +286,6 @@ const CalendarGridView = () => {
     );
   }
 
-  // Si no hay barberos, mostrar mensaje
   if (barbers.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -309,7 +310,6 @@ const CalendarGridView = () => {
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
         <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
           <div className="flex items-center gap-4">
-            {/* Navegación de fecha mejorada */}
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
@@ -334,7 +334,6 @@ const CalendarGridView = () => {
               </Button>
             </div>
 
-            {/* Botón hoy mejorado */}
             <Button
               variant="ghost"
               size="sm"
@@ -346,7 +345,6 @@ const CalendarGridView = () => {
             </Button>
           </div>
 
-          {/* Selector de ubicación mejorado */}
           <div className="flex items-center gap-3">
             <MapPin className="w-5 h-5 text-gray-500" />
             <Select value={selectedLocation} onValueChange={setSelectedLocation}>
@@ -365,7 +363,7 @@ const CalendarGridView = () => {
         </div>
       </div>
 
-      {/* Calendario Grid mejorado */}
+      {/* Calendario Grid */}
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-barbershop-gold/10 to-barbershop-gold/5 border-b">
           <CardTitle className="flex items-center gap-3 text-xl">
@@ -379,7 +377,7 @@ const CalendarGridView = () => {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <div className="min-w-[900px]">
-              {/* Header con barberos mejorado */}
+              {/* Header con barberos */}
               <div className={`grid border-b bg-gray-50`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
                 <div className="p-4 font-bold text-gray-700 border-r bg-gray-100 flex items-center">
                   <Clock className="w-5 h-5 mr-2 text-barbershop-gold" />
@@ -398,7 +396,7 @@ const CalendarGridView = () => {
                 ))}
               </div>
 
-              {/* Filas de tiempo mejoradas */}
+              {/* Filas de tiempo */}
               {timeSlots.map((time, index) => (
                 <div key={time} className={`grid border-b last:border-b-0 hover:bg-gray-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
                   <div className="p-4 bg-gray-50 font-semibold border-r flex items-center justify-center">
@@ -500,7 +498,7 @@ const CalendarGridView = () => {
         </div>
       </div>
 
-      {/* Dialog de detalles del cliente */}
+      {/* Modal de información del cliente */}
       <Dialog open={!!selectedAppointment} onOpenChange={() => setSelectedAppointment(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -571,11 +569,11 @@ const CalendarGridView = () => {
                         <>
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleStatusChange(selectedAppointment.id, 'completada')}
-                            className="text-green-600 border-green-600 hover:bg-green-50"
+                            onClick={() => handlePaymentClick(selectedAppointment)}
+                            className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
                           >
-                            Completar
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            Procesar Pago
                           </Button>
                           <Button
                             size="sm"
@@ -628,6 +626,15 @@ const CalendarGridView = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modal de pago */}
+      <PaymentModal
+        appointment={paymentAppointment}
+        isOpen={!!paymentAppointment}
+        onClose={() => setPaymentAppointment(null)}
+        onPaymentComplete={loadData}
+        barberName={paymentAppointment ? getBarberName(paymentAppointment.barber) : ''}
+      />
     </div>
   );
 };
