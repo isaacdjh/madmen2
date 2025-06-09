@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, MapPin, Clock, User, Phone, Mail } from 'lucide-react';
+import { CalendarIcon, MapPin, Clock, User, Phone, Mail, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -40,7 +40,11 @@ const timeSlots = [
   '18:00', '18:30', '19:00', '19:30', '20:00'
 ];
 
-const ClientBookingForm = () => {
+interface ClientBookingFormProps {
+  onBack?: () => void;
+}
+
+const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [selectedBarber, setSelectedBarber] = useState('');
@@ -108,6 +112,17 @@ const ClientBookingForm = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
+      {onBack && (
+        <Button
+          variant="ghost"
+          onClick={onBack}
+          className="mb-4 flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver
+        </Button>
+      )}
+      
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-barbershop-dark">

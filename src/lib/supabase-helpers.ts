@@ -73,7 +73,7 @@ export const createOrGetClient = async (name: string, phone: string, email: stri
     .single();
 
   if (existingClient) {
-    return existingClient;
+    return existingClient as Client;
   }
 
   // Si no existe, crear nuevo cliente
@@ -84,7 +84,7 @@ export const createOrGetClient = async (name: string, phone: string, email: stri
     .single();
 
   if (error) throw error;
-  return newClient;
+  return newClient as Client;
 };
 
 export const getAllClients = async (): Promise<Client[]> => {
@@ -94,7 +94,7 @@ export const getAllClients = async (): Promise<Client[]> => {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  return (data || []) as Client[];
 };
 
 // Funciones para citas
@@ -114,7 +114,7 @@ export const createAppointment = async (appointmentData: {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as Appointment;
 };
 
 export const getAllAppointments = async (): Promise<Appointment[]> => {
@@ -124,7 +124,7 @@ export const getAllAppointments = async (): Promise<Appointment[]> => {
     .order('appointment_date', { ascending: true });
 
   if (error) throw error;
-  return data || [];
+  return (data || []) as Appointment[];
 };
 
 export const updateAppointmentStatus = async (id: string, status: string): Promise<void> => {
@@ -150,7 +150,7 @@ export const createBonusPackage = async (packageData: {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as BonusPackage;
 };
 
 export const getAllBonusPackages = async (): Promise<BonusPackage[]> => {
@@ -161,7 +161,7 @@ export const getAllBonusPackages = async (): Promise<BonusPackage[]> => {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  return (data || []) as BonusPackage[];
 };
 
 export const sellBonus = async (bonusData: {
@@ -177,7 +177,7 @@ export const sellBonus = async (bonusData: {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as ClientBonus;
 };
 
 export const getClientBonuses = async (client_id?: string): Promise<ClientBonus[]> => {
@@ -192,7 +192,7 @@ export const getClientBonuses = async (client_id?: string): Promise<ClientBonus[
     .order('purchase_date', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  return (data || []) as ClientBonus[];
 };
 
 export const redeemBonusService = async (redemptionData: {
@@ -245,7 +245,7 @@ export const createPayment = async (paymentData: {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as Payment;
 };
 
 export const getClientPayments = async (client_id: string): Promise<Payment[]> => {
@@ -256,7 +256,7 @@ export const getClientPayments = async (client_id: string): Promise<Payment[]> =
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  return (data || []) as Payment[];
 };
 
 // Función para obtener datos completos de cliente con citas, bonos y pagos
@@ -269,8 +269,8 @@ export const getClientCompleteData = async (client_id: string) => {
   ]);
 
   return {
-    client: client.data,
-    appointments: appointments.data || [],
+    client: client.data as Client | null,
+    appointments: (appointments.data || []) as Appointment[],
     bonuses: bonuses,
     payments: payments
   };
