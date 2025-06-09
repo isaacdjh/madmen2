@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home, Scissors, UserCog, Package, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 
 interface NavigationProps {
   currentView: string;
@@ -11,7 +19,6 @@ interface NavigationProps {
 }
 
 const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const navItems = [
@@ -39,94 +46,178 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
     }
   };
 
-  return (
-    <>
-      <nav className="bg-barbershop-dark text-white shadow-2xl relative z-50 border-b-2 border-barbershop-gold">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-24">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-4">
-                <img 
-                  src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
-                  alt="Mad Men Logo" 
-                  className="h-20 w-auto object-contain"
-                />
-                <img 
-                  src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
-                  alt="Mad Men Text" 
-                  className="h-16 w-auto object-contain"
-                />
-              </div>
-              <div className="border-l border-barbershop-gold/30 pl-6 ml-6">
-                <span className="text-lg font-semibold text-barbershop-gold">Panel Administrativo</span>
-                <p className="text-sm text-white/80">Sistema de Gestión</p>
-              </div>
-            </div>
+  const getCurrentViewLabel = () => {
+    const currentItem = navItems.find(item => {
+      if (item.isClientView || item.isBarberPortal) return false;
+      return currentView === item.id;
+    });
+    return currentItem?.label || 'Panel Administrativo';
+  };
 
-            {/* Desktop Menu */}
-            <div className="hidden lg:flex space-x-2">
-              {navItems.map((item) => {
+  return (
+    <nav className="bg-barbershop-dark text-white shadow-2xl relative z-50 border-b-2 border-barbershop-gold">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-24">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
+              <img 
+                src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
+                alt="Mad Men Logo" 
+                className="h-20 w-auto object-contain"
+              />
+              <img 
+                src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
+                alt="Mad Men Text" 
+                className="h-16 w-auto object-contain"
+              />
+            </div>
+            <div className="border-l border-barbershop-gold/30 pl-6 ml-6">
+              <span className="text-lg font-semibold text-barbershop-gold">{getCurrentViewLabel()}</span>
+              <p className="text-sm text-white/80">Sistema de Gestión</p>
+            </div>
+          </div>
+
+          {/* Menú Hamburguesa */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold"
+              >
+                <Menu className="w-6 h-6" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              className="w-64 bg-white border border-gray-200 shadow-lg z-50"
+            >
+              <DropdownMenuLabel className="text-barbershop-dark font-semibold">
+                Navegación
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              {/* Navegación Principal */}
+              <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
+                Principal
+              </DropdownMenuLabel>
+              {navItems.filter(item => item.isClientView || item.isBarberPortal).map((item) => {
                 const Icon = item.icon;
-                const isActive = item.isClientView || item.isBarberPortal ? false : currentView === item.id;
                 return (
-                  <Button
+                  <DropdownMenuItem
                     key={item.id}
-                    variant={isActive ? "secondary" : "ghost"}
+                    onClick={() => handleNavClick(item)}
+                    className="cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10"
+                  >
+                    <Icon className="w-4 h-4 mr-3 text-barbershop-gold" />
+                    <span className="text-barbershop-dark">{item.label}</span>
+                  </DropdownMenuItem>
+                );
+              })}
+              
+              <DropdownMenuSeparator />
+              
+              {/* Gestión */}
+              <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
+                Gestión
+              </DropdownMenuLabel>
+              {navItems.filter(item => 
+                ['calendar', 'booking', 'admin', 'clients'].includes(item.id)
+              ).map((item) => {
+                const Icon = item.icon;
+                const isActive = currentView === item.id;
+                return (
+                  <DropdownMenuItem
+                    key={item.id}
                     onClick={() => handleNavClick(item)}
                     className={cn(
-                      "text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold transition-all duration-300 font-medium px-4 py-2 rounded-lg",
-                      isActive && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 shadow-lg"
+                      "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
+                      isActive && "bg-barbershop-gold/20"
                     )}
                   >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {item.label}
-                  </Button>
+                    <Icon className={cn(
+                      "w-4 h-4 mr-3",
+                      isActive ? "text-barbershop-gold" : "text-gray-600"
+                    )} />
+                    <span className={cn(
+                      isActive ? "text-barbershop-gold font-medium" : "text-barbershop-dark"
+                    )}>
+                      {item.label}
+                    </span>
+                  </DropdownMenuItem>
                 );
               })}
-            </div>
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-barbershop-navy border-t border-barbershop-gold/30">
-            <div className="px-4 py-4 space-y-2">
-              {navItems.map((item) => {
+              
+              <DropdownMenuSeparator />
+              
+              {/* Servicios y Ventas */}
+              <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
+                Servicios y Ventas
+              </DropdownMenuLabel>
+              {navItems.filter(item => 
+                ['staff', 'services', 'bonus', 'payments'].includes(item.id)
+              ).map((item) => {
                 const Icon = item.icon;
-                const isActive = item.isClientView || item.isBarberPortal ? false : currentView === item.id;
+                const isActive = currentView === item.id;
                 return (
-                  <Button
+                  <DropdownMenuItem
                     key={item.id}
-                    variant={isActive ? "secondary" : "ghost"}
-                    onClick={() => {
-                      handleNavClick(item);
-                      setIsMobileMenuOpen(false);
-                    }}
+                    onClick={() => handleNavClick(item)}
                     className={cn(
-                      "w-full justify-start text-white hover:bg-barbershop-gold/20 hover:text-barbershop-gold transition-all duration-300 py-3",
-                      isActive && "bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
+                      "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
+                      isActive && "bg-barbershop-gold/20"
                     )}
                   >
-                    <Icon className="w-5 h-5 mr-3" />
-                    {item.label}
-                  </Button>
+                    <Icon className={cn(
+                      "w-4 h-4 mr-3",
+                      isActive ? "text-barbershop-gold" : "text-gray-600"
+                    )} />
+                    <span className={cn(
+                      isActive ? "text-barbershop-gold font-medium" : "text-barbershop-dark"
+                    )}>
+                      {item.label}
+                    </span>
+                  </DropdownMenuItem>
                 );
               })}
-            </div>
-          </div>
-        )}
-      </nav>
-    </>
+              
+              <DropdownMenuSeparator />
+              
+              {/* Análisis */}
+              <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wide">
+                Análisis
+              </DropdownMenuLabel>
+              {navItems.filter(item => 
+                ['analytics', 'marketing'].includes(item.id)
+              ).map((item) => {
+                const Icon = item.icon;
+                const isActive = currentView === item.id;
+                return (
+                  <DropdownMenuItem
+                    key={item.id}
+                    onClick={() => handleNavClick(item)}
+                    className={cn(
+                      "cursor-pointer hover:bg-barbershop-gold/10 focus:bg-barbershop-gold/10",
+                      isActive && "bg-barbershop-gold/20"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "w-4 h-4 mr-3",
+                      isActive ? "text-barbershop-gold" : "text-gray-600"
+                    )} />
+                    <span className={cn(
+                      isActive ? "text-barbershop-gold font-medium" : "text-barbershop-dark"
+                    )}>
+                      {item.label}
+                    </span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </nav>
   );
 };
 
