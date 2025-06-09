@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,19 +60,19 @@ const CalendarGridView = () => {
 
   useEffect(() => {
     loadData();
-  }, [selectedDate]);
+  }, [selectedDate, selectedLocation]); // Agregar selectedLocation como dependencia
 
   const loadData = async () => {
     try {
       setIsLoading(true);
       const [appointmentsData, barbersData, blockedSlotsData] = await Promise.all([
         getAllAppointments(),
-        getBarbersWithSchedules(),
+        getBarbersWithSchedules(selectedLocation), // Filtrar por ubicación seleccionada
         getBlockedSlots()
       ]);
       
       setAppointments(appointmentsData);
-      setBarbers(barbersData.filter(barber => barber.status === 'active'));
+      setBarbers(barbersData.filter(barber => barber.status === 'active')); // Solo barberos activos
       setBlockedSlots(blockedSlotsData);
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -268,7 +267,7 @@ const CalendarGridView = () => {
         <div className="text-center py-12">
           <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos activos</h3>
-          <p className="text-gray-500">Ve al área de empleados para agregar barberos activos al sistema</p>
+          <p className="text-gray-500">No hay barberos activos en {locations.find(l => l.id === selectedLocation)?.name}</p>
         </div>
       </div>
     );
@@ -347,7 +346,7 @@ const CalendarGridView = () => {
         <CardHeader className="bg-gradient-to-r from-barbershop-gold/10 to-barbershop-gold/5 border-b">
           <CardTitle className="flex items-center gap-3 text-xl">
             <Calendar className="w-6 h-6 text-barbershop-gold" />
-            Horarios y Disponibilidad
+            {locations.find(l => l.id === selectedLocation)?.name} - Horarios y Disponibilidad
             <Badge variant="outline" className="ml-auto">
               {timeSlots.length} franjas horarias
             </Badge>
