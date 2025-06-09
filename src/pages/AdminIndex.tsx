@@ -8,6 +8,7 @@ import ServicesManager from '@/components/ServicesManager';
 import MarketingDashboard from '@/components/MarketingDashboard';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import PaymentSystem from '@/components/PaymentSystem';
+import BonusManager from '@/components/BonusManager';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
@@ -46,6 +47,8 @@ const AdminIndex = () => {
             <AdvancedAnalytics />
           </div>
         );
+      case 'bonus':
+        return <BonusManager />;
       case 'clients':
         return (
           <div className="container mx-auto px-4 py-8">
