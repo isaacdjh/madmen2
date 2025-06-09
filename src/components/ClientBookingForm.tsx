@@ -49,6 +49,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   ];
 
   const handleSlotSelect = (barber: string, date: string, time: string, location: string) => {
+    console.log('Slot seleccionado:', { barber, date, time, location });
     setFormData(prev => ({
       ...prev,
       barber,
@@ -71,6 +72,8 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     setIsSubmitting(true);
 
     try {
+      console.log('Creando cita con datos:', formData);
+      
       // Crear o encontrar cliente
       const client = await createOrGetClient(formData.name, formData.phone, formData.email);
       
@@ -78,7 +81,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
       const selectedService = services.find(s => s.id === formData.service);
       
       // Crear cita
-      await createAppointment({
+      const appointmentData = {
         client_id: client.id,
         location: formData.location,
         service: formData.service,
@@ -86,7 +89,13 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
         appointment_date: formData.date,
         appointment_time: formData.time,
         price: selectedService?.price
-      });
+      };
+      
+      console.log('Datos de la cita a crear:', appointmentData);
+      
+      const newAppointment = await createAppointment(appointmentData);
+      
+      console.log('Cita creada exitosamente:', newAppointment);
 
       toast.success('¡Cita reservada con éxito!');
       

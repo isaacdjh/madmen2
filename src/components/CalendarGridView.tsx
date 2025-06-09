@@ -60,19 +60,23 @@ const CalendarGridView = () => {
 
   useEffect(() => {
     loadData();
-  }, [selectedDate, selectedLocation]); // Agregar selectedLocation como dependencia
+  }, [selectedDate, selectedLocation]);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
+      console.log('Cargando datos para ubicación:', selectedLocation);
       const [appointmentsData, barbersData, blockedSlotsData] = await Promise.all([
         getAllAppointments(),
-        getBarbersWithSchedules(selectedLocation), // Filtrar por ubicación seleccionada
+        getBarbersWithSchedules(selectedLocation),
         getBlockedSlots()
       ]);
       
+      console.log('Citas cargadas:', appointmentsData);
+      console.log('Citas filtradas por ubicación:', appointmentsData.filter(apt => apt.location === selectedLocation));
+      
       setAppointments(appointmentsData);
-      setBarbers(barbersData.filter(barber => barber.status === 'active')); // Solo barberos activos
+      setBarbers(barbersData.filter(barber => barber.status === 'active'));
       setBlockedSlots(blockedSlotsData);
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -148,12 +152,29 @@ const CalendarGridView = () => {
 
   const getAppointmentForSlot = (barber: string, time: string) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    return appointments.find(apt => 
-      apt.appointment_date === dateStr &&
-      apt.appointment_time === time &&
-      apt.barber === barber &&
-      apt.location === selectedLocation
-    );
+    console.log('Buscando cita para:', { barber, time, dateStr, location: selectedLocation });
+    
+    const appointment = appointments.find(apt => {
+      const matches = apt.appointment_date === dateStr &&
+                     apt.appointment_time === time &&
+                     apt.barber === barber &&
+                     apt.location === selectedLocation;
+      
+      if (matches) {
+        console.log('Cita encontrada:', apt);
+      }
+      
+      return matches;
+    });
+    
+    if (!appointment) {
+      console.log('No se encontró cita para:', { barber, time, dateStr, location: selectedLocation });
+      console.log('Citas disponibles:', appointments.filter(apt => 
+        apt.appointment_date === dateStr && apt.location === selectedLocation
+      ));
+    }
+    
+    return appointment;
   };
 
   const isSlotBlocked = (barber: string, time: string) => {
