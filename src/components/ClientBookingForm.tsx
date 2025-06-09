@@ -1,487 +1,307 @@
+
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, User, MapPin, ArrowLeft, CheckCircle, Shuffle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, MapPin, Clock, User, Phone, Mail } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
+import { createOrGetClient, createAppointment } from '@/lib/supabase-helpers';
 
-interface ClientBookingFormProps {
-  onBack: () => void;
-}
+const services = [
+  { id: 'classic-cut', name: 'Corte Clásico', price: 45 },
+  { id: 'beard-trim', name: 'Arreglo de Barba', price: 25 },
+  { id: 'cut-beard', name: 'Corte + Barba', price: 65 },
+  { id: 'shave', name: 'Afeitado Tradicional', price: 35 },
+  { id: 'treatments', name: 'Tratamientos Especiales', price: 40 }
+];
 
-const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
-  const [step, setStep] = useState(1);
-  const [bookingData, setBookingData] = useState({
-    location: '',
-    service: '',
-    barber: '',
-    date: '',
-    time: '',
-    customerName: '',
-    customerPhone: '',
-    customerEmail: ''
-  });
+const locations = [
+  { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
+  { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
+];
 
-  // Centros actualizados para coincidir con el sistema administrativo
-  const locations = [
-    { 
-      id: 'cristobal-bordiu', 
-      name: 'Mad Men Cristóbal Bordiú', 
-      address: 'Cristóbal Bordiú 29, 28003 Madrid',
-      phone: '+34 916 832 731'
-    },
-    { 
-      id: 'general-pardinas', 
-      name: 'Mad Men General Pardiñas', 
-      address: 'General Pardiñas 101, 28006 Madrid',
-      phone: '+34 910 597 766'
+const barbers = [
+  { id: 'alejandro', name: 'Alejandro', location: 'cristobal-bordiu' },
+  { id: 'carlos', name: 'Carlos', location: 'general-pardinas' },
+  { id: 'miguel', name: 'Miguel', location: 'cristobal-bordiu' },
+  { id: 'david', name: 'David', location: 'general-pardinas' }
+];
+
+const timeSlots = [
+  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+  '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30', '19:00', '19:30', '20:00'
+];
+
+const ClientBookingForm = () => {
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedService, setSelectedService] = useState('');
+  const [selectedBarber, setSelectedBarber] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const filteredBarbers = barbers.filter(barber => barber.location === selectedLocation);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedLocation || !selectedService || !selectedBarber || !selectedDate || !selectedTime || !customerName || !customerPhone || !customerEmail) {
+      toast.error('Por favor, completa todos los campos');
+      return;
     }
-  ];
 
-  const services = [
-    { id: 'classic-cut', name: 'Corte Clásico', price: '30€', duration: '45 min' },
-    { id: 'beard-trim', name: 'Arreglo de Barba', price: '15€', duration: '30 min' },
-    { id: 'cut-beard', name: 'Corte + Barba', price: '40€', duration: '75 min' },
-    { id: 'shave', name: 'Afeitado Tradicional', price: '20€', duration: '45 min' },
-    { id: 'treatments', name: 'Tratamientos Especiales', price: '25€', duration: '60 min' }
-  ];
+    setIsSubmitting(true);
 
-  // Barberos actualizados con los nombres reales que coinciden con el sistema administrativo
-  const barbersByLocation = {
-    'cristobal-bordiu': [
-      { id: 'luis-bracho', name: 'Luis Bracho', specialty: 'Cortes Clásicos' },
-      { id: 'jesus-hernandez', name: 'Jesús Hernández', specialty: 'Barbas y Afeitado' },
-      { id: 'luis-alfredo', name: 'Luis Alfredo', specialty: 'Estilos Modernos' },
-      { id: 'dionys-bracho', name: 'Dionys Bracho', specialty: 'Tratamientos Especiales' }
-    ],
-    'general-pardinas': [
-      { id: 'isaac-hernandez', name: 'Isaac Hernández', specialty: 'Cortes Clásicos' },
-      { id: 'carlos-lopez', name: 'Carlos López', specialty: 'Barbas y Afeitado' },
-      { id: 'luis-urbinez', name: 'Luis Urbiñez', specialty: 'Estilos Modernos' },
-      { id: 'randy-valdespino', name: 'Randy Valdespino', specialty: 'Tratamientos Especiales' }
-    ]
-  };
+    try {
+      // Crear o obtener cliente
+      const client = await createOrGetClient(customerName, customerPhone, customerEmail);
+      
+      // Obtener precio del servicio
+      const service = services.find(s => s.id === selectedService);
+      const price = service?.price || 0;
 
-  const timeSlots = [
-    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-    '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'
-  ];
+      // Crear cita
+      await createAppointment({
+        client_id: client.id,
+        location: selectedLocation,
+        service: selectedService,
+        barber: selectedBarber,
+        appointment_date: format(selectedDate, 'yyyy-MM-dd'),
+        appointment_time: selectedTime,
+        price: price
+      });
 
-  const getAvailableBarbers = () => {
-    if (!bookingData.location) return [];
-    return barbersByLocation[bookingData.location as keyof typeof barbersByLocation] || [];
-  };
+      toast.success('¡Cita reservada correctamente!', {
+        description: `Te esperamos el ${format(selectedDate, 'dd/MM/yyyy', { locale: es })} a las ${selectedTime}`
+      });
 
-  const assignRandomBarber = () => {
-    const availableBarbers = getAvailableBarbers();
-    if (availableBarbers.length > 0) {
-      const randomIndex = Math.floor(Math.random() * availableBarbers.length);
-      return availableBarbers[randomIndex].id;
+      // Limpiar formulario
+      setSelectedLocation('');
+      setSelectedService('');
+      setSelectedBarber('');
+      setSelectedDate(undefined);
+      setSelectedTime('');
+      setCustomerName('');
+      setCustomerPhone('');
+      setCustomerEmail('');
+
+    } catch (error: any) {
+      console.error('Error al reservar cita:', error);
+      toast.error('Error al reservar la cita. Por favor, intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
     }
-    return '';
   };
 
-  const handleNext = () => {
-    if (step < 4) setStep(step + 1);
-  };
-
-  const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  const handleSubmit = () => {
-    const finalBarber = bookingData.barber === 'any' || !bookingData.barber ? assignRandomBarber() : bookingData.barber;
-    
-    const appointment = {
-      id: Date.now().toString(),
-      location: bookingData.location,
-      service: bookingData.service,
-      barber: finalBarber,
-      date: bookingData.date,
-      time: bookingData.time,
-      customerName: bookingData.customerName,
-      customerPhone: bookingData.customerPhone,
-      customerEmail: bookingData.customerEmail,
-      status: 'confirmada' as const,
-      createdAt: new Date().toISOString()
-    };
-    
-    console.log('Cita creada para el calendario:', appointment);
-    
-    const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    appointments.push(appointment);
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-    
-    setBookingData(prev => ({ ...prev, barber: finalBarber }));
-    setStep(5);
-  };
-
-  const updateBookingData = (field: string, value: string) => {
-    setBookingData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const getSelectedLocationName = () => {
-    const location = locations.find(l => l.id === bookingData.location);
-    return location ? location.name : '';
-  };
-
-  const getSelectedServiceName = () => {
-    const service = services.find(s => s.id === bookingData.service);
-    return service ? service.name : '';
-  };
-
-  const getSelectedServicePrice = () => {
-    const service = services.find(s => s.id === bookingData.service);
-    return service ? service.price : '';
-  };
-
-  const getSelectedBarberName = () => {
-    if (bookingData.barber === 'any') return 'Cualquier barbero disponible';
-    if (!bookingData.barber) return '';
-    const allBarbers = [...barbersByLocation['cristobal-bordiu'], ...barbersByLocation['general-pardinas']];
-    const barber = allBarbers.find(b => b.id === bookingData.barber);
-    return barber ? barber.name : '';
-  };
-
-  const getFinalBarberName = () => {
-    if (bookingData.barber === 'any' || !bookingData.barber) {
-      const assignedBarber = assignRandomBarber();
-      const allBarbers = [...barbersByLocation['cristobal-bordiu'], ...barbersByLocation['general-pardinas']];
-      const barber = allBarbers.find(b => b.id === assignedBarber);
-      return barber ? `${barber.name} (asignado automáticamente)` : 'Barbero disponible';
-    }
-    return getSelectedBarberName();
-  };
-
-  if (step === 5) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            <Card className="text-center">
-              <CardContent className="p-12">
-                <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
-                <h2 className="text-3xl font-bold text-barbershop-dark mb-4">¡Cita Confirmada!</h2>
-                <p className="text-muted-foreground mb-8">
-                  Tu cita ha sido reservada exitosamente. Recibirás una confirmación por email y SMS.
-                </p>
-                <div className="bg-barbershop-dark rounded-lg p-6 mb-8 text-left">
-                  <h3 className="font-bold mb-4 text-barbershop-gold">Detalles de tu cita:</h3>
-                  <div className="space-y-2 text-sm">
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Ubicación:</strong> {getSelectedLocationName()}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Servicio:</strong> {getSelectedServiceName()}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Barbero:</strong> {getFinalBarberName()}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Fecha:</strong> {bookingData.date}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Hora:</strong> {bookingData.time}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Cliente:</strong> {bookingData.customerName}</p>
-                  </div>
-                </div>
-                <Button onClick={onBack} className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90">
-                  Volver al Inicio
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const selectedServicePrice = services.find(s => s.id === selectedService)?.price;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center mb-8">
-            <Button variant="ghost" onClick={step === 1 ? onBack : handleBack} className="mr-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {step === 1 ? 'Volver' : 'Anterior'}
-            </Button>
+    <div className="max-w-2xl mx-auto p-6">
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-barbershop-dark">
+            Reserva tu Cita
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Elige tu barbero y horario preferido
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Datos del cliente */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-barbershop-dark flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Tus Datos
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="customer-name">Nombre Completo</Label>
+                  <Input
+                    id="customer-name"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Tu nombre completo"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customer-phone">Teléfono</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="customer-phone"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="Tu número de teléfono"
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="customer-email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="customer-email"
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="tu@email.com"
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Selección de ubicación */}
             <div>
-              <h1 className="text-3xl font-bold text-barbershop-dark">Reservar Cita</h1>
-              <p className="text-muted-foreground">Paso {step} de 4</p>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center">
-              {[1, 2, 3, 4].map((stepNum) => (
-                <div key={stepNum} className="flex items-center">
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
-                    step >= stepNum 
-                      ? "bg-barbershop-gold text-barbershop-dark" 
-                      : "bg-gray-200 text-gray-500"
-                  )}>
-                    {stepNum}
-                  </div>
-                  {stepNum < 4 && (
-                    <div className={cn(
-                      "w-12 h-1 mx-2",
-                      step > stepNum ? "bg-barbershop-gold" : "bg-gray-200"
-                    )} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Step Content */}
-          {step === 1 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MapPin className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Selecciona Ubicación
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Label className="flex items-center gap-2 mb-2">
+                <MapPin className="w-4 h-4" />
+                Ubicación
+              </Label>
+              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una ubicación" />
+                </SelectTrigger>
+                <SelectContent>
                   {locations.map((location) => (
-                    <div
-                      key={location.id}
-                      className={cn(
-                        "p-4 border-2 rounded-lg cursor-pointer transition-all",
-                        bookingData.location === location.id
-                          ? "border-barbershop-gold bg-barbershop-gold/10"
-                          : "border-gray-200 hover:border-barbershop-gold/50"
-                      )}
-                      onClick={() => {
-                        updateBookingData('location', location.id);
-                        if (bookingData.barber) {
-                          updateBookingData('barber', '');
-                        }
-                      }}
-                    >
-                      <h3 className="font-bold text-barbershop-dark">{location.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{location.address}</p>
-                      <p className="text-sm text-barbershop-gold font-medium">{location.phone}</p>
-                    </div>
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.name}
+                    </SelectItem>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {step === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Selecciona Servicio, Barbero y Horario
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                {/* Services */}
-                <div>
-                  <h3 className="font-bold mb-4">Servicios</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {services.map((service) => (
-                      <div
-                        key={service.id}
-                        className={cn(
-                          "p-3 border-2 rounded-lg cursor-pointer transition-all",
-                          bookingData.service === service.id
-                            ? "border-barbershop-gold bg-barbershop-gold/10"
-                            : "border-gray-200 hover:border-barbershop-gold/50"
-                        )}
-                        onClick={() => updateBookingData('service', service.id)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="font-bold">{service.name}</h4>
-                            <p className="text-sm text-muted-foreground">{service.duration}</p>
-                          </div>
-                          <span className="font-bold text-barbershop-gold">{service.price}</span>
-                        </div>
+            {/* Selección de servicio */}
+            <div>
+              <Label>Servicio</Label>
+              <Select value={selectedService} onValueChange={setSelectedService}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un servicio" />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      <div className="flex justify-between items-center w-full">
+                        <span>{service.name}</span>
+                        <span className="font-bold text-barbershop-gold ml-4">{service.price}€</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Barbers */}
-                <div>
-                  <h3 className="font-bold mb-4">Barberos</h3>
-                  {!bookingData.location ? (
-                    <p className="text-muted-foreground">Primero selecciona una ubicación para ver los barberos disponibles.</p>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div
-                        className={cn(
-                          "p-3 border-2 rounded-lg cursor-pointer transition-all",
-                          bookingData.barber === 'any'
-                            ? "border-barbershop-gold bg-barbershop-gold/10"
-                            : "border-gray-200 hover:border-barbershop-gold/50"
-                        )}
-                        onClick={() => updateBookingData('barber', 'any')}
-                      >
-                        <div className="flex items-center">
-                          <Shuffle className="w-5 h-5 mr-3 text-barbershop-gold" />
-                          <div>
-                            <h4 className="font-bold">Cualquier barbero disponible</h4>
-                            <p className="text-sm text-muted-foreground">Te asignaremos un barbero experto</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {getAvailableBarbers().map((barber) => (
-                        <div
-                          key={barber.id}
-                          className={cn(
-                            "p-3 border-2 rounded-lg cursor-pointer transition-all",
-                            bookingData.barber === barber.id
-                              ? "border-barbershop-gold bg-barbershop-gold/10"
-                              : "border-gray-200 hover:border-barbershop-gold/50"
-                          )}
-                          onClick={() => updateBookingData('barber', barber.id)}
-                        >
-                          <h4 className="font-bold">{barber.name}</h4>
-                          <p className="text-sm text-muted-foreground">{barber.specialty}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Date and Time */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="font-bold mb-2 block">Fecha</Label>
-                    <Input
-                      type="date"
-                      value={bookingData.date}
-                      onChange={(e) => updateBookingData('date', e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                    />
-                  </div>
-                  <div>
-                    <Label className="font-bold mb-2 block">Hora</Label>
-                    <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                      {timeSlots.map((time) => (
-                        <Button
-                          key={time}
-                          variant={bookingData.time === time ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => updateBookingData('time', time)}
-                          className={cn(
-                            bookingData.time === time 
-                              ? "bg-barbershop-gold text-barbershop-dark" 
-                              : "border-barbershop-gold/50"
-                          )}
-                        >
-                          {time}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {step === 3 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Información de Contacto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="name" className="font-bold">Nombre Completo</Label>
-                    <Input
-                      id="name"
-                      value={bookingData.customerName}
-                      onChange={(e) => updateBookingData('customerName', e.target.value)}
-                      placeholder="Tu nombre completo"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone" className="font-bold">Teléfono</Label>
-                    <Input
-                      id="phone"
-                      value={bookingData.customerPhone}
-                      onChange={(e) => updateBookingData('customerPhone', e.target.value)}
-                      placeholder="+34 123 456 789"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label htmlFor="email" className="font-bold">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={bookingData.customerEmail}
-                      onChange={(e) => updateBookingData('customerEmail', e.target.value)}
-                      placeholder="tu@email.com"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {step === 4 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle className="w-6 h-6 mr-3 text-barbershop-gold" />
-                  Confirmar Reserva
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-barbershop-dark rounded-lg p-6 mb-6">
-                  <h3 className="font-bold mb-4 text-barbershop-gold">Resumen de tu cita:</h3>
-                  <div className="space-y-2">
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Ubicación:</strong> {getSelectedLocationName()}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Servicio:</strong> {getSelectedServiceName()}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Barbero:</strong> {getSelectedBarberName()}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Fecha:</strong> {bookingData.date}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Hora:</strong> {bookingData.time}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Cliente:</strong> {bookingData.customerName}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Teléfono:</strong> {bookingData.customerPhone}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Email:</strong> {bookingData.customerEmail}</p>
-                    <p className="text-foreground"><strong className="text-barbershop-gold">Precio:</strong> {getSelectedServicePrice()}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8">
-            <div></div>
-            <div className="space-x-4">
-              {step < 4 ? (
-                <Button 
-                  onClick={handleNext}
-                  disabled={
-                    (step === 1 && !bookingData.location) ||
-                    (step === 2 && (!bookingData.service || !bookingData.barber || !bookingData.date || !bookingData.time)) ||
-                    (step === 3 && (!bookingData.customerName || !bookingData.customerPhone || !bookingData.customerEmail))
-                  }
-                  className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-                >
-                  Siguiente
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleSubmit}
-                  className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-                >
-                  Confirmar Reserva
-                </Button>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedServicePrice && (
+                <p className="text-sm text-barbershop-gold font-bold mt-2">
+                  Precio: {selectedServicePrice}€
+                </p>
               )}
             </div>
-          </div>
-        </div>
-      </div>
+
+            {/* Selección de barbero */}
+            {selectedLocation && (
+              <div>
+                <Label>Barbero</Label>
+                <Select value={selectedBarber} onValueChange={setSelectedBarber}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona tu barbero" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredBarbers.map((barber) => (
+                      <SelectItem key={barber.id} value={barber.id}>
+                        {barber.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Selección de fecha */}
+            <div>
+              <Label className="flex items-center gap-2 mb-2">
+                <CalendarIcon className="w-4 h-4" />
+                Fecha
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    {selectedDate ? (
+                      format(selectedDate, 'dd/MM/yyyy', { locale: es })
+                    ) : (
+                      <span>Selecciona una fecha</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={(date) => date < new Date() || date.getDay() === 0}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Selección de hora */}
+            {selectedDate && (
+              <div>
+                <Label className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4" />
+                  Hora
+                </Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {timeSlots.map((time) => (
+                    <Button
+                      key={time}
+                      type="button"
+                      variant={selectedTime === time ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedTime(time)}
+                      className={selectedTime === time ? "bg-barbershop-gold text-barbershop-dark" : ""}
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Botón de envío */}
+            <Button
+              type="submit"
+              className="w-full bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Reservando...' : 'Reservar Cita'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

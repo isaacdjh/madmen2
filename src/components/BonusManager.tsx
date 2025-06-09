@@ -9,287 +9,156 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Gift, Plus, Edit, Trash2, DollarSign, Package, Users, Crown } from 'lucide-react';
+import { Gift, Plus, DollarSign, Package, Users, Crown } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface BonusPackage {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  services: {
-    serviceId: string;
-    serviceName: string;
-    quantity: number;
-  }[];
-  active: boolean;
-  createdAt: string;
-}
-
-interface PurchasedBonus {
-  id: string;
-  packageId: string;
-  packageName: string;
-  clientName: string;
-  clientPhone: string;
-  purchaseDate: string;
-  totalPrice: number;
-  servicesRemaining: {
-    serviceId: string;
-    serviceName: string;
-    remaining: number;
-    total: number;
-  }[];
-  status: 'active' | 'completed';
-}
-
-interface RedeemService {
-  bonusId: string;
-  serviceId: string;
-  serviceName: string;
-  redeemDate: string;
-  barberName: string;
-}
+import { 
+  createBonusPackage, 
+  getAllBonusPackages, 
+  sellBonus, 
+  getClientBonuses, 
+  getAllClients,
+  createOrGetClient,
+  type BonusPackage, 
+  type ClientBonus, 
+  type Client 
+} from '@/lib/supabase-helpers';
 
 const BonusManager = () => {
   const [bonusPackages, setBonusPackages] = useState<BonusPackage[]>([]);
-  const [purchasedBonuses, setPurchasedBonuses] = useState<PurchasedBonus[]>([]);
-  const [redeemHistory, setRedeemHistory] = useState<RedeemService[]>([]);
-  const [selectedPackage, setSelectedPackage] = useState<BonusPackage | null>(null);
+  const [clientBonuses, setClientBonuses] = useState<ClientBonus[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [isAddingPackage, setIsAddingPackage] = useState(false);
-  const [isEditingPackage, setIsEditingPackage] = useState(false);
   const [isSellingBonus, setIsSellingBonus] = useState(false);
-  const [isRedeemingService, setIsRedeemingService] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [newPackage, setNewPackage] = useState<Partial<BonusPackage>>({
+  const [newPackage, setNewPackage] = useState({
     name: '',
     description: '',
     price: 0,
-    services: [],
-    active: true
+    services_included: 1
   });
 
   const [saleData, setSaleData] = useState({
     packageId: '',
     clientName: '',
-    clientPhone: ''
+    clientPhone: '',
+    clientEmail: '',
+    soldByBarber: ''
   });
-
-  const [redeemData, setRedeemData] = useState({
-    bonusId: '',
-    serviceId: '',
-    barberName: ''
-  });
-
-  // Servicios disponibles predefinidos
-  const availableServices = [
-    { id: 'classic-cut', name: 'Corte de Pelo' },
-    { id: 'beard-trim', name: 'Arreglo de Barba' },
-    { id: 'cut-beard', name: 'Corte + Barba' },
-    { id: 'buzz-beard', name: 'Rapado + Barba' }
-  ];
 
   useEffect(() => {
-    loadBonusPackages();
-    loadPurchasedBonuses();
-    loadRedeemHistory();
+    loadAllData();
   }, []);
 
-  const loadBonusPackages = () => {
-    const stored = localStorage.getItem('bonusPackages');
-    if (stored) {
-      setBonusPackages(JSON.parse(stored));
-    } else {
-      // Pack inicial Mad Men
-      const initialPackage: BonusPackage = {
-        id: 'mad-men-pack',
-        name: 'Pack Mad Men Premium',
-        description: 'Pack de 4 servicios sin caducidad - La experiencia completa',
-        price: 200,
-        services: [
-          { serviceId: 'classic-cut', serviceName: 'Corte de Pelo', quantity: 1 },
-          { serviceId: 'beard-trim', serviceName: 'Arreglo de Barba', quantity: 1 },
-          { serviceId: 'cut-beard', serviceName: 'Corte + Barba', quantity: 1 },
-          { serviceId: 'buzz-beard', serviceName: 'Rapado + Barba', quantity: 1 }
-        ],
-        active: true,
-        createdAt: new Date().toISOString()
-      };
-      setBonusPackages([initialPackage]);
-      localStorage.setItem('bonusPackages', JSON.stringify([initialPackage]));
+  const loadAllData = async () => {
+    try {
+      const [packagesData, bonusesData, clientsData] = await Promise.all([
+        getAllBonusPackages(),
+        getClientBonuses(),
+        getAllClients()
+      ]);
+
+      setBonusPackages(packagesData);
+      setClientBonuses(bonusesData);
+      setClients(clientsData);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      toast.error('Error al cargar los datos');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const loadPurchasedBonuses = () => {
-    const stored = localStorage.getItem('purchasedBonuses');
-    if (stored) {
-      setPurchasedBonuses(JSON.parse(stored));
-    }
-  };
-
-  const loadRedeemHistory = () => {
-    const stored = localStorage.getItem('redeemHistory');
-    if (stored) {
-      setRedeemHistory(JSON.parse(stored));
-    }
-  };
-
-  const saveBonusPackages = (packages: BonusPackage[]) => {
-    setBonusPackages(packages);
-    localStorage.setItem('bonusPackages', JSON.stringify(packages));
-  };
-
-  const savePurchasedBonuses = (bonuses: PurchasedBonus[]) => {
-    setPurchasedBonuses(bonuses);
-    localStorage.setItem('purchasedBonuses', JSON.stringify(bonuses));
-  };
-
-  const saveRedeemHistory = (history: RedeemService[]) => {
-    setRedeemHistory(history);
-    localStorage.setItem('redeemHistory', JSON.stringify(history));
-  };
-
-  const handleAddPackage = () => {
-    if (!newPackage.name || !newPackage.price || newPackage.services!.length === 0) {
-      toast.error('Nombre, precio y al menos un servicio son obligatorios');
+  const handleAddPackage = async () => {
+    if (!newPackage.name || !newPackage.price || newPackage.services_included <= 0) {
+      toast.error('Nombre, precio y servicios incluidos son obligatorios');
       return;
     }
 
-    const bonusPackage: BonusPackage = {
-      id: newPackage.name!.toLowerCase().replace(/\s+/g, '-'),
-      name: newPackage.name!,
-      description: newPackage.description || '',
-      price: newPackage.price!,
-      services: newPackage.services!,
-      active: true,
-      createdAt: new Date().toISOString()
-    };
-
-    const updatedPackages = [...bonusPackages, bonusPackage];
-    saveBonusPackages(updatedPackages);
-    setIsAddingPackage(false);
-    setNewPackage({
-      name: '',
-      description: '',
-      price: 0,
-      services: [],
-      active: true
-    });
-    toast.success('Pack de bonos creado correctamente');
+    try {
+      await createBonusPackage(newPackage);
+      await loadAllData();
+      setIsAddingPackage(false);
+      setNewPackage({
+        name: '',
+        description: '',
+        price: 0,
+        services_included: 1
+      });
+      toast.success('Pack de bonos creado correctamente');
+    } catch (error) {
+      console.error('Error al crear pack:', error);
+      toast.error('Error al crear el pack de bonos');
+    }
   };
 
-  const handleSellBonus = () => {
-    if (!saleData.packageId || !saleData.clientName || !saleData.clientPhone) {
+  const handleSellBonus = async () => {
+    if (!saleData.packageId || !saleData.clientName || !saleData.clientPhone || !saleData.clientEmail || !saleData.soldByBarber) {
       toast.error('Todos los campos son obligatorios');
       return;
     }
 
-    const selectedPkg = bonusPackages.find(p => p.id === saleData.packageId);
-    if (!selectedPkg) return;
+    try {
+      // Crear o obtener cliente
+      const client = await createOrGetClient(saleData.clientName, saleData.clientPhone, saleData.clientEmail);
+      
+      // Obtener el paquete seleccionado
+      const selectedPackage = bonusPackages.find(p => p.id === saleData.packageId);
+      if (!selectedPackage) return;
 
-    const purchasedBonus: PurchasedBonus = {
-      id: `bonus-${Date.now()}`,
-      packageId: selectedPkg.id,
-      packageName: selectedPkg.name,
-      clientName: saleData.clientName,
-      clientPhone: saleData.clientPhone,
-      purchaseDate: new Date().toISOString(),
-      totalPrice: selectedPkg.price,
-      servicesRemaining: selectedPkg.services.map(s => ({
-        serviceId: s.serviceId,
-        serviceName: s.serviceName,
-        remaining: s.quantity,
-        total: s.quantity
-      })),
-      status: 'active'
-    };
+      // Vender el bono
+      await sellBonus({
+        client_id: client.id,
+        bonus_package_id: saleData.packageId,
+        services_remaining: selectedPackage.services_included,
+        sold_by_barber: saleData.soldByBarber
+      });
 
-    const updatedBonuses = [...purchasedBonuses, purchasedBonus];
-    savePurchasedBonuses(updatedBonuses);
-    setIsSellingBonus(false);
-    setSaleData({ packageId: '', clientName: '', clientPhone: '' });
-    toast.success('Bono vendido correctamente');
-  };
-
-  const handleRedeemService = () => {
-    if (!redeemData.bonusId || !redeemData.serviceId || !redeemData.barberName) {
-      toast.error('Todos los campos son obligatorios');
-      return;
+      await loadAllData();
+      setIsSellingBonus(false);
+      setSaleData({
+        packageId: '',
+        clientName: '',
+        clientPhone: '',
+        clientEmail: '',
+        soldByBarber: ''
+      });
+      toast.success('Bono vendido correctamente');
+    } catch (error) {
+      console.error('Error al vender bono:', error);
+      toast.error('Error al vender el bono');
     }
-
-    const bonusIndex = purchasedBonuses.findIndex(b => b.id === redeemData.bonusId);
-    if (bonusIndex === -1) return;
-
-    const bonus = purchasedBonuses[bonusIndex];
-    const serviceIndex = bonus.servicesRemaining.findIndex(s => s.serviceId === redeemData.serviceId);
-    
-    if (serviceIndex === -1 || bonus.servicesRemaining[serviceIndex].remaining <= 0) {
-      toast.error('Servicio no disponible en este bono');
-      return;
-    }
-
-    // Reducir servicio disponible
-    bonus.servicesRemaining[serviceIndex].remaining -= 1;
-    
-    // Verificar si el bono está completo
-    const allServicesUsed = bonus.servicesRemaining.every(s => s.remaining === 0);
-    if (allServicesUsed) {
-      bonus.status = 'completed';
-    }
-
-    // Agregar al historial
-    const redeemRecord: RedeemService = {
-      bonusId: redeemData.bonusId,
-      serviceId: redeemData.serviceId,
-      serviceName: bonus.servicesRemaining[serviceIndex].serviceName,
-      redeemDate: new Date().toISOString(),
-      barberName: redeemData.barberName
-    };
-
-    const updatedBonuses = [...purchasedBonuses];
-    updatedBonuses[bonusIndex] = bonus;
-    
-    const updatedHistory = [...redeemHistory, redeemRecord];
-
-    savePurchasedBonuses(updatedBonuses);
-    saveRedeemHistory(updatedHistory);
-    setIsRedeemingService(false);
-    setRedeemData({ bonusId: '', serviceId: '', barberName: '' });
-    toast.success('Servicio canjeado correctamente');
   };
 
-  const addServiceToPackage = () => {
-    setNewPackage({
-      ...newPackage,
-      services: [
-        ...newPackage.services!,
-        { serviceId: '', serviceName: '', quantity: 1 }
-      ]
-    });
+  const getTotalBonusRevenue = () => {
+    return clientBonuses.reduce((total, bonus) => {
+      const pkg = bonusPackages.find(p => p.id === bonus.bonus_package_id);
+      return total + (pkg?.price || 0);
+    }, 0);
   };
 
-  const updateServiceInPackage = (index: number, field: string, value: any) => {
-    const updatedServices = [...newPackage.services!];
-    if (field === 'serviceId') {
-      const service = availableServices.find(s => s.id === value);
-      updatedServices[index] = {
-        ...updatedServices[index],
-        serviceId: value,
-        serviceName: service?.name || ''
-      };
-    } else {
-      updatedServices[index] = {
-        ...updatedServices[index],
-        [field]: value
-      };
-    }
-    setNewPackage({ ...newPackage, services: updatedServices });
+  const getClientName = (clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.name || 'Cliente no encontrado';
   };
 
-  const removeServiceFromPackage = (index: number) => {
-    const updatedServices = newPackage.services!.filter((_, i) => i !== index);
-    setNewPackage({ ...newPackage, services: updatedServices });
+  const getClientPhone = (clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.phone || '';
   };
+
+  const getPackageName = (packageId: string) => {
+    const pkg = bonusPackages.find(p => p.id === packageId);
+    return pkg?.name || 'Paquete no encontrado';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">Cargando sistema de bonos...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -299,11 +168,10 @@ const BonusManager = () => {
       </div>
 
       <Tabs defaultValue="packages" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="packages">Packs Disponibles</TabsTrigger>
-          <TabsTrigger value="sales">Ventas de Bonos</TabsTrigger>
-          <TabsTrigger value="redeem">Canjear Servicios</TabsTrigger>
-          <TabsTrigger value="history">Historial</TabsTrigger>
+          <TabsTrigger value="sales">Bonos Vendidos</TabsTrigger>
+          <TabsTrigger value="active">Bonos Activos</TabsTrigger>
         </TabsList>
 
         {/* Packs Tab */}
@@ -326,7 +194,7 @@ const BonusManager = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Bonos Vendidos</p>
-                    <p className="text-2xl font-bold text-barbershop-gold">{purchasedBonuses.length}</p>
+                    <p className="text-2xl font-bold text-barbershop-gold">{clientBonuses.length}</p>
                   </div>
                   <Users className="w-8 h-8 text-barbershop-gold" />
                 </div>
@@ -339,7 +207,7 @@ const BonusManager = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Ingresos Bonos</p>
                     <p className="text-2xl font-bold text-green-600">
-                      €{purchasedBonuses.reduce((sum, b) => sum + b.totalPrice, 0)}
+                      €{getTotalBonusRevenue()}
                     </p>
                   </div>
                   <DollarSign className="w-8 h-8 text-green-600" />
@@ -355,31 +223,21 @@ const BonusManager = () => {
                 Crear Nuevo Pack
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Crear Nuevo Pack de Servicios</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="package-name">Nombre del Pack</Label>
-                    <Input
-                      id="package-name"
-                      value={newPackage.name}
-                      onChange={(e) => setNewPackage({...newPackage, name: e.target.value})}
-                      placeholder="Ej: Pack Premium"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="package-price">Precio (€)</Label>
-                    <Input
-                      id="package-price"
-                      type="number"
-                      value={newPackage.price}
-                      onChange={(e) => setNewPackage({...newPackage, price: Number(e.target.value)})}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="package-name">Nombre del Pack</Label>
+                  <Input
+                    id="package-name"
+                    value={newPackage.name}
+                    onChange={(e) => setNewPackage({...newPackage, name: e.target.value})}
+                    placeholder="Ej: Pack Premium"
+                  />
                 </div>
+                
                 <div>
                   <Label htmlFor="package-description">Descripción</Label>
                   <Textarea
@@ -389,44 +247,27 @@ const BonusManager = () => {
                     placeholder="Descripción del pack..."
                   />
                 </div>
-                
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <Label>Servicios Incluidos</Label>
-                    <Button type="button" size="sm" onClick={addServiceToPackage}>
-                      <Plus className="w-4 h-4 mr-1" />
-                      Agregar Servicio
-                    </Button>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="package-price">Precio (€)</Label>
+                    <Input
+                      id="package-price"
+                      type="number"
+                      value={newPackage.price}
+                      onChange={(e) => setNewPackage({...newPackage, price: Number(e.target.value)})}
+                    />
                   </div>
-                  {newPackage.services?.map((service, index) => (
-                    <div key={index} className="grid grid-cols-5 gap-2 items-center mb-2">
-                      <select
-                        className="col-span-3 px-3 py-2 border rounded-md"
-                        value={service.serviceId}
-                        onChange={(e) => updateServiceInPackage(index, 'serviceId', e.target.value)}
-                      >
-                        <option value="">Seleccionar servicio</option>
-                        {availableServices.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                      </select>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={service.quantity}
-                        onChange={(e) => updateServiceInPackage(index, 'quantity', Number(e.target.value))}
-                        placeholder="Cant."
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => removeServiceFromPackage(index)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                  <div>
+                    <Label htmlFor="services-included">Servicios Incluidos</Label>
+                    <Input
+                      id="services-included"
+                      type="number"
+                      min="1"
+                      value={newPackage.services_included}
+                      onChange={(e) => setNewPackage({...newPackage, services_included: Number(e.target.value)})}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2">
@@ -463,14 +304,9 @@ const BonusManager = () => {
                     <span className="text-sm text-muted-foreground">Precio:</span>
                     <span className="text-xl font-bold text-barbershop-gold">€{pkg.price}</span>
                   </div>
-                  <div>
-                    <span className="text-sm text-muted-foreground block mb-2">Servicios incluidos:</span>
-                    {pkg.services.map((service, idx) => (
-                      <div key={idx} className="flex justify-between text-xs">
-                        <span>{service.serviceName}</span>
-                        <span className="font-medium">x{service.quantity}</span>
-                      </div>
-                    ))}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Servicios:</span>
+                    <span className="font-bold">{pkg.services_included}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -506,24 +342,49 @@ const BonusManager = () => {
                     ))}
                   </select>
                 </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="client-name">Nombre del Cliente</Label>
+                    <Input
+                      id="client-name"
+                      value={saleData.clientName}
+                      onChange={(e) => setSaleData({...saleData, clientName: e.target.value})}
+                      placeholder="Nombre completo"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="client-phone">Teléfono</Label>
+                    <Input
+                      id="client-phone"
+                      value={saleData.clientPhone}
+                      onChange={(e) => setSaleData({...saleData, clientPhone: e.target.value})}
+                      placeholder="Número de teléfono"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="client-name">Nombre del Cliente</Label>
+                  <Label htmlFor="client-email">Email</Label>
                   <Input
-                    id="client-name"
-                    value={saleData.clientName}
-                    onChange={(e) => setSaleData({...saleData, clientName: e.target.value})}
-                    placeholder="Nombre completo"
+                    id="client-email"
+                    type="email"
+                    value={saleData.clientEmail}
+                    onChange={(e) => setSaleData({...saleData, clientEmail: e.target.value})}
+                    placeholder="correo@ejemplo.com"
                   />
                 </div>
+
                 <div>
-                  <Label htmlFor="client-phone">Teléfono</Label>
+                  <Label htmlFor="sold-by">Vendido por (Barbero)</Label>
                   <Input
-                    id="client-phone"
-                    value={saleData.clientPhone}
-                    onChange={(e) => setSaleData({...saleData, clientPhone: e.target.value})}
-                    placeholder="Número de teléfono"
+                    id="sold-by"
+                    value={saleData.soldByBarber}
+                    onChange={(e) => setSaleData({...saleData, soldByBarber: e.target.value})}
+                    placeholder="Nombre del barbero"
                   />
                 </div>
+
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setIsSellingBonus(false)}>
                     Cancelar
@@ -536,104 +397,48 @@ const BonusManager = () => {
             </DialogContent>
           </Dialog>
 
-          <div className="grid grid-cols-1 gap-4">
-            {purchasedBonuses.map((bonus) => (
-              <Card key={bonus.id}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-bold text-barbershop-dark">{bonus.packageName}</h3>
-                      <p className="text-sm text-muted-foreground">Cliente: {bonus.clientName}</p>
-                      <p className="text-sm text-muted-foreground">Tel: {bonus.clientPhone}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge className={bonus.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {bonus.status === 'active' ? 'Activo' : 'Completado'}
-                      </Badge>
-                      <p className="text-lg font-bold text-barbershop-gold mt-1">€{bonus.totalPrice}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {bonus.servicesRemaining.map((service, idx) => (
-                      <div key={idx} className="text-center p-2 border rounded">
-                        <p className="text-xs text-muted-foreground">{service.serviceName}</p>
-                        <p className="font-bold">
-                          {service.remaining}/{service.total}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Historial de Ventas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Pack</TableHead>
+                    <TableHead>Vendido por</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Estado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clientBonuses.map((bonus) => (
+                    <TableRow key={bonus.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{getClientName(bonus.client_id)}</p>
+                          <p className="text-sm text-muted-foreground">{getClientPhone(bonus.client_id)}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{getPackageName(bonus.bonus_package_id)}</TableCell>
+                      <TableCell>{bonus.sold_by_barber}</TableCell>
+                      <TableCell>{new Date(bonus.purchase_date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge className={bonus.status === 'activo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                          {bonus.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* Redeem Tab */}
-        <TabsContent value="redeem" className="space-y-6">
-          <Dialog open={isRedeemingService} onOpenChange={setIsRedeemingService}>
-            <DialogTrigger asChild>
-              <Button className="bg-purple-600 text-white hover:bg-purple-700">
-                <Package className="w-4 h-4 mr-2" />
-                Canjear Servicio
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Canjear Servicio de Bono</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="redeem-bonus">Bono del Cliente</Label>
-                  <select
-                    id="redeem-bonus"
-                    className="w-full px-3 py-2 border rounded-md"
-                    value={redeemData.bonusId}
-                    onChange={(e) => setRedeemData({...redeemData, bonusId: e.target.value})}
-                  >
-                    <option value="">Seleccionar bono</option>
-                    {purchasedBonuses.filter(b => b.status === 'active').map(bonus => (
-                      <option key={bonus.id} value={bonus.id}>
-                        {bonus.clientName} - {bonus.packageName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="redeem-service">Servicio a Canjear</Label>
-                  <select
-                    id="redeem-service"
-                    className="w-full px-3 py-2 border rounded-md"
-                    value={redeemData.serviceId}
-                    onChange={(e) => setRedeemData({...redeemData, serviceId: e.target.value})}
-                  >
-                    <option value="">Seleccionar servicio</option>
-                    {availableServices.map(service => (
-                      <option key={service.id} value={service.id}>{service.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="barber-name">Barbero que Realiza el Servicio</Label>
-                  <Input
-                    id="barber-name"
-                    value={redeemData.barberName}
-                    onChange={(e) => setRedeemData({...redeemData, barberName: e.target.value})}
-                    placeholder="Nombre del barbero"
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsRedeemingService(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleRedeemService} className="bg-purple-600 text-white">
-                    Confirmar Canje
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
+        {/* Active Bonuses Tab */}
+        <TabsContent value="active" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Bonos Activos</CardTitle>
@@ -644,68 +449,32 @@ const BonusManager = () => {
                   <TableRow>
                     <TableHead>Cliente</TableHead>
                     <TableHead>Pack</TableHead>
-                    <TableHead>Servicios Disponibles</TableHead>
+                    <TableHead>Servicios Restantes</TableHead>
+                    <TableHead>Vendido por</TableHead>
                     <TableHead>Estado</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {purchasedBonuses.filter(b => b.status === 'active').map((bonus) => (
+                  {clientBonuses.filter(b => b.status === 'activo').map((bonus) => (
                     <TableRow key={bonus.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{bonus.clientName}</p>
-                          <p className="text-sm text-muted-foreground">{bonus.clientPhone}</p>
+                          <p className="font-medium">{getClientName(bonus.client_id)}</p>
+                          <p className="text-sm text-muted-foreground">{getClientPhone(bonus.client_id)}</p>
                         </div>
                       </TableCell>
-                      <TableCell>{bonus.packageName}</TableCell>
+                      <TableCell>{getPackageName(bonus.bonus_package_id)}</TableCell>
                       <TableCell>
-                        <div className="flex gap-2 flex-wrap">
-                          {bonus.servicesRemaining.map((service, idx) => (
-                            <Badge key={idx} variant={service.remaining > 0 ? "default" : "secondary"}>
-                              {service.serviceName}: {service.remaining}
-                            </Badge>
-                          ))}
-                        </div>
+                        <Badge variant="outline">
+                          {bonus.services_remaining}
+                        </Badge>
                       </TableCell>
+                      <TableCell>{bonus.sold_by_barber}</TableCell>
                       <TableCell>
                         <Badge className="bg-green-100 text-green-800">Activo</Badge>
                       </TableCell>
                     </TableRow>
                   ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* History Tab */}
-        <TabsContent value="history" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Historial de Canjes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Servicio</TableHead>
-                    <TableHead>Barbero</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {redeemHistory.map((redeem, index) => {
-                    const bonus = purchasedBonuses.find(b => b.id === redeem.bonusId);
-                    return (
-                      <TableRow key={index}>
-                        <TableCell>{new Date(redeem.redeemDate).toLocaleDateString()}</TableCell>
-                        <TableCell>{bonus?.clientName || 'N/A'}</TableCell>
-                        <TableCell>{redeem.serviceName}</TableCell>
-                        <TableCell>{redeem.barberName}</TableCell>
-                      </TableRow>
-                    );
-                  })}
                 </TableBody>
               </Table>
             </CardContent>

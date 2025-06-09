@@ -10,20 +10,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, Euro, Clock, User, LogOut, TrendingUp, Gift, DollarSign, Package } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface Appointment {
-  id: string;
-  location: string;
-  service: string;
-  barber: string;
-  date: string;
-  time: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  status: 'confirmada' | 'cancelada' | 'completada';
-  createdAt: string;
-}
+import { 
+  getAllAppointments, 
+  getAllBonusPackages,
+  getClientBonuses,
+  sellBonus,
+  redeemBonusService,
+  createOrGetClient,
+  getAllClients,
+  type Appointment,
+  type BonusPackage,
+  type ClientBonus,
+  type Client
+} from '@/lib/supabase-helpers';
 
 interface BarberSession {
   id: string;
@@ -32,69 +31,31 @@ interface BarberSession {
   loginTime: string;
 }
 
-interface BonusPackage {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  services: {
-    serviceId: string;
-    serviceName: string;
-    quantity: number;
-  }[];
-  active: boolean;
-  createdAt: string;
-}
-
-interface PurchasedBonus {
-  id: string;
-  packageId: string;
-  packageName: string;
-  clientName: string;
-  clientPhone: string;
-  purchaseDate: string;
-  totalPrice: number;
-  servicesRemaining: {
-    serviceId: string;
-    serviceName: string;
-    remaining: number;
-    total: number;
-  }[];
-  status: 'active' | 'completed';
-  soldBy?: string;
-}
-
-interface RedeemService {
-  bonusId: string;
-  serviceId: string;
-  serviceName: string;
-  redeemDate: string;
-  barberName: string;
-}
-
 interface BarberDashboardProps {
   onLogout: () => void;
 }
 
 const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [barberSession, setBarberSession] = useState<BarberSession | null>(null);
   const [bonusPackages, setBonusPackages] = useState<BonusPackage[]>([]);
-  const [purchasedBonuses, setPurchasedBonuses] = useState<PurchasedBonus[]>([]);
-  const [redeemHistory, setRedeemHistory] = useState<RedeemService[]>([]);
+  const [clientBonuses, setClientBonuses] = useState<ClientBonus[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [barberSession, setBarberSession] = useState<BarberSession | null>(null);
   const [isSellingBonus, setIsSellingBonus] = useState(false);
   const [isRedeemingService, setIsRedeemingService] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [saleData, setSaleData] = useState({
     packageId: '',
     clientName: '',
-    clientPhone: ''
+    clientPhone: '',
+    clientEmail: ''
   });
 
   const [redeemData, setRedeemData] = useState({
     bonusId: '',
     serviceId: '',
-    barberName: ''
+    appointmentId: ''
   });
 
   const services = [
@@ -103,13 +64,6 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
     { id: 'cut-beard', name: 'Corte + Barba', price: 65 },
     { id: 'shave', name: 'Afeitado Tradicional', price: 35 },
     { id: 'treatments', name: 'Tratamientos Especiales', price: 40 }
-  ];
-
-  const availableServices = [
-    { id: 'classic-cut', name: 'Corte de Pelo' },
-    { id: 'beard-trim', name: 'Arreglo de Barba' },
-    { id: 'cut-beard', name: 'Corte + Barba' },
-    { id: 'buzz-beard', name: 'Rapado + Barba' }
   ];
 
   const locations = [
@@ -123,45 +77,35 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
     if (session) {
       const parsedSession = JSON.parse(session);
       setBarberSession(parsedSession);
-      setRedeemData(prev => ({ ...prev, barberName: parsedSession.name }));
     }
 
-    // Cargar datos
-    loadAppointments();
-    loadBonusData();
+    loadAllData();
     
     const interval = setInterval(() => {
-      loadAppointments();
-      loadBonusData();
-    }, 5000);
+      loadAllData();
+    }, 30000); // Actualizar cada 30 segundos
     
     return () => clearInterval(interval);
   }, []);
 
-  const loadAppointments = () => {
-    const stored = localStorage.getItem('appointments');
-    if (stored) {
-      setAppointments(JSON.parse(stored));
-    }
-  };
+  const loadAllData = async () => {
+    try {
+      const [appointmentsData, packagesData, bonusesData, clientsData] = await Promise.all([
+        getAllAppointments(),
+        getAllBonusPackages(),
+        getClientBonuses(),
+        getAllClients()
+      ]);
 
-  const loadBonusData = () => {
-    // Cargar packs de bonos
-    const storedPackages = localStorage.getItem('bonusPackages');
-    if (storedPackages) {
-      setBonusPackages(JSON.parse(storedPackages));
-    }
-
-    // Cargar bonos comprados
-    const storedBonuses = localStorage.getItem('purchasedBonuses');
-    if (storedBonuses) {
-      setPurchasedBonuses(JSON.parse(storedBonuses));
-    }
-
-    // Cargar historial
-    const storedHistory = localStorage.getItem('redeemHistory');
-    if (storedHistory) {
-      setRedeemHistory(JSON.parse(storedHistory));
+      setAppointments(appointmentsData);
+      setBonusPackages(packagesData);
+      setClientBonuses(bonusesData);
+      setClients(clientsData);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      toast.error('Error al cargar los datos');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -170,141 +114,117 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
     onLogout();
   };
 
-  const handleSellBonus = () => {
-    if (!saleData.packageId || !saleData.clientName || !saleData.clientPhone) {
+  const handleSellBonus = async () => {
+    if (!saleData.packageId || !saleData.clientName || !saleData.clientPhone || !saleData.clientEmail) {
       toast.error('Todos los campos son obligatorios');
       return;
     }
 
-    const selectedPkg = bonusPackages.find(p => p.id === saleData.packageId);
-    if (!selectedPkg) return;
+    try {
+      // Crear o obtener cliente
+      const client = await createOrGetClient(saleData.clientName, saleData.clientPhone, saleData.clientEmail);
+      
+      // Obtener el paquete seleccionado
+      const selectedPackage = bonusPackages.find(p => p.id === saleData.packageId);
+      if (!selectedPackage) return;
 
-    const purchasedBonus: PurchasedBonus = {
-      id: `bonus-${Date.now()}`,
-      packageId: selectedPkg.id,
-      packageName: selectedPkg.name,
-      clientName: saleData.clientName,
-      clientPhone: saleData.clientPhone,
-      purchaseDate: new Date().toISOString(),
-      totalPrice: selectedPkg.price,
-      servicesRemaining: selectedPkg.services.map(s => ({
-        serviceId: s.serviceId,
-        serviceName: s.serviceName,
-        remaining: s.quantity,
-        total: s.quantity
-      })),
-      status: 'active',
-      soldBy: barberSession?.name
-    };
+      // Vender el bono
+      await sellBonus({
+        client_id: client.id,
+        bonus_package_id: saleData.packageId,
+        services_remaining: selectedPackage.services_included,
+        sold_by_barber: barberSession?.name || 'Barbero'
+      });
 
-    const updatedBonuses = [...purchasedBonuses, purchasedBonus];
-    setPurchasedBonuses(updatedBonuses);
-    localStorage.setItem('purchasedBonuses', JSON.stringify(updatedBonuses));
-    
-    setIsSellingBonus(false);
-    setSaleData({ packageId: '', clientName: '', clientPhone: '' });
-    toast.success('Bono vendido correctamente');
+      await loadAllData();
+      setIsSellingBonus(false);
+      setSaleData({ packageId: '', clientName: '', clientPhone: '', clientEmail: '' });
+      toast.success('Bono vendido correctamente');
+    } catch (error) {
+      console.error('Error al vender bono:', error);
+      toast.error('Error al vender el bono');
+    }
   };
 
-  const handleRedeemService = () => {
-    if (!redeemData.bonusId || !redeemData.serviceId) {
+  const handleRedeemService = async () => {
+    if (!redeemData.bonusId || !redeemData.serviceId || !redeemData.appointmentId) {
       toast.error('Todos los campos son obligatorios');
       return;
     }
 
-    const bonusIndex = purchasedBonuses.findIndex(b => b.id === redeemData.bonusId);
-    if (bonusIndex === -1) return;
+    try {
+      const serviceName = services.find(s => s.id === redeemData.serviceId)?.name || redeemData.serviceId;
 
-    const bonus = purchasedBonuses[bonusIndex];
-    const serviceIndex = bonus.servicesRemaining.findIndex(s => s.serviceId === redeemData.serviceId);
-    
-    if (serviceIndex === -1 || bonus.servicesRemaining[serviceIndex].remaining <= 0) {
-      toast.error('Servicio no disponible en este bono');
-      return;
+      await redeemBonusService({
+        client_bonus_id: redeemData.bonusId,
+        appointment_id: redeemData.appointmentId,
+        redeemed_by_barber: barberSession?.name || 'Barbero',
+        service_name: serviceName
+      });
+
+      await loadAllData();
+      setIsRedeemingService(false);
+      setRedeemData({ bonusId: '', serviceId: '', appointmentId: '' });
+      toast.success('Servicio canjeado correctamente');
+    } catch (error) {
+      console.error('Error al canjear servicio:', error);
+      toast.error('Error al canjear el servicio');
     }
-
-    // Reducir servicio disponible
-    bonus.servicesRemaining[serviceIndex].remaining -= 1;
-    
-    // Verificar si el bono está completo
-    const allServicesUsed = bonus.servicesRemaining.every(s => s.remaining === 0);
-    if (allServicesUsed) {
-      bonus.status = 'completed';
-    }
-
-    // Agregar al historial
-    const redeemRecord: RedeemService = {
-      bonusId: redeemData.bonusId,
-      serviceId: redeemData.serviceId,
-      serviceName: bonus.servicesRemaining[serviceIndex].serviceName,
-      redeemDate: new Date().toISOString(),
-      barberName: redeemData.barberName
-    };
-
-    const updatedBonuses = [...purchasedBonuses];
-    updatedBonuses[bonusIndex] = bonus;
-    
-    const updatedHistory = [...redeemHistory, redeemRecord];
-
-    setPurchasedBonuses(updatedBonuses);
-    setRedeemHistory(updatedHistory);
-    localStorage.setItem('purchasedBonuses', JSON.stringify(updatedBonuses));
-    localStorage.setItem('redeemHistory', JSON.stringify(updatedHistory));
-    
-    setIsRedeemingService(false);
-    setRedeemData({ bonusId: '', serviceId: '', barberName: barberSession?.name || '' });
-    toast.success('Servicio canjeado correctamente');
   };
 
-  if (!barberSession) {
-    return <div>Cargando...</div>;
+  if (!barberSession || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div>Cargando dashboard...</div>
+      </div>
+    );
   }
 
   // Filtrar solo las citas del barbero actual
   const myAppointments = appointments.filter(apt => apt.barber === barberSession.id);
   const today = new Date().toISOString().split('T')[0];
-  const todayAppointments = myAppointments.filter(apt => apt.date === today && apt.status === 'confirmada');
+  const todayAppointments = myAppointments.filter(apt => apt.appointment_date === today && apt.status === 'confirmada');
   
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   const monthlyCompletedAppointments = myAppointments.filter(apt => {
-    const aptDate = new Date(apt.date);
+    const aptDate = new Date(apt.appointment_date);
     return apt.status === 'completada' && 
            aptDate.getMonth() === currentMonth && 
            aptDate.getFullYear() === currentYear;
   });
 
   const monthlyRevenue = monthlyCompletedAppointments.reduce((sum, apt) => {
-    const service = services.find(s => s.id === apt.service);
-    return sum + (service ? service.price : 0);
+    return sum + (apt.price || 0);
   }, 0);
 
   const commission = monthlyRevenue > 3000 ? monthlyRevenue * 0.1 : 0;
   const hasCommission = monthlyRevenue > 3000;
 
+  // Bonos vendidos por este barbero
+  const myBonusSales = clientBonuses.filter(b => b.sold_by_barber === barberSession.name);
+  const myBonusRevenue = myBonusSales.reduce((sum, b) => {
+    const pkg = bonusPackages.find(p => p.id === b.bonus_package_id);
+    return sum + (pkg?.price || 0);
+  }, 0);
+
   const getServiceName = (id: string) => {
     return services.find(s => s.id === id)?.name || id;
-  };
-
-  const getServicePrice = (id: string) => {
-    return services.find(s => s.id === id)?.price || 0;
   };
 
   const getLocationName = (id: string) => {
     return locations.find(l => l.id === id)?.name || id;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmada': return 'bg-green-100 text-green-800';
-      case 'completada': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getClientName = (clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.name || 'Cliente no encontrado';
   };
 
-  // Bonos vendidos por este barbero
-  const myBonusSales = purchasedBonuses.filter(b => b.soldBy === barberSession.name);
-  const myBonusRevenue = myBonusSales.reduce((sum, b) => sum + b.totalPrice, 0);
+  const getClientPhone = (clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.phone || '';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -446,13 +366,13 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <h3 className="font-bold text-barbershop-dark">
-                                {appointment.time}
+                                {appointment.appointment_time}
                               </h3>
                               <p className="text-sm text-muted-foreground">
                                 {getServiceName(appointment.service)}
                               </p>
                             </div>
-                            <Badge className={getStatusColor(appointment.status)}>
+                            <Badge className="bg-green-100 text-green-800">
                               {appointment.status}
                             </Badge>
                           </div>
@@ -460,12 +380,12 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                           <div className="space-y-1 text-sm">
                             <div className="flex items-center text-muted-foreground">
                               <User className="w-4 h-4 mr-2" />
-                              Cliente: ****** (Protegido)
+                              Cliente: {getClientName(appointment.client_id)}
                             </div>
                             <div className="flex justify-between items-center">
                               <span>Servicio: {getServiceName(appointment.service)}</span>
                               <span className="font-bold text-barbershop-gold">
-                                {getServicePrice(appointment.service)}€
+                                {appointment.price}€
                               </span>
                             </div>
                           </div>
@@ -540,24 +460,39 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                         ))}
                       </select>
                     </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="client-name">Nombre del Cliente</Label>
+                        <Input
+                          id="client-name"
+                          value={saleData.clientName}
+                          onChange={(e) => setSaleData({...saleData, clientName: e.target.value})}
+                          placeholder="Nombre completo"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="client-phone">Teléfono</Label>
+                        <Input
+                          id="client-phone"
+                          value={saleData.clientPhone}
+                          onChange={(e) => setSaleData({...saleData, clientPhone: e.target.value})}
+                          placeholder="Número de teléfono"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <Label htmlFor="client-name">Nombre del Cliente</Label>
+                      <Label htmlFor="client-email">Email</Label>
                       <Input
-                        id="client-name"
-                        value={saleData.clientName}
-                        onChange={(e) => setSaleData({...saleData, clientName: e.target.value})}
-                        placeholder="Nombre completo"
+                        id="client-email"
+                        type="email"
+                        value={saleData.clientEmail}
+                        onChange={(e) => setSaleData({...saleData, clientEmail: e.target.value})}
+                        placeholder="correo@ejemplo.com"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="client-phone">Teléfono</Label>
-                      <Input
-                        id="client-phone"
-                        value={saleData.clientPhone}
-                        onChange={(e) => setSaleData({...saleData, clientPhone: e.target.value})}
-                        placeholder="Número de teléfono"
-                      />
-                    </div>
+
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setIsSellingBonus(false)}>
                         Cancelar
@@ -591,13 +526,14 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                         onChange={(e) => setRedeemData({...redeemData, bonusId: e.target.value})}
                       >
                         <option value="">Seleccionar bono</option>
-                        {purchasedBonuses.filter(b => b.status === 'active').map(bonus => (
+                        {clientBonuses.filter(b => b.status === 'activo' && b.services_remaining > 0).map(bonus => (
                           <option key={bonus.id} value={bonus.id}>
-                            {bonus.clientName} - {bonus.packageName}
+                            {getClientName(bonus.client_id)} - {bonus.services_remaining} servicios restantes
                           </option>
                         ))}
                       </select>
                     </div>
+                    
                     <div>
                       <Label htmlFor="redeem-service">Servicio a Canjear</Label>
                       <select
@@ -607,11 +543,29 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                         onChange={(e) => setRedeemData({...redeemData, serviceId: e.target.value})}
                       >
                         <option value="">Seleccionar servicio</option>
-                        {availableServices.map(service => (
+                        {services.map(service => (
                           <option key={service.id} value={service.id}>{service.name}</option>
                         ))}
                       </select>
                     </div>
+
+                    <div>
+                      <Label htmlFor="redeem-appointment">Cita Asociada</Label>
+                      <select
+                        id="redeem-appointment"
+                        className="w-full px-3 py-2 border rounded-md"
+                        value={redeemData.appointmentId}
+                        onChange={(e) => setRedeemData({...redeemData, appointmentId: e.target.value})}
+                      >
+                        <option value="">Seleccionar cita</option>
+                        {myAppointments.filter(apt => apt.status === 'confirmada' || apt.status === 'completada').map(apt => (
+                          <option key={apt.id} value={apt.id}>
+                            {getClientName(apt.client_id)} - {apt.appointment_date} {apt.appointment_time}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setIsRedeemingService(false)}>
                         Cancelar
@@ -634,29 +588,23 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Cliente</TableHead>
-                      <TableHead>Pack</TableHead>
                       <TableHead>Servicios Disponibles</TableHead>
                       <TableHead>Estado</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {purchasedBonuses.filter(b => b.status === 'active').map((bonus) => (
+                    {clientBonuses.filter(b => b.status === 'activo').map((bonus) => (
                       <TableRow key={bonus.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{bonus.clientName}</p>
-                            <p className="text-sm text-muted-foreground">{bonus.clientPhone}</p>
+                            <p className="font-medium">{getClientName(bonus.client_id)}</p>
+                            <p className="text-sm text-muted-foreground">{getClientPhone(bonus.client_id)}</p>
                           </div>
                         </TableCell>
-                        <TableCell>{bonus.packageName}</TableCell>
                         <TableCell>
-                          <div className="flex gap-2 flex-wrap">
-                            {bonus.servicesRemaining.map((service, idx) => (
-                              <Badge key={idx} variant={service.remaining > 0 ? "default" : "secondary"}>
-                                {service.serviceName}: {service.remaining}
-                              </Badge>
-                            ))}
-                          </div>
+                          <Badge variant="outline">
+                            {bonus.services_remaining}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge className="bg-green-100 text-green-800">Activo</Badge>
@@ -681,53 +629,22 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                       <TableHead>Fecha</TableHead>
                       <TableHead>Cliente</TableHead>
                       <TableHead>Pack</TableHead>
-                      <TableHead>Precio</TableHead>
                       <TableHead>Estado</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {myBonusSales.map((bonus) => (
                       <TableRow key={bonus.id}>
-                        <TableCell>{new Date(bonus.purchaseDate).toLocaleDateString()}</TableCell>
-                        <TableCell>{bonus.clientName}</TableCell>
-                        <TableCell>{bonus.packageName}</TableCell>
-                        <TableCell>€{bonus.totalPrice}</TableCell>
+                        <TableCell>{new Date(bonus.purchase_date).toLocaleDateString()}</TableCell>
+                        <TableCell>{getClientName(bonus.client_id)}</TableCell>
+                        <TableCell>{bonusPackages.find(p => p.id === bonus.bonus_package_id)?.name}</TableCell>
                         <TableCell>
-                          <Badge className={bonus.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                            {bonus.status === 'active' ? 'Activo' : 'Completado'}
+                          <Badge className={bonus.status === 'activo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                            {bonus.status}
                           </Badge>
                         </TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Mis Canjes Realizados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead>Servicio</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {redeemHistory.filter(r => r.barberName === barberSession.name).map((redeem, index) => {
-                      const bonus = purchasedBonuses.find(b => b.id === redeem.bonusId);
-                      return (
-                        <TableRow key={index}>
-                          <TableCell>{new Date(redeem.redeemDate).toLocaleDateString()}</TableCell>
-                          <TableCell>{bonus?.clientName || 'N/A'}</TableCell>
-                          <TableCell>{redeem.serviceName}</TableCell>
-                        </TableRow>
-                      );
-                    })}
                   </TableBody>
                 </Table>
               </CardContent>

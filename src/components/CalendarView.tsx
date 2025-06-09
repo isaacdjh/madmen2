@@ -1,274 +1,379 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, Calendar, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-interface Appointment {
-  id: string;
-  location: string;
-  service: string;
-  barber: string;
-  date: string;
-  time: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  status: 'confirmada' | 'cancelada' | 'completada';
-  createdAt: string;
-}
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Calendar, Clock, User, Phone, Mail, MapPin, DollarSign, Gift } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
+import { getAllAppointments, updateAppointmentStatus, getClientCompleteData, getClientBonuses, type Appointment, type Client, type ClientBonus, type Payment } from '@/lib/supabase-helpers';
 
 const CalendarView = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [clientData, setClientData] = useState<{
+    client: Client | null;
+    appointments: Appointment[];
+    bonuses: ClientBonus[];
+    payments: Payment[];
+  }>({ client: null, appointments: [], bonuses: [], payments: [] });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isClientDataLoading, setIsClientDataLoading] = useState(false);
 
-  // Centros actualizados con nombres correctos
+  const services = [
+    { id: 'classic-cut', name: 'Corte Clásico', price: 45 },
+    { id: 'beard-trim', name: 'Arreglo de Barba', price: 25 },
+    { id: 'cut-beard', name: 'Corte + Barba', price: 65 },
+    { id: 'shave', name: 'Afeitado Tradicional', price: 35 },
+    { id: 'treatments', name: 'Tratamientos Especiales', price: 40 }
+  ];
+
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
     { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
   ];
 
-  // Barberos actualizados con los nombres reales de cada centro
-  const barbersByLocation = {
-    'cristobal-bordiu': [
-      { id: 'luis-bracho', name: 'Luis Bracho' },
-      { id: 'jesus-hernandez', name: 'Jesús Hernández' },
-      { id: 'luis-alfredo', name: 'Luis Alfredo' },
-      { id: 'dionys-bracho', name: 'Dionys Bracho' }
-    ],
-    'general-pardinas': [
-      { id: 'isaac-hernandez', name: 'Isaac Hernández' },
-      { id: 'carlos-lopez', name: 'Carlos López' },
-      { id: 'luis-urbinez', name: 'Luis Urbiñez' },
-      { id: 'randy-valdespino', name: 'Randy Valdespino' }
-    ]
-  };
-
-  const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
-    '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'
-  ];
-
-  const services = [
-    { id: 'classic-cut', name: 'Corte Clásico', price: '$45' },
-    { id: 'beard-trim', name: 'Arreglo de Barba', price: '$25' },
-    { id: 'cut-beard', name: 'Corte + Barba', price: '$65' },
-    { id: 'shave', name: 'Afeitado Tradicional', price: '$35' },
-    { id: 'treatments', name: 'Tratamientos Especiales', price: '$40' }
+  const barbers = [
+    { id: 'alejandro', name: 'Alejandro' },
+    { id: 'carlos', name: 'Carlos' },
+    { id: 'miguel', name: 'Miguel' },
+    { id: 'david', name: 'David' }
   ];
 
   useEffect(() => {
-    const loadAppointments = () => {
-      const stored = localStorage.getItem('appointments');
-      if (stored) {
-        setAppointments(JSON.parse(stored));
-      }
-    };
-
     loadAppointments();
-    const interval = setInterval(loadAppointments, 5000);
-    return () => clearInterval(interval);
   }, []);
 
-  const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
+  const loadAppointments = async () => {
+    try {
+      const data = await getAllAppointments();
+      setAppointments(data);
+    } catch (error) {
+      console.error('Error al cargar citas:', error);
+      toast.error('Error al cargar las citas');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const formatDisplayDate = (date: Date) => {
-    return date.toLocaleDateString('es-ES', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+  const handleAppointmentClick = async (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setIsClientDataLoading(true);
+
+    try {
+      const data = await getClientCompleteData(appointment.client_id);
+      setClientData(data);
+    } catch (error) {
+      console.error('Error al cargar datos del cliente:', error);
+      toast.error('Error al cargar los datos del cliente');
+    } finally {
+      setIsClientDataLoading(false);
+    }
   };
 
-  const goToPreviousDay = () => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(newDate.getDate() - 1);
-    setSelectedDate(newDate);
+  const handleStatusChange = async (appointmentId: string, newStatus: string) => {
+    try {
+      await updateAppointmentStatus(appointmentId, newStatus);
+      await loadAppointments();
+      toast.success('Estado actualizado correctamente');
+      
+      if (selectedAppointment && selectedAppointment.id === appointmentId) {
+        setSelectedAppointment({ ...selectedAppointment, status: newStatus as any });
+      }
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+      toast.error('Error al actualizar el estado');
+    }
   };
 
-  const goToNextDay = () => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(newDate.getDate() + 1);
-    setSelectedDate(newDate);
+  const getServiceName = (id: string) => {
+    return services.find(s => s.id === id)?.name || id;
   };
 
-  const goToToday = () => {
-    setSelectedDate(new Date());
+  const getLocationName = (id: string) => {
+    return locations.find(l => l.id === id)?.name || id;
   };
 
-  const getAppointmentForSlot = (barberId: string, timeSlot: string) => {
-    return appointments.find(
-      apt => apt.barber === barberId && 
-             apt.time === timeSlot && 
-             apt.date === formatDate(selectedDate) &&
-             apt.location === selectedLocation &&
-             apt.status !== 'cancelada'
-    );
-  };
-
-  const getServiceName = (serviceId: string) => {
-    return services.find(s => s.id === serviceId)?.name || serviceId;
+  const getBarberName = (id: string) => {
+    return barbers.find(b => b.id === id)?.name || id;
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmada': return 'bg-blue-100 text-blue-800 border border-blue-200';
-      case 'completada': return 'bg-green-100 text-green-800 border border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border border-gray-200';
+      case 'confirmada': return 'bg-green-100 text-green-800';
+      case 'completada': return 'bg-blue-100 text-blue-800';
+      case 'cancelada': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const currentBarbers = barbersByLocation[selectedLocation as keyof typeof barbersByLocation] || [];
+  const groupAppointmentsByDate = (appointments: Appointment[]) => {
+    const grouped: { [key: string]: Appointment[] } = {};
+    
+    appointments.forEach(appointment => {
+      const date = appointment.appointment_date;
+      if (!grouped[date]) {
+        grouped[date] = [];
+      }
+      grouped[date].push(appointment);
+    });
+
+    // Ordenar por fecha
+    const sortedDates = Object.keys(grouped).sort();
+    const result: { [key: string]: Appointment[] } = {};
+    
+    sortedDates.forEach(date => {
+      result[date] = grouped[date].sort((a, b) => a.appointment_time.localeCompare(b.appointment_time));
+    });
+
+    return result;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">Cargando citas...</div>
+      </div>
+    );
+  }
+
+  const groupedAppointments = groupAppointmentsByDate(appointments);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Vista de Calendario</h1>
-        <p className="text-muted-foreground">Programación diaria por barbero y centro</p>
+        <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Calendario de Citas</h1>
+        <p className="text-muted-foreground">Gestiona todas las citas de la barbería</p>
       </div>
 
-      {/* Location and Date Navigation */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Location Selector */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-barbershop-gold" />
-                <span className="font-medium">Centro:</span>
-              </div>
-              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                <SelectTrigger className="w-64">
-                  <SelectValue placeholder="Seleccionar centro" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((location) => (
-                    <SelectItem key={location.id} value={location.id}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Date Navigation */}
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={goToPreviousDay}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <div className="text-center">
-                <h2 className="text-xl font-bold text-barbershop-dark capitalize">
-                  {formatDisplayDate(selectedDate)}
-                </h2>
-              </div>
-              <Button variant="outline" onClick={goToNextDay}>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-              <Button 
-                onClick={goToToday}
-                className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Hoy
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Calendar Grid */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <span>Agenda del Día</span>
-            <Badge variant="outline" className="bg-barbershop-gold/10 text-barbershop-dark">
-              {locations.find(l => l.id === selectedLocation)?.name}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <div className="min-w-full">
-              {/* Header */}
-              <div className={`grid border-b bg-gray-50`} style={{ gridTemplateColumns: `120px repeat(${currentBarbers.length}, 1fr)` }}>
-                <div className="p-4 font-semibold text-gray-600 border-r">
-                  Horario
-                </div>
-                {currentBarbers.map((barber) => (
-                  <div key={barber.id} className="p-4 font-semibold text-center text-barbershop-dark border-r last:border-r-0">
-                    {barber.name}
-                  </div>
-                ))}
-              </div>
-
-              {/* Time Slots */}
-              <div className="max-h-96 overflow-y-auto">
-                {timeSlots.map((timeSlot) => (
-                  <div key={timeSlot} className={`grid border-b hover:bg-gray-50/50 min-h-16`} style={{ gridTemplateColumns: `120px repeat(${currentBarbers.length}, 1fr)` }}>
-                    <div className="p-3 font-medium text-gray-600 border-r bg-gray-50/50 flex items-center">
-                      {timeSlot}
-                    </div>
-                    {currentBarbers.map((barber) => {
-                      const appointment = getAppointmentForSlot(barber.id, timeSlot);
-                      return (
-                        <div key={`${barber.id}-${timeSlot}`} className="p-2 border-r last:border-r-0 min-h-16">
-                          {appointment ? (
-                            <div className={`p-2 rounded-lg h-full flex flex-col justify-center ${getStatusColor(appointment.status)}`}>
-                              <div className="font-medium text-xs truncate">
-                                {appointment.customerName}
+      <div className="space-y-6">
+        {Object.keys(groupedAppointments).length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No hay citas programadas
+            </CardContent>
+          </Card>
+        ) : (
+          Object.entries(groupedAppointments).map(([date, dayAppointments]) => (
+            <Card key={date}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-barbershop-dark">
+                  <Calendar className="w-5 h-5" />
+                  {format(new Date(date), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: es })}
+                  <Badge variant="secondary" className="ml-2">
+                    {dayAppointments.length} citas
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  {dayAppointments.map((appointment) => (
+                    <Card 
+                      key={appointment.id} 
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => handleAppointmentClick(appointment)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-barbershop-gold" />
+                                <span className="font-bold text-lg">{appointment.appointment_time}</span>
                               </div>
-                              <div className="text-xs text-muted-foreground truncate">
-                                {getServiceName(appointment.service)}
-                              </div>
-                              <Badge 
-                                variant="secondary" 
-                                className={`text-xs mt-1 ${getStatusColor(appointment.status)}`}
-                              >
+                              <Badge className={getStatusColor(appointment.status)}>
                                 {appointment.status}
                               </Badge>
                             </div>
-                          ) : (
-                            <div className="h-full flex items-center justify-center text-gray-400 text-xs">
-                              Disponible
+                            
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
+                                <span>Servicio: {getServiceName(appointment.service)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                <span>{getLocationName(appointment.location)} - {getBarberName(appointment.barber)}</span>
+                              </div>
+                              {appointment.price && (
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="w-4 h-4" />
+                                  <span className="font-bold text-barbershop-gold">{appointment.price}€</span>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                          </div>
 
-      {/* Legend */}
-      <Card className="mt-6">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-blue-100 border border-blue-200 rounded"></div>
-              <span className="text-sm">Confirmada</span>
+                          <div className="flex gap-2">
+                            {appointment.status === 'confirmada' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(appointment.id, 'completada');
+                                  }}
+                                  className="text-green-600 border-green-600 hover:bg-green-50"
+                                >
+                                  Completar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(appointment.id, 'cancelada');
+                                  }}
+                                  className="text-red-600 border-red-600 hover:bg-red-50"
+                                >
+                                  Cancelar
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Dialog de detalles del cliente */}
+      <Dialog open={!!selectedAppointment} onOpenChange={() => setSelectedAppointment(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Información Completa del Cliente
+            </DialogTitle>
+          </DialogHeader>
+
+          {isClientDataLoading ? (
+            <div className="text-center py-8">Cargando datos del cliente...</div>
+          ) : clientData.client ? (
+            <div className="space-y-6">
+              {/* Datos del cliente */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Datos del Cliente</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">{clientData.client.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    <span>{clientData.client.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span>{clientData.client.email}</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Cliente desde: {format(new Date(clientData.client.created_at), 'dd/MM/yyyy', { locale: es })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Bonos activos */}
+              {clientData.bonuses.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-barbershop-gold" />
+                      Bonos Activos ({clientData.bonuses.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {clientData.bonuses.map((bonus) => (
+                        <div key={bonus.id} className="flex justify-between items-center p-3 border rounded-lg">
+                          <div>
+                            <div className="font-medium">Bono - {bonus.services_remaining} servicios restantes</div>
+                            <div className="text-sm text-muted-foreground">
+                              Vendido por: {bonus.sold_by_barber} | {format(new Date(bonus.purchase_date), 'dd/MM/yyyy', { locale: es })}
+                            </div>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">
+                            {bonus.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Historial de citas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Historial de Citas ({clientData.appointments.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {clientData.appointments.map((apt) => (
+                      <div key={apt.id} className="flex justify-between items-center p-2 border-b last:border-b-0">
+                        <div className="flex-1">
+                          <div className="text-sm">
+                            {format(new Date(apt.appointment_date), 'dd/MM/yyyy', { locale: es })} - {apt.appointment_time}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {getServiceName(apt.service)} | {getBarberName(apt.barber)}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {apt.price && <span className="text-sm font-medium">{apt.price}€</span>}
+                          <Badge className={getStatusColor(apt.status)} variant="secondary">
+                            {apt.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Historial de pagos */}
+              {clientData.payments.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Historial de Pagos ({clientData.payments.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {clientData.payments.map((payment) => (
+                        <div key={payment.id} className="flex justify-between items-center p-2 border-b last:border-b-0">
+                          <div>
+                            <div className="text-sm font-medium">{payment.amount}€</div>
+                            <div className="text-xs text-muted-foreground">
+                              {format(new Date(payment.created_at), 'dd/MM/yyyy', { locale: es })} | {payment.payment_method}
+                            </div>
+                          </div>
+                          <Badge className={payment.payment_status === 'completado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                            {payment.payment_status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-green-100 border border-green-200 rounded"></div>
-              <span className="text-sm">Completada</span>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No se pudieron cargar los datos del cliente
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded"></div>
-              <span className="text-sm">Disponible</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

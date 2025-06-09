@@ -9,7 +9,245 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          barber: string
+          client_id: string | null
+          created_at: string
+          id: string
+          location: string
+          price: number | null
+          service: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          barber: string
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          location: string
+          price?: number | null
+          service: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          barber?: string
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          location?: string
+          price?: number | null
+          service?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bonus_packages: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+          services_included: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price: number
+          services_included: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+          services_included?: number
+        }
+        Relationships: []
+      }
+      bonus_redemptions: {
+        Row: {
+          appointment_id: string | null
+          client_bonus_id: string | null
+          id: string
+          redeemed_by_barber: string
+          redemption_date: string
+          service_name: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_bonus_id?: string | null
+          id?: string
+          redeemed_by_barber: string
+          redemption_date?: string
+          service_name: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_bonus_id?: string | null
+          id?: string
+          redeemed_by_barber?: string
+          redemption_date?: string
+          service_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bonus_redemptions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bonus_redemptions_client_bonus_id_fkey"
+            columns: ["client_bonus_id"]
+            isOneToOne: false
+            referencedRelation: "client_bonuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_bonuses: {
+        Row: {
+          bonus_package_id: string | null
+          client_id: string | null
+          id: string
+          purchase_date: string
+          services_remaining: number
+          sold_by_barber: string
+          status: string
+        }
+        Insert: {
+          bonus_package_id?: string | null
+          client_id?: string | null
+          id?: string
+          purchase_date?: string
+          services_remaining: number
+          sold_by_barber: string
+          status?: string
+        }
+        Update: {
+          bonus_package_id?: string | null
+          client_id?: string | null
+          id?: string
+          purchase_date?: string
+          services_remaining?: number
+          sold_by_barber?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_bonuses_bonus_package_id_fkey"
+            columns: ["bonus_package_id"]
+            isOneToOne: false
+            referencedRelation: "bonus_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_bonuses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          client_id: string | null
+          created_at: string
+          id: string
+          payment_method: string
+          payment_status: string
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          payment_method: string
+          payment_status?: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          payment_method?: string
+          payment_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
