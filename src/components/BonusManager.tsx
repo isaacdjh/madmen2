@@ -155,7 +155,7 @@ const BonusManager = () => {
       return;
     }
 
-    const package: BonusPackage = {
+    const bonusPackage: BonusPackage = {
       id: newPackage.name!.toLowerCase().replace(/\s+/g, '-'),
       name: newPackage.name!,
       description: newPackage.description || '',
@@ -165,7 +165,7 @@ const BonusManager = () => {
       createdAt: new Date().toISOString()
     };
 
-    const updatedPackages = [...bonusPackages, package];
+    const updatedPackages = [...bonusPackages, bonusPackage];
     saveBonusPackages(updatedPackages);
     setIsAddingPackage(false);
     setNewPackage({
