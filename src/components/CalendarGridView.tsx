@@ -32,17 +32,11 @@ const CalendarGridView = () => {
   }>({ client: null, appointments: [], bonuses: [], payments: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isClientDataLoading, setIsClientDataLoading] = useState(false);
+  const [barbers, setBarbers] = useState<any[]>([]);
 
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
     { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
-  ];
-
-  const barbers = [
-    { id: 'alejandro', name: 'Alejandro' },
-    { id: 'carlos', name: 'Carlos' },
-    { id: 'miguel', name: 'Miguel' },
-    { id: 'david', name: 'David' }
   ];
 
   const services = [
@@ -62,10 +56,39 @@ const CalendarGridView = () => {
     return [];
   };
 
+  // Cargar barberos al inicio
+  useEffect(() => {
+    const storedBarbers = getStoredBarbers();
+    setBarbers(storedBarbers);
+    
+    // Listener para cambios en localStorage
+    const handleStorageChange = () => {
+      const updatedBarbers = getStoredBarbers();
+      setBarbers(updatedBarbers);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // También escuchar cambios locales
+    const interval = setInterval(() => {
+      const currentBarbers = getStoredBarbers();
+      const currentBarbersStr = JSON.stringify(currentBarbers);
+      const stateBarbersStr = JSON.stringify(barbers);
+      
+      if (currentBarbersStr !== stateBarbersStr) {
+        setBarbers(currentBarbers);
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [barbers]);
+
   // Obtener horario de trabajo para un barbero en un día específico
   const getBarberWorkHours = (barberId: string, date: Date) => {
-    const storedBarbers = getStoredBarbers();
-    const barber = storedBarbers.find((b: any) => b.id === barberId);
+    const barber = barbers.find((b: any) => b.id === barberId);
     
     if (!barber) return null;
 
@@ -257,6 +280,19 @@ const CalendarGridView = () => {
     );
   }
 
+  // Si no hay barberos, mostrar mensaje
+  if (barbers.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos configurados</h3>
+          <p className="text-gray-500">Ve al área de empleados para agregar barberos al sistema</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header mejorado */}
@@ -340,7 +376,7 @@ const CalendarGridView = () => {
           <div className="overflow-x-auto">
             <div className="min-w-[900px]">
               {/* Header con barberos mejorado */}
-              <div className="grid grid-cols-5 border-b bg-gray-50">
+              <div className={`grid border-b bg-gray-50`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
                 <div className="p-4 font-bold text-gray-700 border-r bg-gray-100 flex items-center">
                   <Clock className="w-5 h-5 mr-2 text-barbershop-gold" />
                   Horario
@@ -360,7 +396,7 @@ const CalendarGridView = () => {
 
               {/* Filas de tiempo mejoradas */}
               {timeSlots.map((time, index) => (
-                <div key={time} className={`grid grid-cols-5 border-b last:border-b-0 hover:bg-gray-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                <div key={time} className={`grid border-b last:border-b-0 hover:bg-gray-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
                   <div className="p-4 bg-gray-50 font-semibold border-r flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-lg font-bold text-barbershop-dark">{time}</div>

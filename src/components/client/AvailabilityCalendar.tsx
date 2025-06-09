@@ -17,17 +17,11 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
   const [isLoading, setIsLoading] = useState(true);
+  const [barbers, setBarbers] = useState<any[]>([]);
 
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
     { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
-  ];
-
-  const barbers = [
-    { id: 'alejandro', name: 'Alejandro' },
-    { id: 'carlos', name: 'Carlos' },
-    { id: 'miguel', name: 'Miguel' },
-    { id: 'david', name: 'David' }
   ];
 
   // Obtener barberos del localStorage (del área de empleados)
@@ -39,10 +33,39 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     return [];
   };
 
+  // Cargar barberos al inicio
+  useEffect(() => {
+    const storedBarbers = getStoredBarbers();
+    setBarbers(storedBarbers);
+    
+    // Listener para cambios en localStorage
+    const handleStorageChange = () => {
+      const updatedBarbers = getStoredBarbers();
+      setBarbers(updatedBarbers);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // También escuchar cambios locales
+    const interval = setInterval(() => {
+      const currentBarbers = getStoredBarbers();
+      const currentBarbersStr = JSON.stringify(currentBarbers);
+      const stateBarbersStr = JSON.stringify(barbers);
+      
+      if (currentBarbersStr !== stateBarbersStr) {
+        setBarbers(currentBarbers);
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [barbers]);
+
   // Obtener horario de trabajo para un barbero en un día específico
   const getBarberWorkHours = (barberId: string, date: Date) => {
-    const storedBarbers = getStoredBarbers();
-    const barber = storedBarbers.find((b: any) => b.id === barberId);
+    const barber = barbers.find((b: any) => b.id === barberId);
     
     if (!barber || barber.status !== 'active') return null;
 
@@ -156,6 +179,17 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     );
   }
 
+  // Si no hay barberos, mostrar mensaje
+  if (barbers.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos disponibles</h3>
+        <p className="text-gray-500">En este momento no hay barberos configurados en el sistema</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Controles */}
@@ -221,7 +255,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
           <div className="overflow-x-auto">
             <div className="min-w-[800px]">
               {/* Header con barberos */}
-              <div className="grid grid-cols-5 border-b">
+              <div className={`grid border-b`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
                 <div className="p-4 bg-gray-50 font-semibold border-r">Hora</div>
                 {barbers.map((barber) => {
                   const workHours = getBarberWorkHours(barber.id, selectedDate);
@@ -241,7 +275,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
 
               {/* Filas de tiempo */}
               {timeSlots.map((time) => (
-                <div key={time} className="grid grid-cols-5 border-b last:border-b-0">
+                <div key={time} className={`grid border-b last:border-b-0`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
                   <div className="p-3 bg-gray-50 font-medium border-r flex items-center">
                     <Clock className="w-4 h-4 mr-2 text-barbershop-gold" />
                     {time}
