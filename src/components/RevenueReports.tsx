@@ -18,6 +18,7 @@ import {
   type Payment
 } from '@/lib/supabase-helpers';
 import { supabase } from '@/integrations/supabase/client';
+import MonthlyRevenueView from './MonthlyRevenueView';
 
 interface RevenueReportsProps {
   barberId?: string;
@@ -204,169 +205,182 @@ const RevenueReports = ({ barberId, barberName }: RevenueReportsProps) => {
         <p className="text-gray-600">Ingresos detallados por servicios y bonos</p>
       </div>
 
-      {/* Period Selector */}
-      <div className="flex gap-2">
-        <Button 
-          variant={selectedPeriod === 'day' ? 'default' : 'outline'}
-          onClick={() => setSelectedPeriod('day')}
-        >
-          Últimos 7 días
-        </Button>
-        <Button 
-          variant={selectedPeriod === 'week' ? 'default' : 'outline'}
-          onClick={() => setSelectedPeriod('week')}
-        >
-          Últimas 4 semanas
-        </Button>
-        <Button 
-          variant={selectedPeriod === 'month' ? 'default' : 'outline'}
-          onClick={() => setSelectedPeriod('month')}
-        >
-          Último año
-        </Button>
-      </div>
+      <Tabs defaultValue="daily" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="daily">Vista Diaria</TabsTrigger>
+          <TabsTrigger value="monthly">Vista Mensual</TabsTrigger>
+        </TabsList>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Efectivo</p>
-                <p className="text-2xl font-bold text-green-600">{totals.cash.toFixed(2)}€</p>
-              </div>
-              <Banknote className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="daily" className="space-y-6">
+          {/* Period Selector */}
+          <div className="flex gap-2">
+            <Button 
+              variant={selectedPeriod === 'day' ? 'default' : 'outline'}
+              onClick={() => setSelectedPeriod('day')}
+            >
+              Últimos 7 días
+            </Button>
+            <Button 
+              variant={selectedPeriod === 'week' ? 'default' : 'outline'}
+              onClick={() => setSelectedPeriod('week')}
+            >
+              Últimas 4 semanas
+            </Button>
+            <Button 
+              variant={selectedPeriod === 'month' ? 'default' : 'outline'}
+              onClick={() => setSelectedPeriod('month')}
+            >
+              Último año
+            </Button>
+          </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Tarjeta</p>
-                <p className="text-2xl font-bold text-blue-600">{totals.card.toFixed(2)}€</p>
-              </div>
-              <CreditCard className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Efectivo</p>
+                    <p className="text-2xl font-bold text-green-600">{totals.cash.toFixed(2)}€</p>
+                  </div>
+                  <Banknote className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Bonos Vendidos</p>
-                <p className="text-2xl font-bold text-purple-600">{totals.bonusSold.toFixed(2)}€</p>
-              </div>
-              <Gift className="w-8 h-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tarjeta</p>
+                    <p className="text-2xl font-bold text-blue-600">{totals.card.toFixed(2)}€</p>
+                  </div>
+                  <CreditCard className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Ingresos</p>
-                <p className="text-2xl font-bold text-barbershop-gold">
-                  {(totals.totalServices + totals.bonusSold).toFixed(2)}€
-                </p>
-              </div>
-              <Euro className="w-8 h-8 text-barbershop-gold" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Bonos Vendidos</p>
+                    <p className="text-2xl font-bold text-purple-600">{totals.bonusSold.toFixed(2)}€</p>
+                  </div>
+                  <Gift className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Detailed Report Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Desglose Detallado</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Efectivo</TableHead>
-                <TableHead>Tarjeta</TableHead>
-                <TableHead>Bonos Canjeados</TableHead>
-                <TableHead>Bonos Vendidos</TableHead>
-                <TableHead>Total Servicios</TableHead>
-                <TableHead>Servicios</TableHead>
-                <TableHead>Bonos</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {reportsData.map((report) => (
-                <TableRow key={report.date}>
-                  <TableCell>
-                    {new Date(report.date).toLocaleDateString('es-ES', {
-                      weekday: 'short',
-                      day: '2-digit',
-                      month: '2-digit'
-                    })}
-                  </TableCell>
-                  <TableCell className="text-green-600 font-medium">
-                    {report.cash.toFixed(2)}€
-                  </TableCell>
-                  <TableCell className="text-blue-600 font-medium">
-                    {report.card.toFixed(2)}€
-                  </TableCell>
-                  <TableCell className="text-orange-600 font-medium">
-                    {report.redeemedCount} ({report.bonusRedeemed.toFixed(2)}€)
-                  </TableCell>
-                  <TableCell className="text-purple-600 font-medium">
-                    {report.bonusSold.toFixed(2)}€
-                  </TableCell>
-                  <TableCell className="font-bold">
-                    {report.totalServices.toFixed(2)}€
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{report.servicesCount}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-purple-50">
-                      {report.bonusCount}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Ingresos</p>
+                    <p className="text-2xl font-bold text-barbershop-gold">
+                      {(totals.totalServices + totals.bonusSold).toFixed(2)}€
+                    </p>
+                  </div>
+                  <Euro className="w-8 h-8 text-barbershop-gold" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-barbershop-dark">{totals.servicesCount}</p>
-              <p className="text-sm text-muted-foreground">Servicios Completados</p>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Detailed Report Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Desglose Detallado</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Efectivo</TableHead>
+                    <TableHead>Tarjeta</TableHead>
+                    <TableHead>Bonos Canjeados</TableHead>
+                    <TableHead>Bonos Vendidos</TableHead>
+                    <TableHead>Total Servicios</TableHead>
+                    <TableHead>Servicios</TableHead>
+                    <TableHead>Bonos</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reportsData.map((report) => (
+                    <TableRow key={report.date}>
+                      <TableCell>
+                        {new Date(report.date).toLocaleDateString('es-ES', {
+                          weekday: 'short',
+                          day: '2-digit',
+                          month: '2-digit'
+                        })}
+                      </TableCell>
+                      <TableCell className="text-green-600 font-medium">
+                        {report.cash.toFixed(2)}€
+                      </TableCell>
+                      <TableCell className="text-blue-600 font-medium">
+                        {report.card.toFixed(2)}€
+                      </TableCell>
+                      <TableCell className="text-orange-600 font-medium">
+                        {report.redeemedCount} ({report.bonusRedeemed.toFixed(2)}€)
+                      </TableCell>
+                      <TableCell className="text-purple-600 font-medium">
+                        {report.bonusSold.toFixed(2)}€
+                      </TableCell>
+                      <TableCell className="font-bold">
+                        {report.totalServices.toFixed(2)}€
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{report.servicesCount}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-purple-50">
+                          {report.bonusCount}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{totals.bonusCount}</p>
-              <p className="text-sm text-muted-foreground">Bonos Vendidos</p>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-barbershop-dark">{totals.servicesCount}</p>
+                  <p className="text-sm text-muted-foreground">Servicios Completados</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">{totals.redeemedCount}</p>
-              <p className="text-sm text-muted-foreground">Servicios con Bono</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">{totals.bonusCount}</p>
+                  <p className="text-sm text-muted-foreground">Bonos Vendidos</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-orange-600">{totals.redeemedCount}</p>
+                  <p className="text-sm text-muted-foreground">Servicios con Bono</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="monthly">
+          <MonthlyRevenueView barberId={barberId} barberName={barberName} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
