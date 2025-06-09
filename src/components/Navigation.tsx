@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, BarChart3, CreditCard, Settings, Menu, X, CalendarDays, Home, Scissors, UserCog, Package, Gift } from 'lucide-react';
@@ -54,12 +53,19 @@ const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
   };
 
   const getCurrentViewLabel = () => {
-    const allItems = [...directNavItems, ...dropdownItems];
-    const currentItem = allItems.find(item => {
-      if ('isClientView' in item || 'isBarberPortal' in item) return false;
+    // Check direct nav items first (they don't have isClientView/isBarberPortal)
+    const directItem = directNavItems.find(item => currentView === item.id);
+    if (directItem) {
+      return directItem.label;
+    }
+    
+    // Then check dropdown items (excluding the ones that navigate away)
+    const dropdownItem = dropdownItems.find(item => {
+      if (item.isClientView || item.isBarberPortal) return false;
       return currentView === item.id;
     });
-    return currentItem?.label || 'Panel Administrativo';
+    
+    return dropdownItem?.label || 'Panel Administrativo';
   };
 
   return (
