@@ -67,7 +67,9 @@ export interface Barber {
   name: string;
   email?: string;
   phone?: string;
+  location: 'cristobal-bordiu' | 'general-pardinas';
   status: 'active' | 'inactive';
+  user_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -312,7 +314,9 @@ export const createBarber = async (barberData: {
   name: string;
   email?: string;
   phone?: string;
+  location: 'cristobal-bordiu' | 'general-pardinas';
   status?: 'active' | 'inactive';
+  user_id?: string;
 }): Promise<Barber> => {
   const { data, error } = await supabase
     .from('barbers')
@@ -328,6 +332,18 @@ export const getAllBarbers = async (): Promise<Barber[]> => {
   const { data, error } = await supabase
     .from('barbers')
     .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as Barber[];
+};
+
+export const getBarbersByLocation = async (location: string): Promise<Barber[]> => {
+  const { data, error } = await supabase
+    .from('barbers')
+    .select('*')
+    .eq('location', location)
+    .eq('status', 'active')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -466,12 +482,22 @@ export const deleteBlockedSlot = async (barber_id: string, blocked_date: string,
   if (error) throw error;
 };
 
-// Función para obtener barberos con sus horarios
-export const getBarbersWithSchedules = async (): Promise<(Barber & { schedules: BarberSchedule[] })[]> => {
-  const [barbers, schedules] = await Promise.all([
-    getAllBarbers(),
+// Función para obtener barberos con sus horarios filtrados por ubicación
+export const getBarbersWithSchedules = async (location?: string): Promise<(Barber & { schedules: BarberSchedule[] })[]> => {
+  let barbersQuery = supabase.from('barbers').select('*');
+  
+  if (location) {
+    barbersQuery = barbersQuery.eq('location', location);
+  }
+
+  const [barbersResult, schedules] = await Promise.all([
+    barbersQuery,
     getBarberSchedules()
   ]);
+
+  if (barbersResult.error) throw barbersResult.error;
+
+  const barbers = barbersResult.data as Barber[];
 
   return barbers.map(barber => ({
     ...barber,

@@ -39,14 +39,14 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedLocation]);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
       const [appointmentsData, barbersData, blockedSlotsData] = await Promise.all([
         getAllAppointments(),
-        getBarbersWithSchedules(),
+        getBarbersWithSchedules(selectedLocation), // Filtrar barberos por ubicación
         getBlockedSlots()
       ]);
       
@@ -172,7 +172,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
       <div className="text-center py-8">
         <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos disponibles</h3>
-        <p className="text-gray-500">En este momento no hay barberos configurados en el sistema</p>
+        <p className="text-gray-500">No hay barberos activos en la sede seleccionada</p>
       </div>
     );
   }
@@ -235,7 +235,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-barbershop-gold" />
-            Disponibilidad de Barberos
+            Disponibilidad de Barberos - {locations.find(l => l.id === selectedLocation)?.name}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">

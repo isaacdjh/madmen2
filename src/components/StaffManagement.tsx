@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Plus, Edit, Trash2, Calendar, Clock, MapPin, UserCheck, UserX } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, Calendar, Clock, MapPin, UserCheck, UserX, Building } from 'lucide-react';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
@@ -36,6 +35,7 @@ const StaffManagement = () => {
     name: '',
     email: '',
     phone: '',
+    location: 'cristobal-bordiu' as 'cristobal-bordiu' | 'general-pardinas',
     schedules: {} as Record<string, {
       is_working: boolean;
       start_time: string;
@@ -53,6 +53,11 @@ const StaffManagement = () => {
     { id: 'friday', name: 'Viernes' },
     { id: 'saturday', name: 'Sábado' },
     { id: 'sunday', name: 'Domingo' }
+  ];
+
+  const locations = [
+    { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
+    { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
   ];
 
   useEffect(() => {
@@ -87,6 +92,7 @@ const StaffManagement = () => {
       name: '',
       email: '',
       phone: '',
+      location: 'cristobal-bordiu',
       schedules
     });
   };
@@ -103,6 +109,7 @@ const StaffManagement = () => {
         name: newBarber.name.trim(),
         email: newBarber.email.trim() || undefined,
         phone: newBarber.phone.trim() || undefined,
+        location: newBarber.location,
         status: 'active'
       });
 
@@ -136,6 +143,7 @@ const StaffManagement = () => {
         name: selectedBarber.name,
         email: selectedBarber.email,
         phone: selectedBarber.phone,
+        location: selectedBarber.location,
         status: selectedBarber.status
       });
 
@@ -215,6 +223,10 @@ const StaffManagement = () => {
     });
   };
 
+  const getLocationName = (location: string) => {
+    return locations.find(loc => loc.id === location)?.name || location;
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -230,11 +242,11 @@ const StaffManagement = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Gestión de Empleados</h1>
-        <p className="text-muted-foreground">Administrar barberos, horarios por día y disponibilidad</p>
+        <p className="text-muted-foreground">Administrar barberos, horarios por día y sedes de trabajo</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -265,12 +277,12 @@ const StaffManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Inactivos</p>
-                <p className="text-2xl font-bold text-gray-600">
-                  {barbers.filter(b => b.status === 'inactive').length}
+                <p className="text-sm text-muted-foreground">Cristóbal Bordiú</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {barbers.filter(b => b.location === 'cristobal-bordiu' && b.status === 'active').length}
                 </p>
               </div>
-              <UserX className="w-8 h-8 text-gray-600" />
+              <Building className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -279,12 +291,26 @@ const StaffManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Días trabajados</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {barbers.reduce((total, barber) => total + barber.schedules.filter(s => s.is_working).length, 0)}
+                <p className="text-sm text-muted-foreground">General Pardiñas</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {barbers.filter(b => b.location === 'general-pardinas' && b.status === 'active').length}
                 </p>
               </div>
-              <Calendar className="w-8 h-8 text-blue-600" />
+              <Building className="w-8 h-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Inactivos</p>
+                <p className="text-2xl font-bold text-gray-600">
+                  {barbers.filter(b => b.status === 'inactive').length}
+                </p>
+              </div>
+              <UserX className="w-8 h-8 text-gray-600" />
             </div>
           </CardContent>
         </Card>
@@ -307,7 +333,7 @@ const StaffManagement = () => {
               <DialogTitle>Agregar Nuevo Barbero</DialogTitle>
             </DialogHeader>
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="name">Nombre Completo *</Label>
                   <Input
@@ -335,6 +361,26 @@ const StaffManagement = () => {
                     onChange={(e) => setNewBarber({...newBarber, phone: e.target.value})}
                     placeholder="+34 600 123 456"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="location">Sede *</Label>
+                  <Select 
+                    value={newBarber.location} 
+                    onValueChange={(value: 'cristobal-bordiu' | 'general-pardinas') => 
+                      setNewBarber({...newBarber, location: value})
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar sede" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((location) => (
+                        <SelectItem key={location.id} value={location.id}>
+                          {location.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -487,6 +533,10 @@ const StaffManagement = () => {
                 </div>
               )}
               <div className="flex items-center text-sm">
+                <Building className="w-4 h-4 mr-2 text-muted-foreground" />
+                <span className="font-medium">{getLocationName(barber.location)}</span>
+              </div>
+              <div className="flex items-center text-sm">
                 <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
                 Días de trabajo: {getWorkingDays(barber.schedules)}
               </div>
@@ -524,7 +574,7 @@ const StaffManagement = () => {
           </DialogHeader>
           {selectedBarber && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="edit-name">Nombre</Label>
                   <Input
@@ -549,6 +599,26 @@ const StaffManagement = () => {
                     value={selectedBarber.phone || ''}
                     onChange={(e) => setSelectedBarber({...selectedBarber, phone: e.target.value})}
                   />
+                </div>
+                <div>
+                  <Label htmlFor="edit-location">Sede</Label>
+                  <Select 
+                    value={selectedBarber.location} 
+                    onValueChange={(value: 'cristobal-bordiu' | 'general-pardinas') => 
+                      setSelectedBarber({...selectedBarber, location: value})
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((location) => (
+                        <SelectItem key={location.id} value={location.id}>
+                          {location.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="edit-status">Estado</Label>
