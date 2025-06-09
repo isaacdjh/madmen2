@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, Euro, Clock, User, LogOut, TrendingUp, Gift, DollarSign, Package } from 'lucide-react';
+import { Calendar, Euro, Clock, User, LogOut, TrendingUp, Gift, DollarSign, Package, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
+import CalendarGridView from './CalendarGridView';
 import { 
   getAllAppointments, 
   getAllBonusPackages,
@@ -72,7 +72,6 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
   ];
 
   useEffect(() => {
-    // Cargar sesión del barbero
     const session = localStorage.getItem('barberSession');
     if (session) {
       const parsedSession = JSON.parse(session);
@@ -83,7 +82,7 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
     
     const interval = setInterval(() => {
       loadAllData();
-    }, 30000); // Actualizar cada 30 segundos
+    }, 30000);
     
     return () => clearInterval(interval);
   }, []);
@@ -121,14 +120,11 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
     }
 
     try {
-      // Crear o obtener cliente
       const client = await createOrGetClient(saleData.clientName, saleData.clientPhone, saleData.clientEmail);
       
-      // Obtener el paquete seleccionado
       const selectedPackage = bonusPackages.find(p => p.id === saleData.packageId);
       if (!selectedPackage) return;
 
-      // Vender el bono
       await sellBonus({
         client_id: client.id,
         bonus_package_id: saleData.packageId,
@@ -181,7 +177,6 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
     );
   }
 
-  // Filtrar solo las citas del barbero actual
   const myAppointments = appointments.filter(apt => apt.barber === barberSession.id);
   const today = new Date().toISOString().split('T')[0];
   const todayAppointments = myAppointments.filter(apt => apt.appointment_date === today && apt.status === 'confirmada');
@@ -202,7 +197,6 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
   const commission = monthlyRevenue > 3000 ? monthlyRevenue * 0.1 : 0;
   const hasCommission = monthlyRevenue > 3000;
 
-  // Bonos vendidos por este barbero
   const myBonusSales = clientBonuses.filter(b => b.sold_by_barber === barberSession.name);
   const myBonusRevenue = myBonusSales.reduce((sum, b) => {
     const pkg = bonusPackages.find(p => p.id === b.bonus_package_id);
@@ -251,8 +245,9 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="calendar">Calendario</TabsTrigger>
             <TabsTrigger value="bonuses">Gestión de Bonos</TabsTrigger>
             <TabsTrigger value="history">Historial Bonos</TabsTrigger>
           </TabsList>
@@ -326,7 +321,6 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
               </Card>
             </div>
 
-            {/* Progress to Commission */}
             {!hasCommission && (
               <Card>
                 <CardContent className="p-6">
@@ -349,7 +343,6 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
               </Card>
             )}
 
-            {/* Today's Appointments and Monthly Summary */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <h2 className="text-xl font-bold mb-4">Citas de Hoy ({todayAppointments.length})</h2>
@@ -431,6 +424,15 @@ const BarberDashboard = ({ onLogout }: BarberDashboardProps) => {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="calendar" className="space-y-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-barbershop-dark mb-2">Calendario de Citas</h2>
+              <p className="text-gray-600">Gestiona tus citas y procesa pagos directamente desde el calendario</p>
+            </div>
+            
+            <CalendarGridView />
           </TabsContent>
 
           <TabsContent value="bonuses" className="space-y-6">
