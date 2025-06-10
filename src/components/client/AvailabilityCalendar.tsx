@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Clock, ChevronLeft, ChevronRight, User } from 'lucide-react';
-import { format, addDays, subDays, getDay } from 'date-fns';
+import { format, addDays, subDays, getDay, isToday, isBefore } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
   getAllAppointments, 
@@ -45,7 +46,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
       setIsLoading(true);
       const [appointmentsData, barbersData, blockedSlotsData] = await Promise.all([
         getAllAppointments(),
-        getBarbersWithSchedules(selectedLocation), // Filtrar barberos por ubicación
+        getBarbersWithSchedules(selectedLocation),
         getBlockedSlots()
       ]);
       
@@ -112,13 +113,34 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     return slots;
   };
 
-  // Obtener todos los slots únicos para mostrar en el calendario
+  // Función para verificar si un horario ya pasó (solo para el día actual)
+  const isTimeSlotInPast = (timeSlot: string, date: Date) => {
+    if (!isToday(date)) return false; // Si no es hoy, no está en el pasado
+    
+    const now = new Date();
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    const slotTime = new Date();
+    slotTime.setHours(hours, minutes, 0, 0);
+    
+    // Agregar un margen de 30 minutos para evitar reservas de último momento
+    const slotTimeWithMargin = new Date(slotTime);
+    slotTimeWithMargin.setMinutes(slotTimeWithMargin.getMinutes() + 30);
+    
+    return isBefore(slotTimeWithMargin, now);
+  };
+
+  // Obtener todos los slots únicos disponibles (filtrando los que ya pasaron)
   const getAllTimeSlots = () => {
     const allSlots = new Set<string>();
     
     barbers.forEach(barber => {
       const slots = generateTimeSlotsForBarber(barber.id, selectedDate);
-      slots.forEach(slot => allSlots.add(slot));
+      slots.forEach(slot => {
+        // Solo agregar slots que no hayan pasado
+        if (!isTimeSlotInPast(slot, selectedDate)) {
+          allSlots.add(slot);
+        }
+      });
     });
 
     return Array.from(allSlots).sort();
@@ -127,6 +149,11 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   const timeSlots = getAllTimeSlots();
 
   const isSlotAvailable = (barber: string, time: string) => {
+    // Verificar si el horario ya pasó
+    if (isTimeSlotInPast(time, selectedDate)) {
+      return false;
+    }
+
     // Verificar si el barbero trabaja en este horario
     if (!generateTimeSlotsForBarber(barber, selectedDate).includes(time)) {
       return false;
@@ -175,7 +202,8 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
       time,
       available,
       existingAppointment: !!existingAppointment,
-      isBlocked
+      isBlocked,
+      isPastTime: isTimeSlotInPast(time, selectedDate)
     });
 
     return available;
@@ -204,6 +232,80 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
         <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos disponibles</h3>
         <p className="text-gray-500">No hay barberos activos en la sede seleccionada</p>
+      </div>
+    );
+  }
+
+  // Si no hay horarios disponibles para hoy
+  if (timeSlots.length === 0 && isToday(selectedDate)) {
+    return (
+      <div className="space-y-6">
+        {/* Controles de navegación */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+                disabled={format(selectedDate, 'yyyy-MM-dd') <= format(new Date(), 'yyyy-MM-dd')}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <div className="text-lg font-semibold min-w-[200px] text-center">
+                {format(selectedDate, 'EEEE, dd \'de\' MMMM', { locale: es })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedDate(new Date())}
+              className="text-barbershop-gold"
+            >
+              Hoy
+            </Button>
+          </div>
+
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Seleccionar centro" />
+            </SelectTrigger>
+            <SelectContent>
+              {locations.map((location) => (
+                <SelectItem key={location.id} value={location.id}>
+                  {location.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Mensaje de no disponibilidad para hoy */}
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              No hay horarios disponibles para hoy
+            </h3>
+            <p className="text-gray-500 mb-4">
+              Los horarios de hoy ya han pasado o están ocupados. Por favor selecciona otro día.
+            </p>
+            <Button 
+              onClick={() => setSelectedDate(addDays(new Date(), 1))}
+              className="bg-barbershop-gold hover:bg-barbershop-gold/90"
+            >
+              Ver mañana
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -261,6 +363,18 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
         </Select>
       </div>
 
+      {/* Mensaje informativo para horarios de hoy */}
+      {isToday(selectedDate) && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-blue-700">
+            <Clock className="w-5 h-5" />
+            <span className="font-medium">
+              Solo se muestran horarios disponibles con al menos 30 minutos de anticipación
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Calendario Grid mejorado */}
       <Card>
         <CardHeader>
@@ -301,23 +415,28 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
                   {barbers.map((barber) => {
                     const available = isSlotAvailable(barber.id, time);
                     const isWorking = generateTimeSlotsForBarber(barber.id, selectedDate).includes(time);
+                    const isPastTime = isTimeSlotInPast(time, selectedDate);
                     
                     return (
                       <div 
                         key={`${barber.id}-${time}`} 
                         className={`p-2 border-r last:border-r-0 min-h-[50px] ${
-                          !isWorking 
+                          !isWorking || isPastTime
                             ? 'bg-gray-100' 
                             : available 
                               ? 'bg-green-50 hover:bg-green-100 cursor-pointer' 
                               : 'bg-red-50'
                         }`}
-                        onClick={() => available && handleSlotClick(barber.id, time)}
+                        onClick={() => available && !isPastTime && handleSlotClick(barber.id, time)}
                       >
                         <div className="h-full flex items-center justify-center">
                           {!isWorking ? (
                             <span className="text-gray-400 text-sm">
                               No disponible
+                            </span>
+                          ) : isPastTime ? (
+                            <span className="text-gray-400 text-sm">
+                              Horario pasado
                             </span>
                           ) : available ? (
                             <span className="text-green-600 font-medium text-sm">
