@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,18 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Scissors, Plus, Edit, Trash2, DollarSign, Package } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: number; // minutos
-  category: 'corte' | 'barba' | 'combo' | 'tratamiento';
-  active: boolean;
-}
+import { getAllServices, createService, updateService, deleteService, type Service } from '@/lib/supabase-helpers';
 
 interface Product {
   id: string;
@@ -40,6 +31,7 @@ const ServicesManager = () => {
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isEditingService, setIsEditingService] = useState(false);
   const [isEditingProduct, setIsEditingProduct] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [newService, setNewService] = useState<Partial<Service>>({
     name: '',
@@ -60,46 +52,24 @@ const ServicesManager = () => {
   });
 
   useEffect(() => {
-    loadServices();
-    loadProducts();
+    loadData();
   }, []);
 
-  const loadServices = () => {
-    const stored = localStorage.getItem('services');
-    if (stored) {
-      setServices(JSON.parse(stored));
-    } else {
-      const initialServices: Service[] = [
-        {
-          id: 'classic-cut',
-          name: 'Corte Clásico',
-          description: 'Corte tradicional con tijera y máquina',
-          price: 45,
-          duration: 45,
-          category: 'corte',
-          active: true
-        },
-        {
-          id: 'beard-trim',
-          name: 'Arreglo de Barba',
-          description: 'Perfilado y arreglo de barba',
-          price: 25,
-          duration: 30,
-          category: 'barba',
-          active: true
-        },
-        {
-          id: 'cut-beard',
-          name: 'Corte + Barba',
-          description: 'Combo completo corte y barba',
-          price: 65,
-          duration: 75,
-          category: 'combo',
-          active: true
-        }
-      ];
-      setServices(initialServices);
-      localStorage.setItem('services', JSON.stringify(initialServices));
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Cargar servicios desde Supabase
+      const servicesData = await getAllServices();
+      setServices(servicesData);
+
+      // Cargar productos desde localStorage (mantener como estaba)
+      loadProducts();
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      toast.error('Error al cargar los datos');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -133,61 +103,75 @@ const ServicesManager = () => {
     }
   };
 
-  const saveServices = (updatedServices: Service[]) => {
-    setServices(updatedServices);
-    localStorage.setItem('services', JSON.stringify(updatedServices));
-  };
-
   const saveProducts = (updatedProducts: Product[]) => {
     setProducts(updatedProducts);
     localStorage.setItem('products', JSON.stringify(updatedProducts));
   };
 
-  const handleAddService = () => {
+  const handleAddService = async () => {
     if (!newService.name || !newService.price) {
       toast.error('Nombre y precio son obligatorios');
       return;
     }
 
-    const service: Service = {
-      id: newService.name!.toLowerCase().replace(/\s+/g, '-'),
-      name: newService.name!,
-      description: newService.description || '',
-      price: newService.price!,
-      duration: newService.duration!,
-      category: newService.category!,
-      active: true
-    };
+    try {
+      const serviceData = {
+        name: newService.name!,
+        description: newService.description || '',
+        price: newService.price!,
+        duration: newService.duration!,
+        category: newService.category!,
+        active: true
+      };
 
-    const updatedServices = [...services, service];
-    saveServices(updatedServices);
-    setIsAddingService(false);
-    setNewService({
-      name: '',
-      description: '',
-      price: 0,
-      duration: 30,
-      category: 'corte',
-      active: true
-    });
-    toast.success('Servicio agregado correctamente');
+      await createService(serviceData);
+      await loadData(); // Recargar datos
+      setIsAddingService(false);
+      setNewService({
+        name: '',
+        description: '',
+        price: 0,
+        duration: 30,
+        category: 'corte',
+        active: true
+      });
+      toast.success('Servicio agregado correctamente');
+    } catch (error) {
+      console.error('Error al agregar servicio:', error);
+      toast.error('Error al agregar el servicio');
+    }
   };
 
-  const handleUpdateService = () => {
+  const handleUpdateService = async () => {
     if (!selectedService) return;
     
-    const updatedServices = services.map(s => 
-      s.id === selectedService.id ? selectedService : s
-    );
-    saveServices(updatedServices);
-    setIsEditingService(false);
-    toast.success('Servicio actualizado correctamente');
+    try {
+      await updateService(selectedService.id, {
+        name: selectedService.name,
+        description: selectedService.description,
+        price: selectedService.price,
+        duration: selectedService.duration,
+        category: selectedService.category,
+        active: selectedService.active
+      });
+      await loadData(); // Recargar datos
+      setIsEditingService(false);
+      toast.success('Servicio actualizado correctamente');
+    } catch (error) {
+      console.error('Error al actualizar servicio:', error);
+      toast.error('Error al actualizar el servicio');
+    }
   };
 
-  const handleDeleteService = (serviceId: string) => {
-    const updatedServices = services.filter(s => s.id !== serviceId);
-    saveServices(updatedServices);
-    toast.success('Servicio eliminado correctamente');
+  const handleDeleteService = async (serviceId: string) => {
+    try {
+      await deleteService(serviceId);
+      await loadData(); // Recargar datos
+      toast.success('Servicio eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar servicio:', error);
+      toast.error('Error al eliminar el servicio');
+    }
   };
 
   const handleAddProduct = () => {
@@ -231,6 +215,17 @@ const ServicesManager = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-barbershop-gold mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando gestión de servicios...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -334,6 +329,20 @@ const ServicesManager = () => {
                     placeholder="Descripción del servicio..."
                   />
                 </div>
+                <div>
+                  <Label htmlFor="service-category">Categoría</Label>
+                  <Select value={newService.category} onValueChange={(value) => setNewService({...newService, category: value as 'corte' | 'barba' | 'combo' | 'tratamiento'})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="corte">Corte</SelectItem>
+                      <SelectItem value="barba">Barba</SelectItem>
+                      <SelectItem value="combo">Combo</SelectItem>
+                      <SelectItem value="tratamiento">Tratamiento</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="service-price">Precio (€)</Label>
@@ -389,6 +398,12 @@ const ServicesManager = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Duración:</span>
                     <span className="text-sm">{service.duration} min</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Estado:</span>
+                    <Badge className={service.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                      {service.active ? 'Activo' : 'Inactivo'}
+                    </Badge>
                   </div>
                   <div className="flex gap-2 mt-4">
                     <Button 
@@ -574,22 +589,55 @@ const ServicesManager = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-service-price">Precio (€)</Label>
-                <Input
-                  id="edit-service-price"
-                  type="number"
-                  value={selectedService.price}
-                  onChange={(e) => setSelectedService({...selectedService, price: Number(e.target.value)})}
+                <Label htmlFor="edit-service-description">Descripción</Label>
+                <Textarea
+                  id="edit-service-description"
+                  value={selectedService.description || ''}
+                  onChange={(e) => setSelectedService({...selectedService, description: e.target.value})}
                 />
               </div>
               <div>
-                <Label htmlFor="edit-service-duration">Duración (min)</Label>
-                <Input
-                  id="edit-service-duration"
-                  type="number"
-                  value={selectedService.duration}
-                  onChange={(e) => setSelectedService({...selectedService, duration: Number(e.target.value)})}
+                <Label htmlFor="edit-service-category">Categoría</Label>
+                <Select value={selectedService.category} onValueChange={(value) => setSelectedService({...selectedService, category: value as 'corte' | 'barba' | 'combo' | 'tratamiento'})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="corte">Corte</SelectItem>
+                    <SelectItem value="barba">Barba</SelectItem>
+                    <SelectItem value="combo">Combo</SelectItem>
+                    <SelectItem value="tratamiento">Tratamiento</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-service-price">Precio (€)</Label>
+                  <Input
+                    id="edit-service-price"
+                    type="number"
+                    value={selectedService.price}
+                    onChange={(e) => setSelectedService({...selectedService, price: Number(e.target.value)})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-service-duration">Duración (min)</Label>
+                  <Input
+                    id="edit-service-duration"
+                    type="number"
+                    value={selectedService.duration}
+                    onChange={(e) => setSelectedService({...selectedService, duration: Number(e.target.value)})}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="edit-service-active"
+                  checked={selectedService.active}
+                  onChange={(e) => setSelectedService({...selectedService, active: e.target.checked})}
                 />
+                <Label htmlFor="edit-service-active">Servicio activo</Label>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsEditingService(false)}>

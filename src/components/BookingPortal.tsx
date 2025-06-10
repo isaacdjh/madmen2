@@ -1,20 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, Scissors, User, CheckCircle, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getAllBarbers, type Barber } from '@/lib/supabase-helpers';
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: number;
-  category: 'corte' | 'barba' | 'combo' | 'tratamiento';
-  active: boolean;
-}
+import { getAllBarbers, getAllServices, type Barber, type Service } from '@/lib/supabase-helpers';
 
 const BookingPortal = () => {
   const [selectedDate, setSelectedDate] = useState('');
@@ -33,28 +22,22 @@ const BookingPortal = () => {
     try {
       setIsLoading(true);
       
-      // Cargar servicios desde localStorage
-      const storedServices = localStorage.getItem('services');
-      if (storedServices) {
-        const allServices = JSON.parse(storedServices);
-        setServices(allServices.filter((service: Service) => service.active));
-      } else {
-        // Servicios por defecto
-        setServices([
-          { id: 'classic-cut', name: 'Corte Clásico', description: 'Corte tradicional con tijera y máquina', price: 45, duration: 45, category: 'corte', active: true },
-          { id: 'beard-trim', name: 'Arreglo de Barba', description: 'Perfilado y arreglo de barba', price: 25, duration: 30, category: 'barba', active: true },
-          { id: 'cut-beard', name: 'Corte + Barba', description: 'Combo completo corte y barba', price: 65, duration: 75, category: 'combo', active: true },
-          { id: 'shave', name: 'Afeitado Tradicional', description: 'Afeitado clásico con navaja', price: 35, duration: 45, category: 'barba', active: true },
-          { id: 'treatments', name: 'Tratamientos Especiales', description: 'Tratamientos capilares y faciales', price: 40, duration: 60, category: 'tratamiento', active: true }
-        ]);
-      }
+      // Cargar servicios desde Supabase
+      const servicesData = await getAllServices();
+      setServices(servicesData.filter((service: Service) => service.active));
 
       // Cargar barberos desde Supabase
       const barbersData = await getAllBarbers();
       setBarbers(barbersData.filter(barber => barber.status === 'active'));
     } catch (error) {
       console.error('Error al cargar datos:', error);
-      // Barberos por defecto en caso de error
+      // Datos por defecto en caso de error
+      setServices([
+        { id: 'classic-cut', name: 'Corte Clásico', description: 'Corte tradicional con tijera y máquina', price: 45, duration: 45, category: 'corte', active: true, created_at: '', updated_at: '' },
+        { id: 'beard-trim', name: 'Arreglo de Barba', description: 'Perfilado y arreglo de barba', price: 25, duration: 30, category: 'barba', active: true, created_at: '', updated_at: '' },
+        { id: 'cut-beard', name: 'Corte + Barba', description: 'Combo completo corte y barba', price: 65, duration: 75, category: 'combo', active: true, created_at: '', updated_at: '' }
+      ]);
+      
       setBarbers([
         { id: 'carlos', name: 'Carlos Mendoza', location: 'cristobal-bordiu', status: 'active', created_at: '', updated_at: '' },
         { id: 'miguel', name: 'Miguel Rodríguez', location: 'general-pardinas', status: 'active', created_at: '', updated_at: '' },

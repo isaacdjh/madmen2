@@ -96,6 +96,18 @@ export interface BlockedSlot {
   created_at: string;
 }
 
+export interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  duration: number;
+  category: 'corte' | 'barba' | 'combo' | 'tratamiento';
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export const getAllAppointments = async (): Promise<Appointment[]> => {
   const { data, error } = await supabase
     .from('appointments')
@@ -491,6 +503,65 @@ export const createPayment = async (paymentData: Omit<Payment, 'id' | 'created_a
 
   if (error) {
     console.error('Error creating payment:', error);
+    throw error;
+  }
+};
+
+export const getAllServices = async (): Promise<Service[]> => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching services:', error);
+    throw error;
+  }
+
+  return (data || []).map(service => ({
+    ...service,
+    category: service.category as 'corte' | 'barba' | 'combo' | 'tratamiento'
+  }));
+};
+
+export const createService = async (serviceData: Omit<Service, 'id' | 'created_at' | 'updated_at'>): Promise<Service> => {
+  const { data, error } = await supabase
+    .from('services')
+    .insert(serviceData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating service:', error);
+    throw error;
+  }
+
+  return {
+    ...data,
+    category: data.category as 'corte' | 'barba' | 'combo' | 'tratamiento'
+  };
+};
+
+export const updateService = async (id: string, serviceData: Partial<Omit<Service, 'id' | 'created_at' | 'updated_at'>>): Promise<void> => {
+  const { error } = await supabase
+    .from('services')
+    .update(serviceData)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating service:', error);
+    throw error;
+  }
+};
+
+export const deleteService = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('services')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting service:', error);
     throw error;
   }
 };
