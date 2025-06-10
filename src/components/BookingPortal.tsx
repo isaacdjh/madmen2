@@ -1,34 +1,101 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, Scissors, User, CheckCircle, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getAllBarbers, type Barber } from '@/lib/supabase-helpers';
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  category: 'corte' | 'barba' | 'combo' | 'tratamiento';
+  active: boolean;
+}
 
 const BookingPortal = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [selectedBarber, setSelectedBarber] = useState('');
+  const [services, setServices] = useState<Service[]>([]);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const services = [
-    { id: 'classic-cut', name: 'Corte Clásico', price: '$45', duration: '45 min', popular: true },
-    { id: 'beard-trim', name: 'Arreglo de Barba', price: '$25', duration: '30 min', popular: false },
-    { id: 'cut-beard', name: 'Corte + Barba', price: '$65', duration: '75 min', popular: true },
-    { id: 'shave', name: 'Afeitado Tradicional', price: '$35', duration: '45 min', popular: false },
-    { id: 'treatments', name: 'Tratamientos Especiales', price: '$40', duration: '60 min', popular: false },
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const barbers = [
-    { id: 'carlos', name: 'Carlos Mendoza', specialty: 'Cortes Clásicos', experience: '8 años', rating: 4.9 },
-    { id: 'miguel', name: 'Miguel Rodríguez', specialty: 'Barbas y Afeitado', experience: '12 años', rating: 4.8 },
-    { id: 'antonio', name: 'Antonio López', specialty: 'Estilos Modernos', experience: '6 años', rating: 4.7 },
-  ];
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Cargar servicios desde localStorage
+      const storedServices = localStorage.getItem('services');
+      if (storedServices) {
+        const allServices = JSON.parse(storedServices);
+        setServices(allServices.filter((service: Service) => service.active));
+      } else {
+        // Servicios por defecto
+        setServices([
+          { id: 'classic-cut', name: 'Corte Clásico', description: 'Corte tradicional con tijera y máquina', price: 45, duration: 45, category: 'corte', active: true },
+          { id: 'beard-trim', name: 'Arreglo de Barba', description: 'Perfilado y arreglo de barba', price: 25, duration: 30, category: 'barba', active: true },
+          { id: 'cut-beard', name: 'Corte + Barba', description: 'Combo completo corte y barba', price: 65, duration: 75, category: 'combo', active: true },
+          { id: 'shave', name: 'Afeitado Tradicional', description: 'Afeitado clásico con navaja', price: 35, duration: 45, category: 'barba', active: true },
+          { id: 'treatments', name: 'Tratamientos Especiales', description: 'Tratamientos capilares y faciales', price: 40, duration: 60, category: 'tratamiento', active: true }
+        ]);
+      }
+
+      // Cargar barberos desde Supabase
+      const barbersData = await getAllBarbers();
+      setBarbers(barbersData.filter(barber => barber.status === 'active'));
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      // Barberos por defecto en caso de error
+      setBarbers([
+        { id: 'carlos', name: 'Carlos Mendoza', location: 'cristobal-bordiu', status: 'active', created_at: '', updated_at: '' },
+        { id: 'miguel', name: 'Miguel Rodríguez', location: 'general-pardinas', status: 'active', created_at: '', updated_at: '' },
+        { id: 'antonio', name: 'Antonio López', location: 'cristobal-bordiu', status: 'active', created_at: '', updated_at: '' }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getSpecialty = (index: number) => {
+    const specialties = ['Cortes Clásicos', 'Barbas y Afeitado', 'Estilos Modernos', 'Tratamientos Especiales', 'Cortes y Barbas'];
+    return specialties[index % specialties.length];
+  };
+
+  const getExperience = (index: number) => {
+    const experiences = ['8 años', '12 años', '6 años', '10 años', '5 años'];
+    return experiences[index % experiences.length];
+  };
+
+  const getRating = (index: number) => {
+    const ratings = [4.9, 4.8, 4.7, 4.9, 4.8];
+    return ratings[index % ratings.length];
+  };
 
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
     '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-barbershop-gold mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando portal de reservas...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
@@ -121,15 +188,15 @@ const BookingPortal = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-bold text-barbershop-dark">{service.name}</h4>
-                            {service.popular && (
+                            {service.category === 'combo' && (
                               <span className="bg-barbershop-gold text-barbershop-dark text-xs px-2 py-1 rounded-full font-bold">
                                 Popular
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{service.duration}</p>
+                          <p className="text-sm text-muted-foreground">{service.duration} min</p>
                         </div>
-                        <span className="font-bold text-xl text-barbershop-gold">{service.price}</span>
+                        <span className="font-bold text-xl text-barbershop-gold">€{service.price}</span>
                       </div>
                     </div>
                   ))}
@@ -151,7 +218,7 @@ const BookingPortal = () => {
                 </p>
                 
                 <div className="space-y-4">
-                  {barbers.map((barber) => (
+                  {barbers.map((barber, index) => (
                     <div
                       key={barber.id}
                       className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-300 ${
@@ -164,12 +231,12 @@ const BookingPortal = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-bold text-barbershop-dark text-lg">{barber.name}</h4>
-                          <p className="text-sm text-muted-foreground">{barber.specialty}</p>
-                          <p className="text-xs text-muted-foreground">{barber.experience} de experiencia</p>
+                          <p className="text-sm text-muted-foreground">{getSpecialty(index)}</p>
+                          <p className="text-xs text-muted-foreground">{getExperience(index)} de experiencia</p>
                         </div>
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 text-barbershop-gold fill-current" />
-                          <span className="font-bold text-barbershop-gold">{barber.rating}</span>
+                          <span className="font-bold text-barbershop-gold">{getRating(index)}</span>
                         </div>
                       </div>
                     </div>
@@ -202,7 +269,7 @@ const BookingPortal = () => {
                       <p><strong>Hora:</strong> {selectedTime}</p>
                       <p><strong>Servicio:</strong> {services.find(s => s.id === selectedService)?.name}</p>
                       <p><strong>Barbero:</strong> {barbers.find(b => b.id === selectedBarber)?.name}</p>
-                      <p><strong>Precio:</strong> {services.find(s => s.id === selectedService)?.price}</p>
+                      <p><strong>Precio:</strong> €{services.find(s => s.id === selectedService)?.price}</p>
                     </div>
                   </div>
                 ) : (

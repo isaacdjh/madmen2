@@ -1,135 +1,161 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, Gift, Coffee } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Scissors, Clock, Star } from 'lucide-react';
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  category: 'corte' | 'barba' | 'combo' | 'tratamiento';
+  active: boolean;
+}
 
 const ServicesSection = () => {
-  const services = [
-    { name: 'Corte', price: '19€', duration: '30-45 min', description: 'Corte tradicional con tijeras y máquina' },
-    { name: 'Arreglo de Barba', price: '16€', duration: '20-30 min', description: 'Perfilado y mantenimiento de barba' },
-    { name: 'Corte + Barba', price: '32€', duration: '45-60 min', description: 'Servicio completo de corte y barba' },
-    { name: 'Corte de Niño', price: '13€', duration: '30 min', description: 'Hasta los 12 años' },
-    { name: 'Corte Jubilado', price: '13€', duration: '30-45 min', description: 'Precio especial para jubilados' },
-    { name: 'Rapado', price: '16€', duration: '20-30 min', description: 'Rapado completo con máquina' },
-    { name: 'Rapado + Barba', price: '27€', duration: '40-50 min', description: 'Rapado completo con arreglo de barba' },
-    { name: 'Cejas con Cuchillas', price: '5€', duration: '10 min', description: 'Perfilado de cejas' },
-    { name: 'Depilación Nariz', price: '5€', duration: '10 min', description: 'Depilación de vello nasal' },
-    { name: 'Depilación Orejas', price: '5€', duration: '10 min', description: 'Depilación de vello de orejas' },
-    { name: 'Mascarilla Puntos Negros', price: '12€', duration: '30 min', description: 'Tratamiento facial para puntos negros' },
-    { name: 'Mascarilla Facial VIP', price: '20€', duration: '45 min', description: 'Tratamiento facial premium' },
-    { name: 'Tinte de Pelo Oscuro', price: '35€', duration: '60 min', description: 'Tinte profesional tonos oscuros' },
-    { name: 'Lavar + Peinado', price: '11€', duration: '20 min', description: 'Lavado y peinado profesional' },
-    { name: 'Mascarilla Hidratante', price: '8€', duration: '20 min', description: 'Tratamiento hidratante para el cabello' },
-  ];
+  const [services, setServices] = useState<Service[]>([]);
+
+  useEffect(() => {
+    loadServices();
+  }, []);
+
+  const loadServices = () => {
+    const stored = localStorage.getItem('services');
+    if (stored) {
+      const allServices = JSON.parse(stored);
+      // Solo mostrar servicios activos
+      setServices(allServices.filter((service: Service) => service.active));
+    } else {
+      // Servicios por defecto si no hay ninguno guardado
+      const defaultServices: Service[] = [
+        {
+          id: 'classic-cut',
+          name: 'Corte Clásico',
+          description: 'Corte tradicional con tijera y máquina',
+          price: 45,
+          duration: 45,
+          category: 'corte',
+          active: true
+        },
+        {
+          id: 'beard-trim',
+          name: 'Arreglo de Barba',
+          description: 'Perfilado y arreglo de barba',
+          price: 25,
+          duration: 30,
+          category: 'barba',
+          active: true
+        },
+        {
+          id: 'cut-beard',
+          name: 'Corte + Barba',
+          description: 'Combo completo corte y barba',
+          price: 65,
+          duration: 75,
+          category: 'combo',
+          active: true
+        },
+        {
+          id: 'shave',
+          name: 'Afeitado Tradicional',
+          description: 'Afeitado clásico con navaja',
+          price: 35,
+          duration: 45,
+          category: 'barba',
+          active: true
+        },
+        {
+          id: 'treatments',
+          name: 'Tratamientos Especiales',
+          description: 'Tratamientos capilares y faciales',
+          price: 40,
+          duration: 60,
+          category: 'tratamiento',
+          active: true
+        }
+      ];
+      setServices(defaultServices);
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'corte': return 'bg-blue-100 text-blue-800';
+      case 'barba': return 'bg-green-100 text-green-800';
+      case 'combo': return 'bg-purple-100 text-purple-800';
+      case 'tratamiento': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'corte':
+      case 'combo':
+      default:
+        return <Scissors className="w-6 h-6" />;
+    }
+  };
 
   return (
-    <section id="servicios" className="py-24 modern-section">
+    <section id="servicios" className="py-20 bg-gradient-to-b from-white to-slate-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-primary mb-6">Nuestros Servicios</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Servicios profesionales de barbería tradicional con técnicas clásicas y herramientas de primera calidad. 
-            Cada servicio incluye una atención personalizada y productos premium.
+          <div className="inline-block p-3 bg-barbershop-gold/20 rounded-full mb-4">
+            <Scissors className="w-8 h-8 text-barbershop-gold" />
+          </div>
+          <h2 className="text-4xl font-bold text-barbershop-dark mb-4">Nuestros Servicios</h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Ofrecemos una amplia gama de servicios de barbería tradicional con las técnicas más modernas
           </p>
         </div>
 
-        {/* Bebida de Cortesía */}
-        <div className="bg-barbershop-gold/10 border border-barbershop-gold/20 rounded-lg p-8 mb-12 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <Coffee className="w-12 h-12 text-barbershop-gold mr-4" />
-            <Gift className="w-12 h-12 text-barbershop-gold" />
-          </div>
-          <h3 className="text-2xl font-bold text-barbershop-dark mb-2">Bebida de Cortesía</h3>
-          <p className="text-muted-foreground">
-            Con cada servicio, disfruta de una bebida de cortesía: café premium, agua, refrescos o cerveza. 
-            Porque en Mad Men, tu comodidad es nuestra prioridad.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {services.map((service, index) => (
-            <Card key={index} className="service-card h-full">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg border border-primary/20">
-                    <img 
-                      src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
-                      alt="Mad Men Service Logo" 
-                      className="w-6 h-6 object-contain"
-                    />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {services.map((service) => (
+            <Card key={service.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-barbershop-gold/50">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-barbershop-gold/20 rounded-full group-hover:bg-barbershop-gold/30 transition-colors">
+                    {getCategoryIcon(service.category)}
                   </div>
-                  <Badge variant="secondary" className="bg-primary text-primary-foreground font-bold border-0 px-3 py-1">
-                    {service.price}
-                  </Badge>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(service.category)}`}>
+                    {service.category}
+                  </span>
                 </div>
-                <CardTitle className="text-lg text-primary">
-                  {service.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center text-muted-foreground mb-4">
-                  <Clock className="w-4 h-4 mr-2 text-primary" />
-                  <span className="text-sm font-medium">{service.duration}</span>
+                
+                <h3 className="text-xl font-bold text-barbershop-dark mb-2">{service.name}</h3>
+                <p className="text-muted-foreground mb-4 line-clamp-2">{service.description}</p>
+                
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center text-barbershop-gold">
+                    <Clock className="w-4 h-4 mr-2" />
+                    <span className="text-sm font-medium">{service.duration} min</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-barbershop-gold">€{service.price}</span>
+                  </div>
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">{service.description}</p>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Star className="w-4 h-4 text-barbershop-gold fill-current" />
+                    <Star className="w-4 h-4 text-barbershop-gold fill-current" />
+                    <Star className="w-4 h-4 text-barbershop-gold fill-current" />
+                    <Star className="w-4 h-4 text-barbershop-gold fill-current" />
+                    <Star className="w-4 h-4 text-barbershop-gold fill-current" />
+                  </div>
+                  <Button 
+                    size="sm" 
+                    className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
+                  >
+                    Reservar
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        {/* Bonos Section - More Prominent */}
-        <div className="bg-gradient-to-r from-primary/10 via-barbershop-gold/10 to-primary/10 border border-primary/30 rounded-2xl p-10 glass-effect">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-6">
-              <Gift className="w-16 h-16 text-primary mr-6" />
-              <div className="w-16 h-16 flex items-center justify-center bg-primary/10 rounded-xl border-2 border-primary/30">
-                <img 
-                  src="/lovable-uploads/0d116fe9-b6a4-4cca-8d46-59672d4df74d.png" 
-                  alt="Mad Men Service Logo" 
-                  className="w-10 h-10 object-contain"
-                />
-              </div>
-            </div>
-            
-            <h3 className="text-4xl font-bold text-primary mb-6">
-              💈 ¡Descubre nuestros Bonos Exclusivos! 💳
-            </h3>
-            
-            <div className="max-w-4xl mx-auto space-y-6">
-              <p className="text-xl text-foreground font-medium mb-8">
-                Ahorra dinero y disfruta de tu look siempre perfecto con nuestros Bonos digitales:
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <div className="text-3xl mb-3">✅</div>
-                  <h4 className="font-semibold text-primary mb-2">Packs Especiales</h4>
-                  <p className="text-sm text-muted-foreground">Packs de servicios de corte a precio especial</p>
-                </div>
-                
-                <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <div className="text-3xl mb-3">⏰</div>
-                  <h4 className="font-semibold text-primary mb-2">Sin Caducidad</h4>
-                  <p className="text-sm text-muted-foreground">¡Úsalos cuando quieras!</p>
-                </div>
-                
-                <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <div className="text-3xl mb-3">📱</div>
-                  <h4 className="font-semibold text-primary mb-2">100% Digitales</h4>
-                  <p className="text-sm text-muted-foreground">Fáciles de guardar y canjear</p>
-                </div>
-              </div>
-              
-              <div className="bg-barbershop-gold/20 border border-barbershop-gold/40 rounded-xl p-6">
-                <p className="text-lg font-semibold text-foreground mb-2">
-                  ¡Disponibles solo en nuestros centros físicos!
-                </p>
-                <p className="text-primary font-bold text-xl">
-                  👉 Pregunta a tu barbero de confianza por los bonos y empieza a disfrutar de los beneficios.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

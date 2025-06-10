@@ -1,117 +1,158 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Scissors, MapPin, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Users, Star, MapPin, Calendar } from 'lucide-react';
+import { getAllBarbers, type Barber } from '@/lib/supabase-helpers';
 
 const BarbersSection = () => {
-  const locations = [
-    {
-      name: 'Mad Men Río Rosa',
-      address: 'Cristóbal Bordiú 29',
-      barbers: [
-        { name: 'Luis Bracho', specialty: 'Cortes Clásicos y Modernos', experience: '+15 años' },
-        { name: 'Jesús Hernández', specialty: 'Especialista en Barbas', experience: '+12 años' },
-        { name: 'Luis Alfredo', specialty: 'Cortes de Tendencia', experience: '+10 años' },
-        { name: 'Dionys Bracho', specialty: 'Afeitado Tradicional', experience: '+8 años' }
-      ]
-    },
-    {
-      name: 'Mad Men Salamanca',
-      address: 'General Pardiñas 101',
-      barbers: [
-        { name: 'Isaac Hernández', specialty: 'Master Barber', experience: '+20 años' },
-        { name: 'Carlos López', specialty: 'Estilos Clásicos', experience: '+14 años' },
-        { name: 'Luis Urbiñez', specialty: 'Cortes y Barbas', experience: '+11 años' },
-        { name: 'Randy Valdespino', specialty: 'Técnicas Modernas', experience: '+9 años' }
-      ]
-    }
-  ];
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  return (
-    <section id="equipo" className="py-24 modern-section">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-primary mb-6">Nuestro Equipo de Expertos</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            8 barberos profesionales con décadas de experiencia combinada. 
-            Cada uno especializado en diferentes técnicas y estilos para brindarte el mejor servicio.
-          </p>
-        </div>
-        
-        <div className="space-y-16">
-          {locations.map((location, locationIndex) => (
-            <div key={locationIndex}>
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center bg-card border border-border rounded-xl px-6 py-4 glass-effect">
-                  <div className="w-8 h-8 mr-4 flex items-center justify-center">
-                    <img 
-                      src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
-                      alt="Mad Men Logo" 
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-3xl font-bold text-primary mb-1">{location.name}</h3>
-                    <div className="flex items-center text-muted-foreground">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      <span>{location.address}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {location.barbers.map((barber, index) => (
-                  <Card key={index} className="barber-card text-center overflow-hidden">
-                    <CardHeader className="pb-4">
-                      <div className="w-24 h-24 bg-primary/10 rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-primary/20">
-                        <Scissors className="w-12 h-12 text-primary" />
-                      </div>
-                      <CardTitle className="text-xl text-primary">{barber.name}</CardTitle>
-                      <div className="flex items-center justify-center">
-                        <Star className="w-4 h-4 text-barbershop-gold mr-1" />
-                        <span className="text-sm text-muted-foreground">{barber.experience}</span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs border-primary/30 text-primary bg-primary/5 px-3 py-2"
-                      >
-                        {barber.specialty}
-                      </Badge>
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <p className="text-xs text-muted-foreground">
-                          Barbero profesional especializado en técnicas tradicionales y modernas
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="text-center mt-16">
-          <div className="bg-card border border-border rounded-xl p-8 max-w-3xl mx-auto glass-effect">
-            <h3 className="text-2xl font-bold text-primary mb-4">¿Por qué elegir nuestro equipo?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-              <div>
-                <div className="text-3xl font-bold text-barbershop-gold mb-2">+100</div>
-                <div className="text-sm text-muted-foreground">Años de experiencia combinada</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-barbershop-gold mb-2">8</div>
-                <div className="text-sm text-muted-foreground">Barberos especializados</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-barbershop-gold mb-2">2</div>
-                <div className="text-sm text-muted-foreground">Ubicaciones en Madrid</div>
-              </div>
-            </div>
+  useEffect(() => {
+    loadBarbers();
+  }, []);
+
+  const loadBarbers = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getAllBarbers();
+      // Solo mostrar barberos activos
+      setBarbers(data.filter(barber => barber.status === 'active'));
+    } catch (error) {
+      console.error('Error al cargar barberos:', error);
+      // Barberos por defecto en caso de error
+      setBarbers([
+        {
+          id: 'carlos',
+          name: 'Carlos Mendoza',
+          location: 'cristobal-bordiu',
+          status: 'active',
+          created_at: '',
+          updated_at: ''
+        },
+        {
+          id: 'miguel',
+          name: 'Miguel Rodríguez',
+          location: 'general-pardinas',
+          status: 'active',
+          created_at: '',
+          updated_at: ''
+        },
+        {
+          id: 'antonio',
+          name: 'Antonio López',
+          location: 'cristobal-bordiu',
+          status: 'active',
+          created_at: '',
+          updated_at: ''
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getLocationName = (location?: string) => {
+    switch (location) {
+      case 'cristobal-bordiu': return 'Mad Men Cristóbal Bordiú';
+      case 'general-pardinas': return 'Mad Men General Pardiñas';
+      default: return 'Mad Men';
+    }
+  };
+
+  const getSpecialty = (index: number) => {
+    const specialties = [
+      'Cortes Clásicos',
+      'Barbas y Afeitado',
+      'Estilos Modernos',
+      'Tratamientos Especiales',
+      'Cortes y Barbas'
+    ];
+    return specialties[index % specialties.length];
+  };
+
+  const getExperience = (index: number) => {
+    const experiences = ['8 años', '12 años', '6 años', '10 años', '5 años'];
+    return experiences[index % experiences.length];
+  };
+
+  const getRating = (index: number) => {
+    const ratings = [4.9, 4.8, 4.7, 4.9, 4.8];
+    return ratings[index % ratings.length];
+  };
+
+  if (isLoading) {
+    return (
+      <section id="barberos" className="py-20 bg-gradient-to-b from-slate-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-barbershop-gold mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Cargando nuestro equipo...</p>
           </div>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <section id="barberos" className="py-20 bg-gradient-to-b from-slate-50 to-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <div className="inline-block p-3 bg-barbershop-gold/20 rounded-full mb-4">
+            <Users className="w-8 h-8 text-barbershop-gold" />
+          </div>
+          <h2 className="text-4xl font-bold text-barbershop-dark mb-4">Nuestro Equipo</h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Conoce a nuestros barberos profesionales, cada uno con años de experiencia y pasión por su oficio
+          </p>
+        </div>
+
+        {barbers.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">No hay barberos disponibles en este momento.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {barbers.map((barber, index) => (
+              <Card key={barber.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-barbershop-gold/50">
+                <CardContent className="p-8 text-center">
+                  <div className="w-24 h-24 bg-gradient-to-br from-barbershop-gold to-barbershop-navy rounded-full mx-auto mb-6 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <Users className="w-12 h-12 text-white" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-barbershop-dark mb-2">{barber.name}</h3>
+                  <p className="text-barbershop-gold font-medium mb-2">{getSpecialty(index)}</p>
+                  <p className="text-sm text-muted-foreground mb-4">{getExperience(index)} de experiencia</p>
+                  
+                  <div className="flex items-center justify-center mb-4">
+                    <MapPin className="w-4 h-4 text-muted-foreground mr-2" />
+                    <span className="text-sm text-muted-foreground">{getLocationName(barber.location)}</span>
+                  </div>
+
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="flex items-center mr-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className="w-4 h-4 text-barbershop-gold fill-current" 
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-barbershop-gold">{getRating(index)}</span>
+                  </div>
+
+                  <Button 
+                    className="w-full bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 group-hover:scale-105 transition-transform duration-300"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Reservar con {barber.name.split(' ')[0]}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
