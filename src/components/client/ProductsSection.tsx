@@ -1,55 +1,67 @@
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package } from 'lucide-react';
+import { getAllProducts, type Product } from '@/lib/supabase-helpers';
 
 const ProductsSection = () => {
-  const products = [
-    {
-      category: 'Pomadas STMNT',
-      items: [
-        { name: 'Classic Pomade', price: '23€', description: 'Pomada clásica para estilos tradicionales' },
-        { name: 'Fiber Pomade', price: '23€', description: 'Pomada con fibra para mayor textura' }
-      ]
-    },
-    {
-      category: 'Ceras y Pastas STMNT',
-      items: [
-        { name: 'Cera en Polvo', price: '23€', description: 'Volumen y textura instantánea' },
-        { name: 'Matte Paste', price: '23€', description: 'Acabado mate con fijación fuerte' },
-        { name: 'Shine Paste', price: '23€', description: 'Brillo natural con control' },
-        { name: 'Dry Clay', price: '23€', description: 'Arcilla seca para acabado mate' }
-      ]
-    },
-    {
-      category: 'Productos de Acabado STMNT',
-      items: [
-        { name: 'Laca Hair Spray', price: '19,60€', description: 'Fijación duradera en spray' },
-        { name: 'Spray de Peinado', price: '23€', description: 'Para peinar y fijar el cabello' },
-        { name: 'Polvo en Spray', price: '23€', description: 'Volumen y textura en spray' }
-      ]
-    },
-    {
-      category: 'Cuidado Capilar STMNT',
-      items: [
-        { name: 'Champú', price: '18,90€', description: 'Limpieza profunda diaria' },
-        { name: 'Champú Todo-en-1', price: '18,90€', description: 'Champú y acondicionador' },
-        { name: 'Acondicionador', price: '18,90€', description: 'Hidratación y suavidad' },
-        { name: 'Champú Hydro', price: '18,90€', description: 'Hidratación intensiva' }
-      ]
-    },
-    {
-      category: 'Otros Productos STMNT',
-      items: [
-        { name: 'Aceite de Barba', price: '23€', description: 'Cuidado y brillo para la barba' },
-        { name: 'Champú Sólido', price: '12,50€', description: 'Champú ecológico en barra' },
-        { name: 'Spray de Definición', price: '22,80€', description: 'Define y controla el peinado' },
-        { name: 'Gel', price: '19,60€', description: 'Fijación fuerte con brillo' },
-        { name: 'Crema de Rizos', price: '19,60€', description: 'Define y controla los rizos' },
-        { name: 'Serum', price: '18,90€', description: 'Tratamiento intensivo capilar' }
-      ]
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getAllProducts();
+      // Solo mostrar productos activos
+      setProducts(data.filter((product: Product) => product.active));
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+      // Productos por defecto en caso de error
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  const getCategoryName = (category: string) => {
+    switch (category) {
+      case 'pomada': return 'Pomadas STMNT';
+      case 'cera': return 'Ceras STMNT';
+      case 'pasta': return 'Pastas STMNT';
+      case 'acabado': return 'Productos de Acabado STMNT';
+      case 'cuidado': return 'Cuidado Capilar STMNT';
+      case 'aceite': return 'Aceites STMNT';
+      case 'otros': return 'Otros Productos STMNT';
+      default: return 'Productos STMNT';
+    }
+  };
+
+  const groupedProducts = products.reduce((acc, product) => {
+    const categoryName = getCategoryName(product.category);
+    if (!acc[categoryName]) {
+      acc[categoryName] = [];
+    }
+    acc[categoryName].push(product);
+    return acc;
+  }, {} as Record<string, Product[]>);
+
+  if (isLoading) {
+    return (
+      <section id="productos" className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-barbershop-gold mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Cargando productos...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="productos" className="py-20 bg-background">
@@ -61,33 +73,45 @@ const ProductsSection = () => {
           </p>
         </div>
         
-        <div className="space-y-12">
-          {products.map((category, categoryIndex) => (
-            <div key={categoryIndex}>
-              <h3 className="text-2xl font-bold text-center mb-8 text-barbershop-dark">
-                {category.category}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {category.items.map((product, index) => (
-                  <Card key={index} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="w-16 h-16 bg-barbershop-gold/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <Package className="w-8 h-8 text-barbershop-gold" />
-                      </div>
-                      <CardTitle className="text-center text-lg">{product.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <p className="text-muted-foreground mb-4 text-sm">{product.description}</p>
-                      <Badge variant="secondary" className="gold-accent font-bold text-lg">
-                        {product.price}
-                      </Badge>
-                    </CardContent>
-                  </Card>
-                ))}
+        {Object.keys(groupedProducts).length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">No hay productos disponibles en este momento.</p>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            {Object.entries(groupedProducts).map(([categoryName, categoryProducts]) => (
+              <div key={categoryName}>
+                <h3 className="text-2xl font-bold text-center mb-8 text-barbershop-dark">
+                  {categoryName}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categoryProducts.map((product) => (
+                    <Card key={product.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="w-16 h-16 bg-barbershop-gold/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                          <Package className="w-8 h-8 text-barbershop-gold" />
+                        </div>
+                        <CardTitle className="text-center text-lg">{product.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-center">
+                        <p className="text-muted-foreground mb-4 text-sm">{product.description}</p>
+                        <Badge variant="secondary" className="gold-accent font-bold text-lg">
+                          €{product.price}
+                        </Badge>
+                        {product.stock <= 5 && product.stock > 0 && (
+                          <p className="text-orange-600 text-xs mt-2">¡Pocas unidades disponibles!</p>
+                        )}
+                        {product.stock === 0 && (
+                          <p className="text-red-600 text-xs mt-2">Agotado</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground">

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Appointment {
@@ -103,6 +104,18 @@ export interface Service {
   price: number;
   duration: number;
   category: 'corte' | 'barba' | 'combo' | 'tratamiento';
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  stock: number;
+  category: 'pomada' | 'shampoo' | 'aceite' | 'accesorio' | 'cera' | 'pasta' | 'acabado' | 'cuidado' | 'otros';
   active: boolean;
   created_at: string;
   updated_at: string;
@@ -562,6 +575,65 @@ export const deleteService = async (id: string): Promise<void> => {
 
   if (error) {
     console.error('Error deleting service:', error);
+    throw error;
+  }
+};
+
+export const getAllProducts = async (): Promise<Product[]> => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching products:', error);
+    throw error;
+  }
+
+  return (data || []).map(product => ({
+    ...product,
+    category: product.category as 'pomada' | 'shampoo' | 'aceite' | 'accesorio' | 'cera' | 'pasta' | 'acabado' | 'cuidado' | 'otros'
+  }));
+};
+
+export const createProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> => {
+  const { data, error } = await supabase
+    .from('products')
+    .insert(productData)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating product:', error);
+    throw error;
+  }
+
+  return {
+    ...data,
+    category: data.category as 'pomada' | 'shampoo' | 'aceite' | 'accesorio' | 'cera' | 'pasta' | 'acabado' | 'cuidado' | 'otros'
+  };
+};
+
+export const updateProduct = async (id: string, productData: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>): Promise<void> => {
+  const { error } = await supabase
+    .from('products')
+    .update(productData)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating product:', error);
+    throw error;
+  }
+};
+
+export const deleteProduct = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting product:', error);
     throw error;
   }
 };

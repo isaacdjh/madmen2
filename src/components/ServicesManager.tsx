@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,17 +11,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Scissors, Plus, Edit, Trash2, DollarSign, Package } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAllServices, createService, updateService, deleteService, type Service } from '@/lib/supabase-helpers';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  category: 'pomada' | 'shampoo' | 'aceite' | 'accesorio';
-  active: boolean;
-}
+import { 
+  getAllServices, 
+  createService, 
+  updateService, 
+  deleteService, 
+  type Service,
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  type Product
+} from '@/lib/supabase-helpers';
 
 const ServicesManager = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -59,53 +61,20 @@ const ServicesManager = () => {
     try {
       setIsLoading(true);
       
-      // Cargar servicios desde Supabase
-      const servicesData = await getAllServices();
+      // Cargar servicios y productos desde Supabase
+      const [servicesData, productsData] = await Promise.all([
+        getAllServices(),
+        getAllProducts()
+      ]);
+      
       setServices(servicesData);
-
-      // Cargar productos desde localStorage (mantener como estaba)
-      loadProducts();
+      setProducts(productsData);
     } catch (error) {
       console.error('Error al cargar datos:', error);
       toast.error('Error al cargar los datos');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const loadProducts = () => {
-    const stored = localStorage.getItem('products');
-    if (stored) {
-      setProducts(JSON.parse(stored));
-    } else {
-      const initialProducts: Product[] = [
-        {
-          id: 'pomade-classic',
-          name: 'Pomada Clásica',
-          description: 'Pomada de fijación media',
-          price: 15,
-          stock: 25,
-          category: 'pomada',
-          active: true
-        },
-        {
-          id: 'beard-oil',
-          name: 'Aceite para Barba',
-          description: 'Aceite hidratante para barba',
-          price: 20,
-          stock: 15,
-          category: 'aceite',
-          active: true
-        }
-      ];
-      setProducts(initialProducts);
-      localStorage.setItem('products', JSON.stringify(initialProducts));
-    }
-  };
-
-  const saveProducts = (updatedProducts: Product[]) => {
-    setProducts(updatedProducts);
-    localStorage.setItem('products', JSON.stringify(updatedProducts));
   };
 
   const handleAddService = async () => {
@@ -174,34 +143,70 @@ const ServicesManager = () => {
     }
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price) {
       toast.error('Nombre y precio son obligatorios');
       return;
     }
 
-    const product: Product = {
-      id: newProduct.name!.toLowerCase().replace(/\s+/g, '-'),
-      name: newProduct.name!,
-      description: newProduct.description || '',
-      price: newProduct.price!,
-      stock: newProduct.stock!,
-      category: newProduct.category!,
-      active: true
-    };
+    try {
+      const productData = {
+        name: newProduct.name!,
+        description: newProduct.description || '',
+        price: newProduct.price!,
+        stock: newProduct.stock!,
+        category: newProduct.category!,
+        active: true
+      };
 
-    const updatedProducts = [...products, product];
-    saveProducts(updatedProducts);
-    setIsAddingProduct(false);
-    setNewProduct({
-      name: '',
-      description: '',
-      price: 0,
-      stock: 0,
-      category: 'pomada',
-      active: true
-    });
-    toast.success('Producto agregado correctamente');
+      await createProduct(productData);
+      await loadData(); // Recargar datos
+      setIsAddingProduct(false);
+      setNewProduct({
+        name: '',
+        description: '',
+        price: 0,
+        stock: 0,
+        category: 'pomada',
+        active: true
+      });
+      toast.success('Producto agregado correctamente');
+    } catch (error) {
+      console.error('Error al agregar producto:', error);
+      toast.error('Error al agregar el producto');
+    }
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!selectedProduct) return;
+    
+    try {
+      await updateProduct(selectedProduct.id, {
+        name: selectedProduct.name,
+        description: selectedProduct.description,
+        price: selectedProduct.price,
+        stock: selectedProduct.stock,
+        category: selectedProduct.category,
+        active: selectedProduct.active
+      });
+      await loadData(); // Recargar datos
+      setIsEditingProduct(false);
+      toast.success('Producto actualizado correctamente');
+    } catch (error) {
+      console.error('Error al actualizar producto:', error);
+      toast.error('Error al actualizar el producto');
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteProduct(productId);
+      await loadData(); // Recargar datos
+      toast.success('Producto eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      toast.error('Error al eliminar el producto');
+    }
   };
 
   const getCategoryColor = (category: string) => {
@@ -211,7 +216,12 @@ const ServicesManager = () => {
       case 'combo': return 'bg-purple-100 text-purple-800';
       case 'tratamiento': return 'bg-orange-100 text-orange-800';
       case 'pomada': return 'bg-yellow-100 text-yellow-800';
-      case 'aceite': return 'bg-emerald-100 text-emerald-800';
+      case 'cera': return 'bg-indigo-100 text-indigo-800';
+      case 'pasta': return 'bg-pink-100 text-pink-800';
+      case 'acabado': return 'bg-teal-100 text-teal-800';
+      case 'cuidado': return 'bg-emerald-100 text-emerald-800';
+      case 'aceite': return 'bg-amber-100 text-amber-800';
+      case 'otros': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -507,12 +517,30 @@ const ServicesManager = () => {
                     placeholder="Descripción del producto..."
                   />
                 </div>
+                <div>
+                  <Label htmlFor="product-category">Categoría</Label>
+                  <Select value={newProduct.category} onValueChange={(value) => setNewProduct({...newProduct, category: value as 'pomada' | 'shampoo' | 'aceite' | 'accesorio' | 'cera' | 'pasta' | 'acabado' | 'cuidado' | 'otros'})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pomada">Pomada</SelectItem>
+                      <SelectItem value="cera">Cera</SelectItem>
+                      <SelectItem value="pasta">Pasta</SelectItem>
+                      <SelectItem value="acabado">Acabado</SelectItem>
+                      <SelectItem value="cuidado">Cuidado</SelectItem>
+                      <SelectItem value="aceite">Aceite</SelectItem>
+                      <SelectItem value="otros">Otros</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="product-price">Precio (€)</Label>
                     <Input
                       id="product-price"
                       type="number"
+                      step="0.01"
                       value={newProduct.price}
                       onChange={(e) => setNewProduct({...newProduct, price: Number(e.target.value)})}
                     />
@@ -564,6 +592,33 @@ const ServicesManager = () => {
                     <span className={`text-sm font-medium ${product.stock < 5 ? 'text-red-600' : 'text-green-600'}`}>
                       {product.stock} unidades
                     </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Estado:</span>
+                    <Badge className={product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                      {product.active ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setIsEditingProduct(true);
+                      }}
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      Editar
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => handleDeleteProduct(product.id)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Eliminar
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -644,6 +699,90 @@ const ServicesManager = () => {
                   Cancelar
                 </Button>
                 <Button onClick={handleUpdateService} className="bg-barbershop-gold text-barbershop-dark">
+                  Guardar Cambios
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Product Dialog */}
+      <Dialog open={isEditingProduct} onOpenChange={setIsEditingProduct}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Producto: {selectedProduct?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedProduct && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-product-name">Nombre</Label>
+                <Input
+                  id="edit-product-name"
+                  value={selectedProduct.name}
+                  onChange={(e) => setSelectedProduct({...selectedProduct, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-product-description">Descripción</Label>
+                <Textarea
+                  id="edit-product-description"
+                  value={selectedProduct.description || ''}
+                  onChange={(e) => setSelectedProduct({...selectedProduct, description: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-product-category">Categoría</Label>
+                <Select value={selectedProduct.category} onValueChange={(value) => setSelectedProduct({...selectedProduct, category: value as 'pomada' | 'shampoo' | 'aceite' | 'accesorio' | 'cera' | 'pasta' | 'acabado' | 'cuidado' | 'otros'})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pomada">Pomada</SelectItem>
+                    <SelectItem value="cera">Cera</SelectItem>
+                    <SelectItem value="pasta">Pasta</SelectItem>
+                    <SelectItem value="acabado">Acabado</SelectItem>
+                    <SelectItem value="cuidado">Cuidado</SelectItem>
+                    <SelectItem value="aceite">Aceite</SelectItem>
+                    <SelectItem value="otros">Otros</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-product-price">Precio (€)</Label>
+                  <Input
+                    id="edit-product-price"
+                    type="number"
+                    step="0.01"
+                    value={selectedProduct.price}
+                    onChange={(e) => setSelectedProduct({...selectedProduct, price: Number(e.target.value)})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-product-stock">Stock</Label>
+                  <Input
+                    id="edit-product-stock"
+                    type="number"
+                    value={selectedProduct.stock}
+                    onChange={(e) => setSelectedProduct({...selectedProduct, stock: Number(e.target.value)})}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="edit-product-active"
+                  checked={selectedProduct.active}
+                  onChange={(e) => setSelectedProduct({...selectedProduct, active: e.target.checked})}
+                />
+                <Label htmlFor="edit-product-active">Producto activo</Label>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditingProduct(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleUpdateProduct} className="bg-barbershop-gold text-barbershop-dark">
                   Guardar Cambios
                 </Button>
               </div>
