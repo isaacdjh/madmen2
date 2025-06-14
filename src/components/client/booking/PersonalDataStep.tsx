@@ -88,13 +88,13 @@ const PersonalDataStep = ({
           <Label htmlFor="preferredBarber">Barbero preferido (opcional)</Label>
           <Select 
             value={formData.preferredBarber} 
-            onValueChange={(value) => setFormData(prev => ({ ...prev, preferredBarber: value }))}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, preferredBarber: value === 'no-preference' ? '' : value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecciona un barbero o déjalo en blanco para ver todos los horarios" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sin preferencia (mostrar todos los horarios)</SelectItem>
+              <SelectItem value="no-preference">Sin preferencia (mostrar todos los horarios)</SelectItem>
               {availableBarbers.map((barber) => (
                 <SelectItem key={barber.id} value={barber.id}>
                   <div className="flex justify-between items-center w-full">
