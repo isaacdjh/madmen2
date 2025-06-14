@@ -68,7 +68,7 @@ const generateCalendarLinks = (appointment: AppointmentEmailRequest, locationDet
 VERSION:2.0
 PRODID:-//Mad Men//ES
 BEGIN:VEVENT
-UID:${appointment.appointmentId}@madmen.es
+UID:${appointment.appointmentId}@madmenbarberia.com
 DTSTAMP:${formatForCalendar(new Date())}
 DTSTART:${formatForCalendar(startDate)}
 DTEND:${formatForCalendar(endDate)}
@@ -92,10 +92,10 @@ const handler = async (req: Request): Promise<Response> => {
     const { googleUrl, icalContent } = generateCalendarLinks(appointment, locationDetails);
     const formattedDate = formatDate(appointment.date);
 
-    const cancelUrl = `https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/cancel-appointment/${appointment.appointmentId}`;
+    const cancelUrl = `https://madmenbarberia.com/cancel-appointment/${appointment.appointmentId}`;
 
     const emailResponse = await resend.emails.send({
-      from: "Mad Men Barbershop <noreply@tudominio.com>",
+      from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
       to: [appointment.clientEmail],
       subject: "✅ Cita confirmada en Mad Men",
       html: `
@@ -175,7 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
               <p>¿Tienes alguna pregunta? Contáctanos:</p>
-              <p>📞 ${locationDetails.phone} | ✉️ info@madmen.es</p>
+              <p>📞 ${locationDetails.phone} | ✉️ info@madmenbarberia.com</p>
               <p style="margin-top: 20px;">
                 <strong>Mad Men Barbershop</strong><br>
                 El arte de ser un caballero
