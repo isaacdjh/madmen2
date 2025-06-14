@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Calendar, Clock, User, Phone, Mail, MapPin, Scissors } from 'lucide-react';
 import { toast } from 'sonner';
-import { createOrGetClient, createAppointment } from '@/lib/supabase-helpers';
+import { createOrGetClient, createAppointment, getBarbersWithSchedules } from '@/lib/supabase-helpers';
 import AvailabilityCalendar from './client/AvailabilityCalendar';
+import { useEffect } from 'react';
 
 interface ClientBookingFormProps {
   onBack: () => void;
@@ -21,12 +22,14 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     phone: '',
     email: '',
     service: '',
+    preferredBarber: '', // Nuevo campo para barbero preferido
     barber: '',
     location: '',
     date: '',
     time: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableBarbers, setAvailableBarbers] = useState<any[]>([]);
 
   const services = [
     { id: 'classic-cut', name: 'Corte Clásico', price: 45, duration: 30 },
@@ -41,18 +44,51 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
   ];
 
-  const barbers = [
-    { id: 'alejandro', name: 'Alejandro' },
-    { id: 'carlos', name: 'Carlos' },
-    { id: 'miguel', name: 'Miguel' },
-    { id: 'david', name: 'David' }
-  ];
+  // Cargar barberos disponibles
+  useEffect(() => {
+    const loadBarbers = async () => {
+      try {
+        // Cargar barberos de ambas ubicaciones
+        const [bordiu, pardinas] = await Promise.all([
+          getBarbersWithSchedules('cristobal-bordiu'),
+          getBarbersWithSchedules('general-pardinas')
+        ]);
+        
+        const allBarbers = [...bordiu, ...pardinas].filter(barber => barber.status === 'active');
+        setAvailableBarbers(allBarbers);
+      } catch (error) {
+        console.error('Error cargando barberos:', error);
+      }
+    };
+    
+    loadBarbers();
+  }, []);
 
   const handleSlotSelect = (barber: string, date: string, time: string, location: string) => {
     console.log('Slot seleccionado:', { barber, date, time, location });
+    
+    // Si el cliente tiene un barbero preferido y está disponible, usarlo
+    // Si no, usar el barbero asignado automáticamente
+    let finalBarber = barber;
+    
+    if (formData.preferredBarber) {
+      // Verificar si el barbero preferido está disponible en esta hora/ubicación
+      const preferredBarberAvailable = availableBarbers.find(b => 
+        b.id === formData.preferredBarber && 
+        b.location === location
+      );
+      
+      if (preferredBarberAvailable) {
+        finalBarber = formData.preferredBarber;
+        console.log('Usando barbero preferido:', finalBarber);
+      } else {
+        console.log('Barbero preferido no disponible, usando asignación automática:', finalBarber);
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
-      barber,
+      barber: finalBarber,
       date,
       time,
       location
@@ -106,6 +142,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
         phone: '',
         email: '',
         service: '',
+        preferredBarber: '',
         barber: '',
         location: '',
         date: '',
@@ -123,7 +160,10 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   };
 
   const getLocationName = (id: string) => locations.find(l => l.id === id)?.name || '';
-  const getBarberName = (id: string) => barbers.find(b => b.id === id)?.name || '';
+  const getBarberName = (id: string) => {
+    const barber = availableBarbers.find(b => b.id === id);
+    return barber?.name || id;
+  };
   const getServiceName = (id: string) => services.find(s => s.id === id)?.name || '';
 
   return (
@@ -236,6 +276,36 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 </Select>
               </div>
 
+              {/* Nueva sección para barbero preferido */}
+              <div>
+                <Label htmlFor="preferredBarber">Barbero preferido (opcional)</Label>
+                <Select 
+                  value={formData.preferredBarber} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, preferredBarber: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un barbero o déjalo en blanco para asignación automática" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sin preferencia (asignación automática)</SelectItem>
+                    {availableBarbers.map((barber) => (
+                      <SelectItem key={barber.id} value={barber.id}>
+                        <div className="flex justify-between items-center w-full">
+                          <span>{barber.name}</span>
+                          <span className="text-sm text-gray-500 ml-2">
+                            {locations.find(l => l.id === barber.location)?.name}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-gray-500 mt-1">
+                  Si seleccionas un barbero, intentaremos asignártelo según su disponibilidad.
+                  Si no está disponible en la hora que elijas, se asignará automáticamente otro barbero.
+                </p>
+              </div>
+
               <div className="flex justify-end">
                 <Button 
                   onClick={() => setStep(2)}
@@ -257,6 +327,15 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 <Calendar className="w-5 h-5 text-barbershop-gold" />
                 Selecciona Fecha y Hora
               </CardTitle>
+              {formData.preferredBarber && (
+                <div className="text-sm text-barbershop-gold bg-barbershop-gold/10 p-3 rounded-lg">
+                  <User className="w-4 h-4 inline mr-2" />
+                  Barbero preferido: <strong>{getBarberName(formData.preferredBarber)}</strong>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Te asignaremos este barbero si está disponible en la hora que selecciones.
+                  </p>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <AvailabilityCalendar onSlotSelect={handleSlotSelect} />
@@ -323,6 +402,16 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                       <User className="w-4 h-4 text-barbershop-gold" />
                       <span className="font-medium">Barbero:</span>
                       <span>{getBarberName(formData.barber)}</span>
+                      {formData.preferredBarber && formData.barber === formData.preferredBarber && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          Tu preferido
+                        </span>
+                      )}
+                      {formData.preferredBarber && formData.barber !== formData.preferredBarber && (
+                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                          Asignado automáticamente
+                        </span>
+                      )}
                     </div>
                     
                     <div className="flex items-center gap-2">
