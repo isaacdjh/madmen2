@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -25,7 +26,7 @@ const getLocationDetails = (locationId: string) => {
   const locations = {
     'cristobal-bordiu': {
       name: 'Mad Men Cristóbal Bordiú',
-      address: 'Calle Cristóbal Bordiú, 42, 28003 Madrid',
+      address: 'Calle Cristóbal Bordiú, 29, 28003 Madrid',
       phone: '+34 914 41 23 45'
     },
     'general-pardinas': {
@@ -35,6 +36,13 @@ const getLocationDetails = (locationId: string) => {
     }
   };
   return locations[locationId as keyof typeof locations] || locations['cristobal-bordiu'];
+};
+
+const getBarberName = (barberId: string) => {
+  const barbers = {
+    '98ccb6df-6112-45a5-b4ff-32c3245c7a32': 'Luis'
+  };
+  return barbers[barberId as keyof typeof barbers] || barberId;
 };
 
 const formatDate = (dateStr: string) => {
@@ -47,7 +55,7 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-const generateCalendarLinks = (appointment: AppointmentEmailRequest, locationDetails: any) => {
+const generateCalendarLinks = (appointment: AppointmentEmailRequest, locationDetails: any, barberName: string) => {
   const startDate = new Date(`${appointment.date}T${appointment.time}`);
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hora después
   
@@ -56,13 +64,13 @@ const generateCalendarLinks = (appointment: AppointmentEmailRequest, locationDet
   };
 
   const title = `Cita en Mad Men - ${appointment.service}`;
-  const description = `Cita en Mad Men con ${appointment.barber}. Servicio: ${appointment.service}. Precio: ${appointment.price}€`;
+  const description = `Cita en Mad Men con ${barberName}. Servicio: ${appointment.service}. Precio: ${appointment.price}€`;
   const location = `${locationDetails.name}, ${locationDetails.address}`;
 
   // Google Calendar
   const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatForCalendar(startDate)}/${formatForCalendar(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
 
-  // iCal (Apple Calendar)
+  // iCal (Apple Calendar) - formato corregido
   const icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Mad Men//ES
@@ -91,24 +99,27 @@ const handler = async (req: Request): Promise<Response> => {
     const appointment: AppointmentEmailRequest = await req.json();
     console.log("Datos de la cita recibidos:", JSON.stringify(appointment, null, 2));
     
-    // Verificar que tenemos la API key
     const apiKey = Deno.env.get("RESEND_API_KEY");
     console.log("API Key disponible:", apiKey ? "SÍ" : "NO");
     console.log("Longitud de API Key:", apiKey ? apiKey.length : 0);
     
     const locationDetails = getLocationDetails(appointment.location);
-    const { googleUrl, icalContent } = generateCalendarLinks(appointment, locationDetails);
+    const barberName = getBarberName(appointment.barber);
+    const { googleUrl, icalContent } = generateCalendarLinks(appointment, locationDetails, barberName);
     const formattedDate = formatDate(appointment.date);
 
-    const cancelUrl = `https://madmenbarberia.com/cancel-appointment/${appointment.appointmentId}`;
+    // URL de cancelación corregida - debe apuntar a tu dominio real
+    const cancelUrl = `${Deno.env.get('SUPABASE_URL')?.replace('/supabase', '')}/cancel-appointment/${appointment.appointmentId}`;
 
     console.log("=== Preparando envío de email ===");
     console.log("De:", "Mad Men Barbershop <onboarding@resend.dev>");
     console.log("Para:", appointment.clientEmail);
     console.log("Asunto:", "✅ Cita confirmada en Mad Men");
+    console.log("Barbero:", barberName);
+    console.log("URL de cancelación:", cancelUrl);
 
     const emailResponse = await resend.emails.send({
-      from: "Mad Men Barbershop <onboarding@resend.dev>", // Temporal: usando dominio verificado de Resend
+      from: "Mad Men Barbershop <onboarding@resend.dev>",
       to: [appointment.clientEmail],
       subject: "✅ Cita confirmada en Mad Men",
       html: `
@@ -146,7 +157,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">👨‍💼 Barbero:</td>
-                    <td style="padding: 8px 0;">${appointment.barber}</td>
+                    <td style="padding: 8px 0;">${barberName}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">📍 Centro:</td>
@@ -172,7 +183,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <a href="${googleUrl}" target="_blank" style="display: inline-block; background: #4285f4; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">📅 Google Calendar</a>
                 </div>
                 <div style="display: inline-block; margin: 0 10px;">
-                  <a href="data:text/calendar;charset=utf8,${encodeURIComponent(icalContent)}" download="cita-madmen.ics" style="display: inline-block; background: #333; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">🍎 Apple Calendar</a>
+                  <a href="data:text/calendar;charset=utf-8;base64,${btoa(icalContent)}" download="cita-madmen-${appointment.appointmentId}.ics" style="display: inline-block; background: #333; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">🍎 Apple Calendar</a>
                 </div>
               </div>
               
