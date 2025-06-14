@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { createOrGetClient, createAppointment } from '@/lib/supabase-helpers';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useClientBooking = (onBack: () => void) => {
   const [step, setStep] = useState(1);
@@ -44,6 +45,35 @@ export const useClientBooking = (onBack: () => void) => {
     setStep(3);
   };
 
+  const sendConfirmationEmail = async (appointmentData: any, appointmentId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-appointment-confirmation', {
+        body: {
+          clientName: appointmentData.name,
+          clientEmail: appointmentData.email,
+          service: services.find(s => s.id === appointmentData.service)?.name || appointmentData.service,
+          barber: appointmentData.barber,
+          location: appointmentData.location,
+          date: appointmentData.date,
+          time: appointmentData.time,
+          price: services.find(s => s.id === appointmentData.service)?.price || 0,
+          appointmentId: appointmentId
+        }
+      });
+
+      if (error) {
+        console.error('Error enviando email de confirmación:', error);
+        // No bloqueamos el proceso si falla el email
+        toast.warning('Cita creada exitosamente, pero no se pudo enviar el email de confirmación');
+      } else {
+        console.log('Email de confirmación enviado exitosamente');
+      }
+    } catch (error) {
+      console.error('Error enviando email de confirmación:', error);
+      // No bloqueamos el proceso si falla el email
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -78,7 +108,10 @@ export const useClientBooking = (onBack: () => void) => {
       
       console.log('Cita creada exitosamente:', newAppointment);
 
-      toast.success('¡Cita reservada con éxito!');
+      // Enviar email de confirmación
+      await sendConfirmationEmail(formData, newAppointment.id);
+
+      toast.success('¡Cita reservada con éxito! Te hemos enviado un email de confirmación.');
       
       setFormData({
         name: '',
