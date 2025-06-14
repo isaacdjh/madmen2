@@ -42,7 +42,7 @@ const getBarberName = (barberId: string) => {
   const barbers = {
     '98ccb6df-6112-45a5-b4ff-32c3245c7a32': 'Luis'
   };
-  return barbers[barberId as keyof typeof barbers] || barberId;
+  return barbers[barberId as keyof typeof barbers] || 'Barbero';
 };
 
 const formatDate = (dateStr: string) => {
@@ -53,6 +53,22 @@ const formatDate = (dateStr: string) => {
     month: 'long', 
     day: 'numeric' 
   });
+};
+
+// Función para codificar texto UTF-8 a base64 de forma segura
+const encodeToBase64 = (text: string): string => {
+  // Convertir string a UTF-8 bytes
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(text);
+  
+  // Convertir bytes a string binario
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  
+  // Codificar a base64
+  return btoa(binary);
 };
 
 const generateCalendarLinks = (appointment: AppointmentEmailRequest, locationDetails: any, barberName: string) => {
@@ -70,7 +86,7 @@ const generateCalendarLinks = (appointment: AppointmentEmailRequest, locationDet
   // Google Calendar
   const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatForCalendar(startDate)}/${formatForCalendar(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
 
-  // iCal (Apple Calendar) - formato corregido
+  // iCal (Apple Calendar) - contenido sin caracteres especiales problemáticos
   const icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Mad Men//ES
@@ -108,8 +124,8 @@ const handler = async (req: Request): Promise<Response> => {
     const { googleUrl, icalContent } = generateCalendarLinks(appointment, locationDetails, barberName);
     const formattedDate = formatDate(appointment.date);
 
-    // URL de cancelación corregida - debe apuntar a tu dominio real
-    const cancelUrl = `${Deno.env.get('SUPABASE_URL')?.replace('/supabase', '')}/cancel-appointment/${appointment.appointmentId}`;
+    // URL de cancelación con el dominio correcto
+    const cancelUrl = `https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/cancel-appointment/${appointment.appointmentId}`;
 
     console.log("=== Preparando envío de email ===");
     console.log("De:", "Mad Men Barbershop <onboarding@resend.dev>");
@@ -183,7 +199,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <a href="${googleUrl}" target="_blank" style="display: inline-block; background: #4285f4; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">📅 Google Calendar</a>
                 </div>
                 <div style="display: inline-block; margin: 0 10px;">
-                  <a href="data:text/calendar;charset=utf-8;base64,${btoa(icalContent)}" download="cita-madmen-${appointment.appointmentId}.ics" style="display: inline-block; background: #333; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">🍎 Apple Calendar</a>
+                  <a href="data:text/calendar;charset=utf-8;base64,${encodeToBase64(icalContent)}" download="cita-madmen-${appointment.appointmentId}.ics" style="display: inline-block; background: #333; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">🍎 Apple Calendar</a>
                 </div>
               </div>
               
