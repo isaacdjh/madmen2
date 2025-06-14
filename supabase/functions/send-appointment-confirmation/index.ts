@@ -95,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
     const cancelUrl = `https://madmenbarberia.com/cancel-appointment/${appointment.appointmentId}`;
 
     const emailResponse = await resend.emails.send({
-      from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
+      from: "Mad Men Barbershop <onboarding@resend.dev>", // Temporal: usando dominio verificado de Resend
       to: [appointment.clientEmail],
       subject: "✅ Cita confirmada en Mad Men",
       html: `
