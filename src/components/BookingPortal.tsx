@@ -103,7 +103,7 @@ const BookingPortal = () => {
                   1. Elige fecha y hora
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 md:p-6">
+              <CardContent className="px-3 py-4 md:px-6 md:py-6">
                 <p className="text-sm text-muted-foreground mb-4 md:mb-6">
                   Selecciona el momento que mejor se adapte a tu agenda con disponibilidad en tiempo real.
                 </p>
