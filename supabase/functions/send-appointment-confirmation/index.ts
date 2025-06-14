@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -87,12 +86,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("=== Inicio del proceso de envío de email ===");
+    
     const appointment: AppointmentEmailRequest = await req.json();
+    console.log("Datos de la cita recibidos:", JSON.stringify(appointment, null, 2));
+    
+    // Verificar que tenemos la API key
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    console.log("API Key disponible:", apiKey ? "SÍ" : "NO");
+    console.log("Longitud de API Key:", apiKey ? apiKey.length : 0);
+    
     const locationDetails = getLocationDetails(appointment.location);
     const { googleUrl, icalContent } = generateCalendarLinks(appointment, locationDetails);
     const formattedDate = formatDate(appointment.date);
 
     const cancelUrl = `https://madmenbarberia.com/cancel-appointment/${appointment.appointmentId}`;
+
+    console.log("=== Preparando envío de email ===");
+    console.log("De:", "Mad Men Barbershop <onboarding@resend.dev>");
+    console.log("Para:", appointment.clientEmail);
+    console.log("Asunto:", "✅ Cita confirmada en Mad Men");
 
     const emailResponse = await resend.emails.send({
       from: "Mad Men Barbershop <onboarding@resend.dev>", // Temporal: usando dominio verificado de Resend
@@ -187,7 +200,16 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email de confirmación enviado:", emailResponse);
+    console.log("=== Respuesta de Resend ===");
+    console.log("Estado:", emailResponse.error ? "ERROR" : "ÉXITO");
+    console.log("Datos completos:", JSON.stringify(emailResponse, null, 2));
+
+    if (emailResponse.error) {
+      console.error("Error específico:", emailResponse.error);
+      throw new Error(`Error de Resend: ${emailResponse.error.message || 'Error desconocido'}`);
+    }
+
+    console.log("Email enviado exitosamente. ID:", emailResponse.data?.id);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
@@ -197,9 +219,17 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error enviando email de confirmación:", error);
+    console.error("=== ERROR EN EL ENVÍO DE EMAIL ===");
+    console.error("Tipo de error:", typeof error);
+    console.error("Mensaje de error:", error.message);
+    console.error("Stack trace:", error.stack);
+    console.error("Error completo:", JSON.stringify(error, null, 2));
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: "Revisa los logs para más información"
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
