@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import {
 
 interface AvailabilityCalendarProps {
   onSlotSelect?: (barber: string, date: string, time: string, location: string) => void;
+  preferredBarber?: string; // Nuevo prop para barbero preferido
 }
 
 interface BarberWithSchedules extends Barber {
@@ -29,7 +31,7 @@ interface TimeSlotInfo {
   totalBarbers: number;
 }
 
-const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
+const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCalendarProps) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -46,6 +48,16 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   useEffect(() => {
     loadData();
   }, [selectedLocation]);
+
+  // Si hay barbero preferido, cambiar automáticamente la ubicación si es necesario
+  useEffect(() => {
+    if (preferredBarber && barbers.length > 0) {
+      const preferredBarberData = barbers.find(b => b.id === preferredBarber);
+      if (preferredBarberData && preferredBarberData.location !== selectedLocation) {
+        setSelectedLocation(preferredBarberData.location);
+      }
+    }
+  }, [preferredBarber, barbers]);
 
   const loadData = async () => {
     try {
@@ -139,15 +151,25 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   const getAllTimeSlots = () => {
     const allSlots = new Set<string>();
     
-    barbers.forEach(barber => {
-      const slots = generateTimeSlotsForBarber(barber.id, selectedDate);
+    // Si hay barbero preferido, solo obtener sus slots
+    if (preferredBarber) {
+      const slots = generateTimeSlotsForBarber(preferredBarber, selectedDate);
       slots.forEach(slot => {
-        // Solo agregar slots que no hayan pasado
         if (!isTimeSlotInPast(slot, selectedDate)) {
           allSlots.add(slot);
         }
       });
-    });
+    } else {
+      // Si no hay barbero preferido, obtener slots de todos los barberos
+      barbers.forEach(barber => {
+        const slots = generateTimeSlotsForBarber(barber.id, selectedDate);
+        slots.forEach(slot => {
+          if (!isTimeSlotInPast(slot, selectedDate)) {
+            allSlots.add(slot);
+          }
+        });
+      });
+    }
 
     return Array.from(allSlots).sort();
   };
@@ -157,14 +179,22 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     const timeSlots = getAllTimeSlots();
     
     return timeSlots.map(time => {
-      const availableBarbers = barbers.filter(barber => 
-        isSlotAvailable(barber.id, time)
-      ).map(barber => barber.id);
+      let availableBarbers;
+      
+      if (preferredBarber) {
+        // Si hay barbero preferido, solo verificar su disponibilidad
+        availableBarbers = isSlotAvailable(preferredBarber, time) ? [preferredBarber] : [];
+      } else {
+        // Si no hay barbero preferido, verificar todos los barberos
+        availableBarbers = barbers.filter(barber => 
+          isSlotAvailable(barber.id, time)
+        ).map(barber => barber.id);
+      }
       
       return {
         time,
         availableBarbers,
-        totalBarbers: barbers.length
+        totalBarbers: preferredBarber ? 1 : barbers.length
       };
     });
   };
@@ -231,7 +261,16 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   };
 
   const handleTimeSlotClick = (timeSlot: string) => {
-    setSelectedTimeSlot(timeSlot);
+    if (preferredBarber) {
+      // Si hay barbero preferido, seleccionar directamente
+      if (isSlotAvailable(preferredBarber, timeSlot) && onSlotSelect) {
+        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+        onSlotSelect(preferredBarber, dateStr, timeSlot, selectedLocation);
+      }
+    } else {
+      // Si no hay barbero preferido, mostrar barberos disponibles
+      setSelectedTimeSlot(timeSlot);
+    }
   };
 
   const handleBarberSelection = (barberId: string, time: string) => {
@@ -263,6 +302,84 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
 
   // Get time slots with availability info
   const timeSlots = getTimeSlotsWithAvailability();
+
+  // Si hay barbero preferido pero no tiene horarios disponibles
+  if (preferredBarber && timeSlots.length === 0) {
+    const preferredBarberData = barbers.find(b => b.id === preferredBarber);
+    return (
+      <div className="space-y-6">
+        {/* Controles de navegación */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+                disabled={format(selectedDate, 'yyyy-MM-dd') <= format(new Date(), 'yyyy-MM-dd')}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <div className="text-lg font-semibold min-w-[200px] text-center">
+                {format(selectedDate, 'EEEE, dd \'de\' MMMM', { locale: es })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedDate(new Date())}
+              className="text-barbershop-gold"
+            >
+              Hoy
+            </Button>
+          </div>
+
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Seleccionar centro" />
+            </SelectTrigger>
+            <SelectContent>
+              {locations.map((location) => (
+                <SelectItem key={location.id} value={location.id}>
+                  {location.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Mensaje de no disponibilidad para barbero preferido */}
+        <Card>
+          <CardContent className="p-8 text-center">
+            <User className="w-16 h-16 text-barbershop-gold mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-barbershop-dark mb-2">
+              {preferredBarberData?.name} no tiene horarios disponibles
+            </h3>
+            <p className="text-gray-500 mb-4">
+              Tu barbero preferido no tiene horarios disponibles para {format(selectedDate, 'dd \'de\' MMMM', { locale: es })}. 
+              Prueba con otro día.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Button 
+                onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+                className="bg-barbershop-gold hover:bg-barbershop-gold/90"
+              >
+                Ver día siguiente
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Si no hay horarios disponibles para hoy
   if (timeSlots.length === 0 && isToday(selectedDate)) {
@@ -400,12 +517,27 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
         </div>
       )}
 
+      {/* Mostrar barbero preferido si existe */}
+      {preferredBarber && (
+        <div className="bg-barbershop-gold/10 border border-barbershop-gold/30 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-barbershop-dark">
+            <User className="w-5 h-5 text-barbershop-gold" />
+            <span className="font-medium">
+              Mostrando horarios disponibles para: <strong>{barbers.find(b => b.id === preferredBarber)?.name}</strong>
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Time Slots Grid */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Calendar className="w-5 h-5 text-barbershop-gold" />
-            Selecciona una Hora - {locations.find(l => l.id === selectedLocation)?.name}
+            {preferredBarber ? 
+              `Horarios de ${barbers.find(b => b.id === preferredBarber)?.name}` :
+              `Selecciona una Hora - ${locations.find(l => l.id === selectedLocation)?.name}`
+            }
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
@@ -433,15 +565,18 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
                 >
                   <span className="font-semibold">{slot.time}</span>
                   <span className="text-xs opacity-80">
-                    {isAvailable ? `${slot.availableBarbers.length} disponible${slot.availableBarbers.length > 1 ? 's' : ''}` : 'Ocupado'}
+                    {isAvailable ? 
+                      (preferredBarber ? 'Disponible' : `${slot.availableBarbers.length} disponible${slot.availableBarbers.length > 1 ? 's' : ''}`) 
+                      : 'Ocupado'
+                    }
                   </span>
                 </Button>
               );
             })}
           </div>
 
-          {/* Show available barbers for selected time slot */}
-          {selectedTimeSlot && (
+          {/* Show available barbers for selected time slot (solo si no hay barbero preferido) */}
+          {selectedTimeSlot && !preferredBarber && (
             <div className="mt-6 pt-6 border-t">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <User className="w-5 h-5 text-barbershop-gold" />

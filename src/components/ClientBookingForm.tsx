@@ -22,7 +22,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
     phone: '',
     email: '',
     service: '',
-    preferredBarber: '', // Nuevo campo para barbero preferido
+    preferredBarber: '', // Barbero preferido
     barber: '',
     location: '',
     date: '',
@@ -67,28 +67,9 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
   const handleSlotSelect = (barber: string, date: string, time: string, location: string) => {
     console.log('Slot seleccionado:', { barber, date, time, location });
     
-    // Si el cliente tiene un barbero preferido y está disponible, usarlo
-    // Si no, usar el barbero asignado automáticamente
-    let finalBarber = barber;
-    
-    if (formData.preferredBarber) {
-      // Verificar si el barbero preferido está disponible en esta hora/ubicación
-      const preferredBarberAvailable = availableBarbers.find(b => 
-        b.id === formData.preferredBarber && 
-        b.location === location
-      );
-      
-      if (preferredBarberAvailable) {
-        finalBarber = formData.preferredBarber;
-        console.log('Usando barbero preferido:', finalBarber);
-      } else {
-        console.log('Barbero preferido no disponible, usando asignación automática:', finalBarber);
-      }
-    }
-    
     setFormData(prev => ({
       ...prev,
-      barber: finalBarber,
+      barber,
       date,
       time,
       location
@@ -276,7 +257,7 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                 </Select>
               </div>
 
-              {/* Nueva sección para barbero preferido */}
+              {/* Sección para barbero preferido */}
               <div>
                 <Label htmlFor="preferredBarber">Barbero preferido (opcional)</Label>
                 <Select 
@@ -284,10 +265,10 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   onValueChange={(value) => setFormData(prev => ({ ...prev, preferredBarber: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un barbero o déjalo en blanco para asignación automática" />
+                    <SelectValue placeholder="Selecciona un barbero o déjalo en blanco para ver todos los horarios" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sin preferencia (asignación automática)</SelectItem>
+                    <SelectItem value="">Sin preferencia (mostrar todos los horarios)</SelectItem>
                     {availableBarbers.map((barber) => (
                       <SelectItem key={barber.id} value={barber.id}>
                         <div className="flex justify-between items-center w-full">
@@ -301,8 +282,8 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-gray-500 mt-1">
-                  Si seleccionas un barbero, intentaremos asignártelo según su disponibilidad.
-                  Si no está disponible en la hora que elijas, se asignará automáticamente otro barbero.
+                  Si seleccionas un barbero, solo verás sus horarios disponibles.
+                  Si no seleccionas ninguno, podrás elegir entre todos los barberos disponibles.
                 </p>
               </div>
 
@@ -330,15 +311,18 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
               {formData.preferredBarber && (
                 <div className="text-sm text-barbershop-gold bg-barbershop-gold/10 p-3 rounded-lg">
                   <User className="w-4 h-4 inline mr-2" />
-                  Barbero preferido: <strong>{getBarberName(formData.preferredBarber)}</strong>
+                  Barbero seleccionado: <strong>{getBarberName(formData.preferredBarber)}</strong>
                   <p className="text-xs text-gray-600 mt-1">
-                    Te asignaremos este barbero si está disponible en la hora que selecciones.
+                    Solo se mostrarán los horarios disponibles de este barbero.
                   </p>
                 </div>
               )}
             </CardHeader>
             <CardContent>
-              <AvailabilityCalendar onSlotSelect={handleSlotSelect} />
+              <AvailabilityCalendar 
+                onSlotSelect={handleSlotSelect} 
+                preferredBarber={formData.preferredBarber || undefined}
+              />
               
               <div className="flex justify-between mt-6">
                 <Button 
@@ -405,11 +389,6 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
                       {formData.preferredBarber && formData.barber === formData.preferredBarber && (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
                           Tu preferido
-                        </span>
-                      )}
-                      {formData.preferredBarber && formData.barber !== formData.preferredBarber && (
-                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
-                          Asignado automáticamente
                         </span>
                       )}
                     </div>
