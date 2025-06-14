@@ -261,6 +261,9 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     );
   }
 
+  // Get time slots with availability info
+  const timeSlots = getTimeSlotsWithAvailability();
+
   // Si no hay horarios disponibles para hoy
   if (timeSlots.length === 0 && isToday(selectedDate)) {
     return (
