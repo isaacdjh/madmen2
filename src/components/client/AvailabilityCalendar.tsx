@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,12 @@ interface BarberWithSchedules extends Barber {
   schedules: BarberSchedule[];
 }
 
+interface TimeSlotInfo {
+  time: string;
+  availableBarbers: string[];
+  totalBarbers: number;
+}
+
 const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
@@ -31,6 +36,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
   const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
   const [isLoading, setIsLoading] = useState(true);
   const [barbers, setBarbers] = useState<BarberWithSchedules[]>([]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
 
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
@@ -146,7 +152,22 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     return Array.from(allSlots).sort();
   };
 
-  const timeSlots = getAllTimeSlots();
+  // Get time slots with availability info
+  const getTimeSlotsWithAvailability = (): TimeSlotInfo[] => {
+    const timeSlots = getAllTimeSlots();
+    
+    return timeSlots.map(time => {
+      const availableBarbers = barbers.filter(barber => 
+        isSlotAvailable(barber.id, time)
+      ).map(barber => barber.id);
+      
+      return {
+        time,
+        availableBarbers,
+        totalBarbers: barbers.length
+      };
+    });
+  };
 
   const isSlotAvailable = (barber: string, time: string) => {
     // Verificar si el horario ya pasó
@@ -209,10 +230,14 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
     return available;
   };
 
-  const handleSlotClick = (barber: string, time: string) => {
-    if (isSlotAvailable(barber, time) && onSlotSelect) {
+  const handleTimeSlotClick = (timeSlot: string) => {
+    setSelectedTimeSlot(timeSlot);
+  };
+
+  const handleBarberSelection = (barberId: string, time: string) => {
+    if (isSlotAvailable(barberId, time) && onSlotSelect) {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      onSlotSelect(barber, dateStr, time, selectedLocation);
+      onSlotSelect(barberId, dateStr, time, selectedLocation);
     }
   };
 
@@ -312,10 +337,9 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Controles */}
+      {/* Date and Location Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-4">
-          {/* Navegación de fecha */}
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -325,7 +349,7 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <div className="text-lg font-semibold min-w-[200px] text-center">
+            <div className="text-base sm:text-lg font-semibold min-w-[180px] sm:min-w-[200px] text-center">
               {format(selectedDate, 'EEEE, dd \'de\' MMMM', { locale: es })}
             </div>
             <Button
@@ -337,7 +361,6 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
             </Button>
           </div>
 
-          {/* Botón hoy */}
           <Button
             variant="ghost"
             size="sm"
@@ -348,9 +371,8 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
           </Button>
         </div>
 
-        {/* Selector de ubicación */}
         <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-          <SelectTrigger className="w-[250px]">
+          <SelectTrigger className="w-full sm:w-[250px]">
             <SelectValue placeholder="Seleccionar centro" />
           </SelectTrigger>
           <SelectContent>
@@ -363,98 +385,87 @@ const AvailabilityCalendar = ({ onSlotSelect }: AvailabilityCalendarProps) => {
         </Select>
       </div>
 
-      {/* Mensaje informativo para horarios de hoy */}
+      {/* Info message for today */}
       {isToday(selectedDate) && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center gap-2 text-blue-700">
             <Clock className="w-5 h-5" />
-            <span className="font-medium">
+            <span className="font-medium text-sm">
               Solo se muestran horarios disponibles con al menos 30 minutos de anticipación
             </span>
           </div>
         </div>
       )}
 
-      {/* Calendario Grid mejorado */}
+      {/* Time Slots Grid */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <Calendar className="w-5 h-5 text-barbershop-gold" />
-            Disponibilidad de Barberos - {locations.find(l => l.id === selectedLocation)?.name}
+            Selecciona una Hora - {locations.find(l => l.id === selectedLocation)?.name}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              {/* Header con barberos */}
-              <div className={`grid border-b`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
-                <div className="p-4 bg-gray-50 font-semibold border-r">Hora</div>
-                {barbers.map((barber) => {
-                  const workHours = getBarberWorkHours(barber.id, selectedDate);
-                  return (
-                    <div key={barber.id} className="p-4 bg-gray-50 font-semibold text-center border-r last:border-r-0 flex flex-col items-center justify-center gap-1">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-barbershop-gold" />
-                        {barber.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {workHours ? `${workHours.start_time} - ${workHours.end_time}` : 'No disponible'}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Filas de tiempo */}
-              {timeSlots.map((time) => (
-                <div key={time} className={`grid border-b last:border-b-0`} style={{ gridTemplateColumns: `200px repeat(${barbers.length}, 1fr)` }}>
-                  <div className="p-3 bg-gray-50 font-medium border-r flex items-center">
-                    <Clock className="w-4 h-4 mr-2 text-barbershop-gold" />
-                    {time}
-                  </div>
-                  {barbers.map((barber) => {
-                    const available = isSlotAvailable(barber.id, time);
-                    const isWorking = generateTimeSlotsForBarber(barber.id, selectedDate).includes(time);
-                    const isPastTime = isTimeSlotInPast(time, selectedDate);
-                    
-                    return (
-                      <div 
-                        key={`${barber.id}-${time}`} 
-                        className={`p-2 border-r last:border-r-0 min-h-[50px] ${
-                          !isWorking || isPastTime
-                            ? 'bg-gray-100' 
-                            : available 
-                              ? 'bg-green-50 hover:bg-green-100 cursor-pointer' 
-                              : 'bg-red-50'
-                        }`}
-                        onClick={() => available && !isPastTime && handleSlotClick(barber.id, time)}
-                      >
-                        <div className="h-full flex items-center justify-center">
-                          {!isWorking ? (
-                            <span className="text-gray-400 text-sm">
-                              No disponible
-                            </span>
-                          ) : isPastTime ? (
-                            <span className="text-gray-400 text-sm">
-                              Horario pasado
-                            </span>
-                          ) : available ? (
-                            <span className="text-green-600 font-medium text-sm">
-                              Disponible
-                            </span>
-                          ) : (
-                            <span className="text-red-500 text-sm">
-                              Ocupado
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+        <CardContent className="p-4 sm:p-6">
+          {/* Time Slots Grid - Responsive */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {timeSlots.map((slot) => {
+              const isAvailable = slot.availableBarbers.length > 0;
+              const isSelected = selectedTimeSlot === slot.time;
+              
+              return (
+                <Button
+                  key={slot.time}
+                  variant={isSelected ? "default" : "outline"}
+                  onClick={() => isAvailable && handleTimeSlotClick(slot.time)}
+                  disabled={!isAvailable}
+                  className={`
+                    h-12 sm:h-14 flex flex-col justify-center items-center text-xs sm:text-sm font-medium
+                    ${isSelected 
+                      ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 border-2 border-barbershop-gold' 
+                      : isAvailable 
+                        ? 'border-barbershop-gold/50 text-barbershop-dark hover:bg-barbershop-gold/10 hover:border-barbershop-gold' 
+                        : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                    }
+                  `}
+                >
+                  <span className="font-semibold">{slot.time}</span>
+                  <span className="text-xs opacity-80">
+                    {isAvailable ? `${slot.availableBarbers.length} disponible${slot.availableBarbers.length > 1 ? 's' : ''}` : 'Ocupado'}
+                  </span>
+                </Button>
+              );
+            })}
           </div>
+
+          {/* Show available barbers for selected time slot */}
+          {selectedTimeSlot && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <User className="w-5 h-5 text-barbershop-gold" />
+                Barberos disponibles para {selectedTimeSlot}
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {barbers
+                  .filter(barber => isSlotAvailable(barber.id, selectedTimeSlot))
+                  .map((barber) => (
+                    <Button
+                      key={barber.id}
+                      variant="outline"
+                      onClick={() => handleBarberSelection(barber.id, selectedTimeSlot)}
+                      className="h-16 sm:h-20 flex flex-col justify-center items-center text-left border-2 border-barbershop-gold/20 hover:border-barbershop-gold hover:bg-barbershop-gold/10 transition-all"
+                    >
+                      <span className="font-semibold text-barbershop-dark text-sm sm:text-base">{barber.name}</span>
+                      <span className="text-xs text-gray-600">{selectedTimeSlot}</span>
+                    </Button>
+                  ))}
+              </div>
+              
+              {barbers.filter(barber => isSlotAvailable(barber.id, selectedTimeSlot)).length === 0 && (
+                <p className="text-gray-500 text-center py-4">No hay barberos disponibles para esta hora</p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
