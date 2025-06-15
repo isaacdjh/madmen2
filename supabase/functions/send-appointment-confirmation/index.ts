@@ -130,96 +130,538 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("=== Preparando envío de email ===");
     console.log("De:", "Mad Men Barbershop <noreply@madmenbarberia.com>");
     console.log("Para:", appointment.clientEmail);
-    console.log("Asunto:", "✅ Cita confirmada en Mad Men");
+    console.log("Asunto:", "✂️ Tu cita está confirmada - Mad Men Barbershop");
     console.log("Barbero:", barberName);
     console.log("URL de cancelación:", cancelUrl);
 
     const emailResponse = await resend.emails.send({
       from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
       to: [appointment.clientEmail],
-      subject: "✅ Cita confirmada en Mad Men",
+      subject: "✂️ Tu cita está confirmada - Mad Men Barbershop",
       html: `
         <!DOCTYPE html>
-        <html>
+        <html lang="es">
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Cita Confirmada - Mad Men</title>
+          <title>Cita Confirmada - Mad Men Barbershop</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+            
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            
+            body {
+              font-family: 'Inter', Arial, sans-serif;
+              line-height: 1.6;
+              color: #2c2c2c;
+              background-color: #f8f9fa;
+            }
+            
+            .email-container {
+              max-width: 650px;
+              margin: 0 auto;
+              background: #ffffff;
+              box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+              border-radius: 16px;
+              overflow: hidden;
+            }
+            
+            .header {
+              background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+              padding: 40px 30px;
+              text-align: center;
+              position: relative;
+              overflow: hidden;
+            }
+            
+            .header::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-image: url('https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/lovable-uploads/4427d6e6-852a-4295-9f0f-6668b98f86e9.png');
+              background-size: cover;
+              background-position: center;
+              opacity: 0.3;
+              z-index: 1;
+            }
+            
+            .header-content {
+              position: relative;
+              z-index: 2;
+            }
+            
+            .logo {
+              font-family: 'Playfair Display', serif;
+              font-size: 32px;
+              font-weight: 700;
+              color: #d4af37;
+              margin-bottom: 10px;
+              text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            }
+            
+            .tagline {
+              color: #ffffff;
+              font-size: 16px;
+              font-weight: 300;
+              letter-spacing: 1px;
+              text-transform: uppercase;
+            }
+            
+            .confirmation-badge {
+              background: linear-gradient(135deg, #d4af37, #f4e76f);
+              color: #1a1a1a;
+              padding: 12px 24px;
+              border-radius: 50px;
+              font-weight: 600;
+              font-size: 18px;
+              margin: 30px auto 0;
+              display: inline-block;
+              box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+            }
+            
+            .main-content {
+              padding: 40px 30px;
+            }
+            
+            .greeting {
+              font-size: 24px;
+              font-weight: 600;
+              color: #1a1a1a;
+              margin-bottom: 20px;
+              text-align: center;
+            }
+            
+            .intro-text {
+              font-size: 16px;
+              color: #666;
+              text-align: center;
+              margin-bottom: 40px;
+              line-height: 1.8;
+            }
+            
+            .appointment-card {
+              background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+              border: 2px solid #e9ecef;
+              border-radius: 16px;
+              padding: 30px;
+              margin-bottom: 30px;
+              box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            }
+            
+            .appointment-title {
+              font-size: 20px;
+              font-weight: 700;
+              color: #1a1a1a;
+              margin-bottom: 25px;
+              text-align: center;
+              position: relative;
+            }
+            
+            .appointment-title::after {
+              content: '';
+              width: 60px;
+              height: 3px;
+              background: linear-gradient(90deg, #d4af37, #f4e76f);
+              position: absolute;
+              bottom: -10px;
+              left: 50%;
+              transform: translateX(-50%);
+              border-radius: 2px;
+            }
+            
+            .appointment-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 20px;
+              margin-bottom: 20px;
+            }
+            
+            .appointment-item {
+              display: flex;
+              align-items: center;
+              padding: 15px;
+              background: rgba(212, 175, 55, 0.05);
+              border-radius: 12px;
+              border-left: 4px solid #d4af37;
+            }
+            
+            .appointment-icon {
+              font-size: 20px;
+              margin-right: 12px;
+              width: 24px;
+              text-align: center;
+            }
+            
+            .appointment-label {
+              font-weight: 600;
+              color: #1a1a1a;
+              font-size: 14px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .appointment-value {
+              color: #333;
+              font-size: 16px;
+              margin-top: 2px;
+            }
+            
+            .price-highlight {
+              grid-column: 1 / -1;
+              background: linear-gradient(135deg, #d4af37, #f4e76f);
+              color: #1a1a1a;
+              text-align: center;
+              padding: 20px;
+              border-radius: 12px;
+              box-shadow: 0 8px 16px rgba(212, 175, 55, 0.2);
+            }
+            
+            .price-highlight .appointment-value {
+              font-size: 28px;
+              font-weight: 700;
+              color: #1a1a1a;
+            }
+            
+            .location-section {
+              background: #f8f9fa;
+              border-radius: 16px;
+              padding: 25px;
+              margin: 30px 0;
+              border-left: 6px solid #d4af37;
+            }
+            
+            .location-title {
+              font-size: 18px;
+              font-weight: 700;
+              color: #1a1a1a;
+              margin-bottom: 15px;
+              display: flex;
+              align-items: center;
+            }
+            
+            .location-icon {
+              margin-right: 10px;
+              font-size: 20px;
+              color: #d4af37;
+            }
+            
+            .location-details {
+              color: #555;
+              line-height: 1.8;
+            }
+            
+            .location-details strong {
+              color: #1a1a1a;
+              display: block;
+              margin-bottom: 5px;
+            }
+            
+            .actions-section {
+              text-align: center;
+              margin: 40px 0;
+            }
+            
+            .actions-title {
+              font-size: 18px;
+              font-weight: 600;
+              color: #1a1a1a;
+              margin-bottom: 20px;
+            }
+            
+            .button-group {
+              display: flex;
+              justify-content: center;
+              gap: 15px;
+              flex-wrap: wrap;
+              margin-bottom: 30px;
+            }
+            
+            .btn {
+              display: inline-block;
+              padding: 14px 28px;
+              text-decoration: none;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 14px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            
+            .btn-calendar {
+              background: linear-gradient(135deg, #4285f4, #34a853);
+              color: white;
+            }
+            
+            .btn-calendar:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(66, 133, 244, 0.3);
+            }
+            
+            .btn-apple {
+              background: linear-gradient(135deg, #1a1a1a, #333);
+              color: white;
+            }
+            
+            .btn-apple:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(26, 26, 26, 0.3);
+            }
+            
+            .btn-cancel {
+              background: linear-gradient(135deg, #dc3545, #c82333);
+              color: white;
+              margin-top: 15px;
+            }
+            
+            .btn-cancel:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+            }
+            
+            .reminder-section {
+              background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+              border-left: 6px solid #ffc107;
+              padding: 25px;
+              border-radius: 12px;
+              margin: 30px 0;
+            }
+            
+            .reminder-title {
+              font-size: 16px;
+              font-weight: 700;
+              color: #856404;
+              margin-bottom: 10px;
+              display: flex;
+              align-items: center;
+            }
+            
+            .reminder-text {
+              color: #856404;
+              font-size: 14px;
+              line-height: 1.6;
+            }
+            
+            .footer {
+              background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+              color: #ffffff;
+              padding: 40px 30px;
+              text-align: center;
+            }
+            
+            .footer-logo {
+              font-family: 'Playfair Display', serif;
+              font-size: 24px;
+              font-weight: 700;
+              color: #d4af37;
+              margin-bottom: 15px;
+            }
+            
+            .footer-tagline {
+              font-size: 14px;
+              color: #cccccc;
+              margin-bottom: 20px;
+              font-style: italic;
+            }
+            
+            .footer-contact {
+              font-size: 14px;
+              color: #ffffff;
+              line-height: 1.8;
+            }
+            
+            .footer-contact a {
+              color: #d4af37;
+              text-decoration: none;
+            }
+            
+            .social-links {
+              margin-top: 20px;
+            }
+            
+            .social-links a {
+              display: inline-block;
+              margin: 0 10px;
+              padding: 8px;
+              background: rgba(212, 175, 55, 0.1);
+              border-radius: 50%;
+              color: #d4af37;
+              text-decoration: none;
+              font-size: 16px;
+              transition: all 0.3s ease;
+            }
+            
+            .social-links a:hover {
+              background: #d4af37;
+              color: #1a1a1a;
+              transform: translateY(-2px);
+            }
+            
+            @media (max-width: 600px) {
+              .email-container {
+                margin: 10px;
+                border-radius: 12px;
+              }
+              
+              .header {
+                padding: 30px 20px;
+              }
+              
+              .main-content {
+                padding: 30px 20px;
+              }
+              
+              .appointment-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+              }
+              
+              .button-group {
+                flex-direction: column;
+                align-items: center;
+              }
+              
+              .btn {
+                width: 100%;
+                max-width: 280px;
+              }
+              
+              .logo {
+                font-size: 28px;
+              }
+              
+              .greeting {
+                font-size: 20px;
+              }
+            }
+          </style>
         </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Mad Men Barbershop</h1>
-            <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.9;">Tu cita ha sido confirmada</p>
-          </div>
-          
-          <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
-            <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-              <h2 style="color: #1a1a1a; margin-top: 0; font-size: 24px;">¡Hola ${appointment.clientName}!</h2>
-              <p style="font-size: 16px; margin-bottom: 25px;">Tu cita ha sido confirmada exitosamente. Aquí tienes todos los detalles:</p>
-              
-              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">📅 Fecha:</td>
-                    <td style="padding: 8px 0;">${formattedDate}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">🕐 Hora:</td>
-                    <td style="padding: 8px 0;">${appointment.time}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">✂️ Servicio:</td>
-                    <td style="padding: 8px 0;">${appointment.service}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">👨‍💼 Barbero:</td>
-                    <td style="padding: 8px 0;">${barberName}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">📍 Centro:</td>
-                    <td style="padding: 8px 0;">${locationDetails.name}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #1a1a1a;">💰 Precio:</td>
-                    <td style="padding: 8px 0; font-size: 18px; font-weight: bold; color: #d4af37;">${appointment.price}€</td>
-                  </tr>
-                </table>
-              </div>
-              
-              <div style="background: #e8f4fd; border-left: 4px solid #2196F3; padding: 15px; margin-bottom: 25px;">
-                <h3 style="margin-top: 0; color: #1976D2;">📍 Ubicación</h3>
-                <p style="margin: 5px 0;"><strong>${locationDetails.name}</strong></p>
-                <p style="margin: 5px 0;">${locationDetails.address}</p>
-                <p style="margin: 5px 0;">📞 ${locationDetails.phone}</p>
-              </div>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <h3 style="color: #1a1a1a; margin-bottom: 15px;">📅 Agregar a tu Calendario</h3>
-                <div style="display: inline-block; margin: 0 10px;">
-                  <a href="${googleUrl}" target="_blank" style="display: inline-block; background: #4285f4; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">📅 Google Calendar</a>
-                </div>
-                <div style="display: inline-block; margin: 0 10px;">
-                  <a href="data:text/calendar;charset=utf-8;base64,${encodeToBase64(icalContent)}" download="cita-madmen-${appointment.appointmentId}.ics" style="display: inline-block; background: #333; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">🍎 Apple Calendar</a>
-                </div>
-              </div>
-              
-              <div style="text-align: center; margin: 25px 0;">
-                <a href="${cancelUrl}" style="display: inline-block; background: #dc3545; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold;">❌ Cancelar Cita</a>
-              </div>
-              
-              <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-top: 25px;">
-                <h4 style="margin-top: 0; color: #856404;">⏰ Recordatorio</h4>
-                <p style="margin: 5px 0; color: #856404;">Te recomendamos llegar 10 minutos antes de tu cita. Si necesitas cancelar o reprogramar, por favor hazlo con al menos 2 horas de anticipación.</p>
+        <body>
+          <div class="email-container">
+            <!-- Header Section -->
+            <div class="header">
+              <div class="header-content">
+                <div class="logo">MAD MEN</div>
+                <div class="tagline">Barbershop Tradicional</div>
+                <div class="confirmation-badge">✂️ CITA CONFIRMADA</div>
               </div>
             </div>
             
-            <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
-              <p>¿Tienes alguna pregunta? Contáctanos:</p>
-              <p>📞 ${locationDetails.phone} | ✉️ info@madmenbarberia.com</p>
-              <p style="margin-top: 20px;">
-                <strong>Mad Men Barbershop</strong><br>
-                El arte de ser un caballero
+            <!-- Main Content -->
+            <div class="main-content">
+              <h1 class="greeting">¡Hola ${appointment.clientName}!</h1>
+              <p class="intro-text">
+                Tu cita ha sido confirmada exitosamente. Nos complace recibirte en Mad Men Barbershop, 
+                donde la tradición y el estilo se encuentran para ofrecerte la mejor experiencia.
               </p>
+              
+              <!-- Appointment Details Card -->
+              <div class="appointment-card">
+                <h2 class="appointment-title">Detalles de tu Cita</h2>
+                <div class="appointment-grid">
+                  <div class="appointment-item">
+                    <div class="appointment-icon">📅</div>
+                    <div>
+                      <div class="appointment-label">Fecha</div>
+                      <div class="appointment-value">${formattedDate}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="appointment-item">
+                    <div class="appointment-icon">🕐</div>
+                    <div>
+                      <div class="appointment-label">Hora</div>
+                      <div class="appointment-value">${appointment.time}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="appointment-item">
+                    <div class="appointment-icon">✂️</div>
+                    <div>
+                      <div class="appointment-label">Servicio</div>
+                      <div class="appointment-value">${appointment.service}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="appointment-item">
+                    <div class="appointment-icon">👨‍💼</div>
+                    <div>
+                      <div class="appointment-label">Barbero</div>
+                      <div class="appointment-value">${barberName}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="appointment-item price-highlight">
+                    <div>
+                      <div class="appointment-label">Precio del Servicio</div>
+                      <div class="appointment-value">${appointment.price}€</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Location Section -->
+              <div class="location-section">
+                <h3 class="location-title">
+                  <span class="location-icon">📍</span>
+                  Ubicación
+                </h3>
+                <div class="location-details">
+                  <strong>${locationDetails.name}</strong>
+                  ${locationDetails.address}<br>
+                  📞 ${locationDetails.phone}
+                </div>
+              </div>
+              
+              <!-- Actions Section -->
+              <div class="actions-section">
+                <h3 class="actions-title">Agregar a tu Calendario</h3>
+                <div class="button-group">
+                  <a href="${googleUrl}" target="_blank" class="btn btn-calendar">
+                    📅 Google Calendar
+                  </a>
+                  <a href="data:text/calendar;charset=utf-8;base64,${encodeToBase64(icalContent)}" download="cita-madmen-${appointment.appointmentId}.ics" class="btn btn-apple">
+                    🍎 Apple Calendar
+                  </a>
+                </div>
+                
+                <a href="${cancelUrl}" class="btn btn-cancel">
+                  ❌ Cancelar Cita
+                </a>
+              </div>
+              
+              <!-- Reminder Section -->
+              <div class="reminder-section">
+                <h4 class="reminder-title">⏰ Recordatorio Importante</h4>
+                <div class="reminder-text">
+                  Te recomendamos llegar <strong>10 minutos antes</strong> de tu cita para una experiencia más relajada. 
+                  Si necesitas cancelar o reprogramar, por favor hazlo con al menos <strong>2 horas de anticipación</strong>.
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+              <div class="footer-logo">MAD MEN</div>
+              <div class="footer-tagline">"El arte de ser un caballero"</div>
+              <div class="footer-contact">
+                📞 ${locationDetails.phone}<br>
+                ✉️ <a href="mailto:info@madmenbarberia.com">info@madmenbarberia.com</a><br>
+                🌐 <a href="https://madmenbarberia.com">www.madmenbarberia.com</a>
+              </div>
+              <div class="social-links">
+                <a href="#" title="Instagram">📷</a>
+                <a href="#" title="Facebook">📘</a>
+                <a href="#" title="WhatsApp">💬</a>
+              </div>
             </div>
           </div>
         </body>
