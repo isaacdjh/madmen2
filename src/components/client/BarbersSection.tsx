@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Star, MapPin, Calendar } from 'lucide-react';
 import { getAllBarbers, type Barber } from '@/lib/supabase-helpers';
 
@@ -82,6 +83,15 @@ const BarbersSection = () => {
     return ratings[index % ratings.length];
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   if (isLoading) {
     return (
       <section id="barberos" className="py-20 bg-gradient-to-b from-slate-50 to-white">
@@ -117,8 +127,17 @@ const BarbersSection = () => {
             {barbers.map((barber, index) => (
               <Card key={barber.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-barbershop-gold/50">
                 <CardContent className="p-8 text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-barbershop-gold to-barbershop-navy rounded-full mx-auto mb-6 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Users className="w-12 h-12 text-white" />
+                  <div className="mb-6">
+                    <Avatar className="w-24 h-24 mx-auto group-hover:scale-110 transition-transform duration-300">
+                      <AvatarImage 
+                        src={barber.photo_url || undefined} 
+                        alt={barber.name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-barbershop-gold to-barbershop-navy text-white font-bold text-lg">
+                        {getInitials(barber.name)}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                   
                   <h3 className="text-xl font-bold text-barbershop-dark mb-2">{barber.name}</h3>
