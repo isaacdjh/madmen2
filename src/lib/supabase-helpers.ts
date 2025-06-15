@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Appointment {
@@ -70,6 +69,7 @@ export interface Barber {
   status: 'active' | 'inactive';
   phone?: string;
   email?: string;
+  photo_url?: string | null;
   user_id?: string;
   created_at: string;
   updated_at: string;

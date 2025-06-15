@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Users, Plus, Edit, Trash2, Calendar, Clock, MapPin, UserCheck, UserX, Building } from 'lucide-react';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import PhotoUpload from './PhotoUpload';
 import { 
   createBarber, 
   getAllBarbers, 
@@ -36,6 +38,7 @@ const StaffManagement = () => {
     email: '',
     phone: '',
     location: 'cristobal-bordiu' as 'cristobal-bordiu' | 'general-pardinas',
+    photo_url: null as string | null,
     schedules: {} as Record<string, {
       is_working: boolean;
       start_time: string;
@@ -93,6 +96,7 @@ const StaffManagement = () => {
       email: '',
       phone: '',
       location: 'cristobal-bordiu',
+      photo_url: null,
       schedules
     });
   };
@@ -110,6 +114,7 @@ const StaffManagement = () => {
         email: newBarber.email.trim() || undefined,
         phone: newBarber.phone.trim() || undefined,
         location: newBarber.location,
+        photo_url: newBarber.photo_url,
         status: 'active'
       });
 
@@ -144,6 +149,7 @@ const StaffManagement = () => {
         email: selectedBarber.email,
         phone: selectedBarber.phone,
         location: selectedBarber.location,
+        photo_url: selectedBarber.photo_url,
         status: selectedBarber.status
       });
 
@@ -225,6 +231,15 @@ const StaffManagement = () => {
 
   const getLocationName = (location: string) => {
     return locations.find(loc => loc.id === location)?.name || location;
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   if (isLoading) {
@@ -333,6 +348,13 @@ const StaffManagement = () => {
               <DialogTitle>Agregar Nuevo Barbero</DialogTitle>
             </DialogHeader>
             <div className="space-y-6">
+              {/* Photo Upload Section */}
+              <PhotoUpload
+                currentPhotoUrl={newBarber.photo_url}
+                onPhotoUpdate={(photoUrl) => setNewBarber({...newBarber, photo_url: photoUrl})}
+                barberName={newBarber.name || 'Nuevo Barbero'}
+              />
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="name">Nombre Completo *</Label>
@@ -516,9 +538,17 @@ const StaffManagement = () => {
           <Card key={barber.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-barbershop-dark">{barber.name}</CardTitle>
-                  {barber.email && <p className="text-sm text-muted-foreground">{barber.email}</p>}
+                <div className="flex items-center space-x-3">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={barber.photo_url || undefined} alt={barber.name} />
+                    <AvatarFallback className="bg-barbershop-gold text-barbershop-dark font-bold">
+                      {getInitials(barber.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <CardTitle className="text-barbershop-dark">{barber.name}</CardTitle>
+                    {barber.email && <p className="text-sm text-muted-foreground">{barber.email}</p>}
+                  </div>
                 </div>
                 <Badge className={getStatusColor(barber.status)}>
                   {getStatusLabel(barber.status)}
@@ -574,6 +604,13 @@ const StaffManagement = () => {
           </DialogHeader>
           {selectedBarber && (
             <div className="space-y-6">
+              {/* Photo Upload Section */}
+              <PhotoUpload
+                currentPhotoUrl={selectedBarber.photo_url}
+                onPhotoUpdate={(photoUrl) => setSelectedBarber({...selectedBarber, photo_url: photoUrl})}
+                barberName={selectedBarber.name}
+              />
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="edit-name">Nombre</Label>
