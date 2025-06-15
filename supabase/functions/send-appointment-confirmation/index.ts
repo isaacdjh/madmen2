@@ -128,14 +128,14 @@ const handler = async (req: Request): Promise<Response> => {
     const cancelUrl = `https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/cancel-appointment/${appointment.appointmentId}`;
 
     console.log("=== Preparando envío de email ===");
-    console.log("De:", "Mad Men Barbershop <onboarding@resend.dev>");
+    console.log("De:", "Mad Men Barbershop <noreply@madmenbarberia.com>");
     console.log("Para:", appointment.clientEmail);
     console.log("Asunto:", "✅ Cita confirmada en Mad Men");
     console.log("Barbero:", barberName);
     console.log("URL de cancelación:", cancelUrl);
 
     const emailResponse = await resend.emails.send({
-      from: "Mad Men Barbershop <onboarding@resend.dev>",
+      from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
       to: [appointment.clientEmail],
       subject: "✅ Cita confirmada en Mad Men",
       html: `
