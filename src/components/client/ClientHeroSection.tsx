@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Calendar, Star, MapPin } from 'lucide-react';
 
@@ -21,21 +20,16 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
 
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-4xl mx-auto">
-          {/* Logo Principal */}
+          {/* Logo Principal - Ahora más grande */}
           <div className="mb-8">
             <img 
               src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
               alt="Mad Men Logo" 
-              className="w-32 h-32 mx-auto object-contain"
+              className="w-48 h-48 md:w-64 md:h-64 mx-auto object-contain"
             />
           </div>
 
-          {/* Título Principal */}
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 gold-accent drop-shadow-lg">
-            Mad Men
-          </h1>
-          
-          {/* Descripción Elegante */}
+          {/* Descripción Elegante - sin título Mad Men */}
           <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto leading-relaxed">
             Donde el estilo clásico se encuentra con la excelencia moderna. 
             El arte de la barbería tradicional perfeccionado en Madrid.
