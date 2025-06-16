@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,6 +67,10 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
     total: 0
   });
 
+  // Referencias para los inputs de pago mixto
+  const cashInputRef = useRef<HTMLInputElement>(null);
+  const cardInputRef = useRef<HTMLInputElement>(null);
+
   const services = [
     { id: 'classic-cut', name: 'Corte Clásico', price: 45 },
     { id: 'beard-trim', name: 'Arreglo de Barba', price: 25 },
@@ -89,14 +92,27 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
 
   useEffect(() => {
     if (appointment?.price) {
+      const servicePrice = appointment.price;
       setPaymentBreakdown(prev => ({
         ...prev,
-        total: appointment.price || 0,
-        cashAmount: prev.method === 'cash' ? appointment.price || 0 : 0,
-        cardAmount: prev.method === 'card' ? appointment.price || 0 : 0
+        total: servicePrice,
+        cashAmount: prev.method === 'cash' ? servicePrice : prev.method === 'mixed' ? servicePrice : 0,
+        cardAmount: prev.method === 'card' ? servicePrice : 0
       }));
     }
   }, [appointment]);
+
+  // Autofocus en el input correcto cuando cambia el método de pago
+  useEffect(() => {
+    if (isOpen && paymentBreakdown.method === 'mixed') {
+      setTimeout(() => {
+        if (cashInputRef.current) {
+          cashInputRef.current.focus();
+          cashInputRef.current.select();
+        }
+      }, 100);
+    }
+  }, [paymentBreakdown.method, isOpen]);
 
   const loadClientData = async () => {
     if (!appointment?.client_id) return;
@@ -127,7 +143,7 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
     setPaymentBreakdown(prev => ({
       ...prev,
       method,
-      cashAmount: method === 'cash' ? servicePrice : 0,
+      cashAmount: method === 'cash' ? servicePrice : method === 'mixed' ? servicePrice : 0,
       cardAmount: method === 'card' ? servicePrice : 0,
       selectedBonusId: method === 'bonus' ? (availableBonuses[0]?.id || null) : null
     }));
@@ -150,6 +166,20 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
       
       return newBreakdown;
     });
+  };
+
+  const handleInputFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    event.target.select();
+  };
+
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>, otherInputRef: React.RefObject<HTMLInputElement>) => {
+    if (event.key === 'Tab' || event.key === 'Enter') {
+      event.preventDefault();
+      if (otherInputRef.current) {
+        otherInputRef.current.focus();
+        otherInputRef.current.select();
+      }
+    }
   };
 
   const handleBonusSelection = (bonusId: string) => {
@@ -378,6 +408,7 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
                           Efectivo (€)
                         </Label>
                         <Input
+                          ref={cashInputRef}
                           id="mixed-cash"
                           type="number"
                           step="0.01"
@@ -385,7 +416,10 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
                           max={servicePrice}
                           value={paymentBreakdown.cashAmount}
                           onChange={(e) => handleMixedPaymentChange('cash', e.target.value)}
-                          className="mt-1"
+                          onFocus={handleInputFocus}
+                          onKeyDown={(e) => handleInputKeyDown(e, cardInputRef)}
+                          className="mt-1 text-lg font-medium"
+                          placeholder="0.00"
                         />
                       </div>
                       <div>
@@ -394,6 +428,7 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
                           Tarjeta (€)
                         </Label>
                         <Input
+                          ref={cardInputRef}
                           id="mixed-card"
                           type="number"
                           step="0.01"
@@ -401,8 +436,27 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
                           max={servicePrice}
                           value={paymentBreakdown.cardAmount}
                           onChange={(e) => handleMixedPaymentChange('card', e.target.value)}
-                          className="mt-1"
+                          onFocus={handleInputFocus}
+                          onKeyDown={(e) => handleInputKeyDown(e, cashInputRef)}
+                          className="mt-1 text-lg font-medium"
+                          placeholder="0.00"
                         />
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground bg-white p-3 rounded border">
+                      <div className="flex justify-between">
+                        <span>Total del servicio:</span>
+                        <span className="font-medium">€{servicePrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Total ingresado:</span>
+                        <span className={`font-medium ${
+                          (paymentBreakdown.cashAmount + paymentBreakdown.cardAmount) === servicePrice 
+                            ? 'text-green-600' 
+                            : 'text-orange-600'
+                        }`}>
+                          €{(paymentBreakdown.cashAmount + paymentBreakdown.cardAmount).toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   </div>
