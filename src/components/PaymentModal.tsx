@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { 
   DollarSign, 
@@ -18,8 +18,7 @@ import {
   Calendar,
   MapPin,
   CheckCircle,
-  Plus,
-  Minus
+  Banknote
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -41,10 +40,12 @@ interface PaymentModalProps {
   barberName: string;
 }
 
+type PaymentMethod = 'cash' | 'card' | 'bonus' | 'mixed';
+
 interface PaymentBreakdown {
-  cash: number;
-  card: number;
-  bonusUsed: boolean;
+  method: PaymentMethod;
+  cashAmount: number;
+  cardAmount: number;
   selectedBonusId: string | null;
   total: number;
 }
@@ -60,9 +61,9 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
   const [isProcessing, setIsProcessing] = useState(false);
   
   const [paymentBreakdown, setPaymentBreakdown] = useState<PaymentBreakdown>({
-    cash: 0,
-    card: 0,
-    bonusUsed: false,
+    method: 'cash',
+    cashAmount: 0,
+    cardAmount: 0,
     selectedBonusId: null,
     total: 0
   });
@@ -91,7 +92,8 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
       setPaymentBreakdown(prev => ({
         ...prev,
         total: appointment.price || 0,
-        cash: appointment.price || 0
+        cashAmount: prev.method === 'cash' ? appointment.price || 0 : 0,
+        cardAmount: prev.method === 'card' ? appointment.price || 0 : 0
       }));
     }
   }, [appointment]);
@@ -119,7 +121,19 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
     return locations.find(l => l.id === locationId)?.name || locationId;
   };
 
-  const handlePaymentChange = (type: 'cash' | 'card', value: string) => {
+  const handlePaymentMethodChange = (method: PaymentMethod) => {
+    const servicePrice = appointment?.price || 0;
+    
+    setPaymentBreakdown(prev => ({
+      ...prev,
+      method,
+      cashAmount: method === 'cash' ? servicePrice : 0,
+      cardAmount: method === 'card' ? servicePrice : 0,
+      selectedBonusId: method === 'bonus' ? (availableBonuses[0]?.id || null) : null
+    }));
+  };
+
+  const handleMixedPaymentChange = (type: 'cash' | 'card', value: string) => {
     const numValue = parseFloat(value) || 0;
     const servicePrice = appointment?.price || 0;
     
@@ -127,55 +141,36 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
       const newBreakdown = { ...prev };
       
       if (type === 'cash') {
-        newBreakdown.cash = numValue;
-        // Ajustar tarjeta automáticamente
-        const remainingAfterBonus = prev.bonusUsed ? 0 : servicePrice;
-        newBreakdown.card = Math.max(0, remainingAfterBonus - numValue);
+        newBreakdown.cashAmount = numValue;
+        newBreakdown.cardAmount = Math.max(0, servicePrice - numValue);
       } else {
-        newBreakdown.card = numValue;
-        // Ajustar efectivo automáticamente
-        const remainingAfterBonus = prev.bonusUsed ? 0 : servicePrice;
-        newBreakdown.cash = Math.max(0, remainingAfterBonus - numValue);
+        newBreakdown.cardAmount = numValue;
+        newBreakdown.cashAmount = Math.max(0, servicePrice - numValue);
       }
       
       return newBreakdown;
     });
   };
 
-  const handleBonusToggle = (bonusId: string | null = null) => {
-    setPaymentBreakdown(prev => {
-      const newBreakdown = { ...prev };
-      
-      if (prev.bonusUsed && prev.selectedBonusId === bonusId) {
-        // Desactivar bono
-        newBreakdown.bonusUsed = false;
-        newBreakdown.selectedBonusId = null;
-        newBreakdown.cash = appointment?.price || 0;
-        newBreakdown.card = 0;
-      } else {
-        // Activar bono
-        newBreakdown.bonusUsed = true;
-        newBreakdown.selectedBonusId = bonusId;
-        newBreakdown.cash = 0;
-        newBreakdown.card = 0;
-      }
-      
-      return newBreakdown;
-    });
+  const handleBonusSelection = (bonusId: string) => {
+    setPaymentBreakdown(prev => ({
+      ...prev,
+      selectedBonusId: bonusId
+    }));
   };
 
   const validatePayment = () => {
     const servicePrice = appointment?.price || 0;
-    const totalPaid = paymentBreakdown.cash + paymentBreakdown.card;
     
-    if (paymentBreakdown.bonusUsed) {
+    if (paymentBreakdown.method === 'bonus') {
       if (!paymentBreakdown.selectedBonusId) {
         toast.error('Selecciona un bono para usar');
         return false;
       }
-      // Con bono, no se necesita pago adicional
       return true;
     }
+    
+    const totalPaid = paymentBreakdown.cashAmount + paymentBreakdown.cardAmount;
     
     if (totalPaid < servicePrice) {
       toast.error(`Faltan €${(servicePrice - totalPaid).toFixed(2)} por cobrar`);
@@ -196,7 +191,7 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
     setIsProcessing(true);
     try {
       // 1. Si se usa bono, canjearlo
-      if (paymentBreakdown.bonusUsed && paymentBreakdown.selectedBonusId) {
+      if (paymentBreakdown.method === 'bonus' && paymentBreakdown.selectedBonusId) {
         const serviceInfo = getServiceInfo(appointment.service);
         await redeemBonusService({
           client_bonus_id: paymentBreakdown.selectedBonusId,
@@ -204,27 +199,27 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
           redeemed_by_barber: barberName,
           service_name: serviceInfo.name
         });
-      }
-      
-      // 2. Registrar pagos en efectivo/tarjeta si los hay
-      if (paymentBreakdown.cash > 0) {
-        await createPayment({
-          client_id: appointment.client_id!,
-          appointment_id: appointment.id,
-          amount: paymentBreakdown.cash,
-          payment_method: 'efectivo',
-          payment_status: 'completado'
-        });
-      }
-      
-      if (paymentBreakdown.card > 0) {
-        await createPayment({
-          client_id: appointment.client_id!,
-          appointment_id: appointment.id,
-          amount: paymentBreakdown.card,
-          payment_method: 'tarjeta',
-          payment_status: 'completado'
-        });
+      } else {
+        // 2. Registrar pagos en efectivo/tarjeta
+        if (paymentBreakdown.cashAmount > 0) {
+          await createPayment({
+            client_id: appointment.client_id!,
+            appointment_id: appointment.id,
+            amount: paymentBreakdown.cashAmount,
+            payment_method: 'efectivo',
+            payment_status: 'completado'
+          });
+        }
+        
+        if (paymentBreakdown.cardAmount > 0) {
+          await createPayment({
+            client_id: appointment.client_id!,
+            appointment_id: appointment.id,
+            amount: paymentBreakdown.cardAmount,
+            payment_method: 'tarjeta',
+            payment_status: 'completado'
+          });
+        }
       }
       
       // 3. Marcar cita como completada
@@ -314,97 +309,141 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
               </Card>
             )}
 
-            {/* Bonos disponibles */}
-            {availableBonuses.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-barbershop-gold" />
-                    Bonos Disponibles ({availableBonuses.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {availableBonuses.map((bonus) => (
-                      <div 
-                        key={bonus.id} 
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          paymentBreakdown.selectedBonusId === bonus.id 
-                            ? 'border-barbershop-gold bg-barbershop-gold/10' 
-                            : 'border-gray-200 hover:border-barbershop-gold/50'
-                        }`}
-                        onClick={() => handleBonusToggle(bonus.id)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium">Bono de Servicios</div>
-                            <div className="text-sm text-muted-foreground">
-                              {bonus.services_remaining} servicios restantes
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Vendido por: {bonus.sold_by_barber}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {paymentBreakdown.selectedBonusId === bonus.id && (
-                              <CheckCircle className="w-5 h-5 text-green-600" />
-                            )}
-                            <Badge className="bg-green-100 text-green-800">
-                              Disponible
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Sistema de pago */}
+            {/* Método de pago */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Método de Pago</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {!paymentBreakdown.bonusUsed && (
-                  <>
+              <CardContent className="space-y-6">
+                <RadioGroup 
+                  value={paymentBreakdown.method} 
+                  onValueChange={(value) => handlePaymentMethodChange(value as PaymentMethod)}
+                  className="space-y-4"
+                >
+                  {/* Efectivo */}
+                  <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value="cash" id="cash" />
+                    <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <Banknote className="w-5 h-5 text-green-600" />
+                      <span className="font-medium">Efectivo completo</span>
+                      <span className="text-muted-foreground">- €{servicePrice}</span>
+                    </Label>
+                  </div>
+
+                  {/* Tarjeta */}
+                  <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value="card" id="card" />
+                    <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <CreditCard className="w-5 h-5 text-blue-600" />
+                      <span className="font-medium">Tarjeta completa</span>
+                      <span className="text-muted-foreground">- €{servicePrice}</span>
+                    </Label>
+                  </div>
+
+                  {/* Pago mixto */}
+                  <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value="mixed" id="mixed" />
+                    <Label htmlFor="mixed" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <div className="flex items-center gap-1">
+                        <Banknote className="w-4 h-4 text-green-600" />
+                        <CreditCard className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <span className="font-medium">Pago mixto (Efectivo + Tarjeta)</span>
+                    </Label>
+                  </div>
+
+                  {/* Bono */}
+                  {availableBonuses.length > 0 && (
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value="bonus" id="bonus" />
+                      <Label htmlFor="bonus" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <Gift className="w-5 h-5 text-barbershop-gold" />
+                        <span className="font-medium">Usar Bono</span>
+                        <Badge className="bg-green-100 text-green-800">
+                          {availableBonuses.length} disponible{availableBonuses.length > 1 ? 's' : ''}
+                        </Badge>
+                      </Label>
+                    </div>
+                  )}
+                </RadioGroup>
+
+                {/* Detalles del pago mixto */}
+                {paymentBreakdown.method === 'mixed' && (
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h4 className="font-medium">Distribución del pago</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="cash-amount" className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4" />
+                        <Label htmlFor="mixed-cash" className="flex items-center gap-2">
+                          <Banknote className="w-4 h-4 text-green-600" />
                           Efectivo (€)
                         </Label>
                         <Input
-                          id="cash-amount"
+                          id="mixed-cash"
                           type="number"
                           step="0.01"
                           min="0"
-                          value={paymentBreakdown.cash}
-                          onChange={(e) => handlePaymentChange('cash', e.target.value)}
+                          max={servicePrice}
+                          value={paymentBreakdown.cashAmount}
+                          onChange={(e) => handleMixedPaymentChange('cash', e.target.value)}
                           className="mt-1"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="card-amount" className="flex items-center gap-2">
-                          <CreditCard className="w-4 h-4" />
+                        <Label htmlFor="mixed-card" className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-blue-600" />
                           Tarjeta (€)
                         </Label>
                         <Input
-                          id="card-amount"
+                          id="mixed-card"
                           type="number"
                           step="0.01"
                           min="0"
-                          value={paymentBreakdown.card}
-                          onChange={(e) => handlePaymentChange('card', e.target.value)}
+                          max={servicePrice}
+                          value={paymentBreakdown.cardAmount}
+                          onChange={(e) => handleMixedPaymentChange('card', e.target.value)}
                           className="mt-1"
                         />
                       </div>
                     </div>
-                    
-                    <Separator />
-                  </>
+                  </div>
                 )}
+
+                {/* Selección de bono */}
+                {paymentBreakdown.method === 'bonus' && availableBonuses.length > 0 && (
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h4 className="font-medium">Seleccionar Bono</h4>
+                    <div className="space-y-2">
+                      {availableBonuses.map((bonus) => (
+                        <div 
+                          key={bonus.id}
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                            paymentBreakdown.selectedBonusId === bonus.id 
+                              ? 'border-barbershop-gold bg-barbershop-gold/10' 
+                              : 'border-gray-200 hover:border-barbershop-gold/50'
+                          }`}
+                          onClick={() => handleBonusSelection(bonus.id)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">Bono de Servicios</div>
+                              <div className="text-sm text-muted-foreground">
+                                {bonus.services_remaining} servicios restantes
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Vendido por: {bonus.sold_by_barber}
+                              </div>
+                            </div>
+                            {paymentBreakdown.selectedBonusId === bonus.id && (
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
                 
                 {/* Resumen del pago */}
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2">
@@ -413,23 +452,23 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
                     <span>€{servicePrice}</span>
                   </div>
                   
-                  {paymentBreakdown.bonusUsed ? (
+                  {paymentBreakdown.method === 'bonus' ? (
                     <div className="flex justify-between text-sm font-medium text-green-600">
                       <span>Pagado con bono:</span>
                       <span>€{servicePrice}</span>
                     </div>
                   ) : (
                     <>
-                      {paymentBreakdown.cash > 0 && (
+                      {paymentBreakdown.cashAmount > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Efectivo:</span>
-                          <span>€{paymentBreakdown.cash}</span>
+                          <span>€{paymentBreakdown.cashAmount.toFixed(2)}</span>
                         </div>
                       )}
-                      {paymentBreakdown.card > 0 && (
+                      {paymentBreakdown.cardAmount > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Tarjeta:</span>
-                          <span>€{paymentBreakdown.card}</span>
+                          <span>€{paymentBreakdown.cardAmount.toFixed(2)}</span>
                         </div>
                       )}
                     </>
@@ -439,7 +478,7 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
                   <div className="flex justify-between font-bold">
                     <span>Total a pagar:</span>
                     <span className="text-barbershop-gold">
-                      €{paymentBreakdown.bonusUsed ? 0 : (paymentBreakdown.cash + paymentBreakdown.card)}
+                      €{paymentBreakdown.method === 'bonus' ? '0.00' : (paymentBreakdown.cashAmount + paymentBreakdown.cardAmount).toFixed(2)}
                     </span>
                   </div>
                 </div>
