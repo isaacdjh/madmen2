@@ -37,15 +37,14 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 flex items-center justify-center">
+          <div className="flex items-center">
+            <div className="w-16 h-16 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
                 alt="Mad Men Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <h1 className="text-2xl font-bold text-barbershop-gold">Mad Men</h1>
           </div>
 
           {/* Desktop Navigation */}
