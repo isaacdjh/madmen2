@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Calendar, Star, MapPin } from 'lucide-react';
 
@@ -20,12 +21,12 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
 
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-4xl mx-auto">
-          {/* Logo Principal - Ahora más grande */}
-          <div className="mb-8">
+          {/* Logo Principal - Centrado donde estaban las letras amarillas */}
+          <div className="mb-6">
             <img 
               src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
               alt="Mad Men Logo" 
-              className="w-48 h-48 md:w-64 md:h-64 mx-auto object-contain"
+              className="w-32 h-32 md:w-40 md:h-40 mx-auto object-contain"
             />
           </div>
 
