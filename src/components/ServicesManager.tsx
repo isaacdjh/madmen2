@@ -99,7 +99,7 @@ const ServicesManager = () => {
       setNewService({
         name: '',
         description: '',
-        price: '',
+        price: 0,
         duration: 30,
         category: 'corte',
         active: true
