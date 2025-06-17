@@ -360,6 +360,7 @@ const ServicesManager = () => {
                       id="service-price"
                       type="number"
                       value={newService.price}
+                      step={"0.1"}
                       onChange={(e) => setNewService({...newService, price: Number(e.target.value)})}
                     />
                   </div>
