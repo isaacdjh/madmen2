@@ -99,7 +99,7 @@ const ServicesManager = () => {
       setNewService({
         name: '',
         description: '',
-        price: 0,
+        price: '',
         duration: 30,
         category: 'corte',
         active: true
@@ -361,7 +361,7 @@ const ServicesManager = () => {
                       type="number"
                       value={newService.price}
                       step={"0.1"}
-                      onChange={(e) => setNewService({...newService, price: Number(e.target.value)})}
+                      onChange={(e) => setNewService({...newService, price: e.target.value ? Number(e.target.value) : ''})}
                     />
                   </div>
                   <div>
