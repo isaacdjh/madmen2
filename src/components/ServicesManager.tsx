@@ -361,7 +361,13 @@ const ServicesManager = () => {
                       type="number"
                       value={newService.price}
                       step={"0.1"}
-                      onChange={(e) => setNewService({...newService, price: e.target.value ? Number(e.target.value) : ''})}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const parsed = Number(raw);
+                        if (!isNaN(parsed)) {
+                          setNewService({ ...newService, price: parsed });
+                        }
+                      }
                     />
                   </div>
                   <div>
