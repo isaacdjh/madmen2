@@ -367,7 +367,7 @@ const ServicesManager = () => {
                         if (!isNaN(parsed)) {
                           setNewService({ ...newService, price: parsed });
                         }
-                      }
+                      }}
                     />
                   </div>
                   <div>
