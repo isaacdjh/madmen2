@@ -364,6 +364,7 @@ const ServicesManager = () => {
                       onChange={(e) => {
                         const raw = e.target.value;
                         const parsed = Number(raw);
+                        console.log("raw: ", raw, parsed)
                         if (!isNaN(parsed)) {
                           setNewService({ ...newService, price: parsed });
                         }
