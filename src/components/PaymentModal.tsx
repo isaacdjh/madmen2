@@ -149,8 +149,19 @@ const PaymentModal = ({ appointment, isOpen, onClose, onPaymentComplete, barberN
     }));
   };
 
+  const handleNumericInputChange = (value: string) => {
+    // Remove leading zeros but keep single zero
+    if (value === '') return '';
+    if (value === '0') return '0';
+    
+    // Remove leading zeros from multi-digit numbers
+    const cleanedValue = value.replace(/^0+/, '');
+    return cleanedValue === '' ? '0' : cleanedValue;
+  };
+
   const handleMixedPaymentChange = (type: 'cash' | 'card', value: string) => {
-    const numValue = parseFloat(value) || 0;
+    const cleanedValue = handleNumericInputChange(value);
+    const numValue = parseFloat(cleanedValue) || 0;
     const servicePrice = appointment?.price || 0;
     
     setPaymentBreakdown(prev => {
