@@ -21,9 +21,15 @@ import {
   Eye
 } from 'lucide-react';
 import { getAllClients, getClientCompleteData, sellBonus, getAllBonusPackages, createPayment } from '@/lib/supabase-helpers';
-import type { Client, BonusPackage, ClientBonus } from '@/lib/supabase-helpers';
+import type { BonusPackage, ClientBonus } from '@/lib/supabase-helpers';
 
-interface ClientWithSummary extends Client {
+interface ClientWithSummary {
+  id: string;
+  name: string;
+  last_name?: string;
+  phone: string;
+  email: string;
+  client_since: string;
   total_appointments?: number;
   completed_appointments?: number;
   active_bonus_services?: number;
@@ -33,7 +39,15 @@ interface ClientWithSummary extends Client {
 }
 
 interface ClientDetails {
-  client: Client;
+  client: {
+    id: string;
+    name: string;
+    last_name?: string;
+    phone: string;
+    email: string;
+    created_at: string;
+    updated_at: string;
+  };
   appointments: any[];
   bonuses: ClientBonus[];
   payments: any[];

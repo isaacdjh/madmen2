@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Appointment {
@@ -10,6 +11,9 @@ export interface Appointment {
   location: string;
   status: 'confirmada' | 'completada' | 'cancelada';
   price?: number;
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
   created_at: string;
   updated_at: string;
 }
@@ -17,6 +21,7 @@ export interface Appointment {
 export interface Client {
   id: string;
   name: string;
+  last_name?: string;
   phone: string;
   email: string;
   created_at: string;
@@ -170,7 +175,7 @@ export const getClientBonuses = async (): Promise<ClientBonus[]> => {
   }));
 };
 
-export const getAllClients = async (): Promise<Client[]> => {
+export const getAllClients = async (): Promise<any[]> => {
   const { data, error } = await supabase
     .from('client_complete_summary')
     .select('*')
