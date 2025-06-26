@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
@@ -32,35 +33,35 @@ const AdminIndex = () => {
         return <BonusManager />;
       case 'payments':
         return (
-          <div className="container mx-auto px-4 py-8">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Sistema de Cobros</h1>
-              <p className="text-muted-foreground">Panel completo de gestión de pagos y facturación</p>
+          <div className="container mx-auto px-4 py-4 md:py-8">
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-barbershop-dark mb-2">Sistema de Cobros</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Panel completo de gestión de pagos y facturación</p>
             </div>
             <PaymentSystem />
           </div>
         );
       case 'analytics':
         return (
-          <div className="container mx-auto px-4 py-8">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Estadísticas y Análisis</h1>
-              <p className="text-muted-foreground">Dashboard completo con métricas avanzadas del negocio</p>
+          <div className="container mx-auto px-4 py-4 md:py-8">
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-barbershop-dark mb-2">Estadísticas y Análisis</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Dashboard completo con métricas avanzadas del negocio</p>
             </div>
             <AdvancedAnalytics />
           </div>
         );
       case 'reports':
         return (
-          <div className="container mx-auto px-4 py-8">
+          <div className="container mx-auto px-4 py-4 md:py-8">
             <RevenueReports />
           </div>
         );
       case 'clients':
         return (
-          <div className="container mx-auto px-4 py-8">
-            <h2 className="text-3xl font-bold mb-4">Gestión de Clientes</h2>
-            <p className="text-muted-foreground">Base de datos de clientes y historial - En desarrollo</p>
+          <div className="container mx-auto px-4 py-4 md:py-8">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">Gestión de Clientes</h2>
+            <p className="text-sm md:text-base text-muted-foreground">Base de datos de clientes y historial - En desarrollo</p>
           </div>
         );
       default:
@@ -69,9 +70,11 @@ const AdminIndex = () => {
   };
 
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full bg-background">
       <Navigation currentView={currentView} onViewChange={setCurrentView} />
-      {renderCurrentView()}
+      <div className="w-full">
+        {renderCurrentView()}
+      </div>
     </div>
   );
 };

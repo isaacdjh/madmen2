@@ -125,102 +125,106 @@ const AdminPanel = () => {
     }, 0);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-barbershop-dark mb-2">Panel Administrativo</h1>
-        <p className="text-muted-foreground">Gestión de citas y reservas de Mad Men Barbería</p>
+    <div className="container mx-auto px-4 py-4 md:py-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-barbershop-dark mb-2">Panel Administrativo</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Gestión de citas y reservas de Mad Men Barbería</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      {/* Stats Cards - Responsive Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Citas</p>
-                <p className="text-2xl font-bold text-barbershop-dark">{appointments.length}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Total Citas</p>
+                <p className="text-lg md:text-2xl font-bold text-barbershop-dark">{appointments.length}</p>
               </div>
-              <Calendar className="w-8 h-8 text-barbershop-gold" />
+              <Calendar className="w-6 h-6 md:w-8 md:h-8 text-barbershop-gold" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Hoy</p>
-                <p className="text-2xl font-bold text-barbershop-dark">{todayAppointments.length}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Hoy</p>
+                <p className="text-lg md:text-2xl font-bold text-barbershop-dark">{todayAppointments.length}</p>
               </div>
-              <Clock className="w-8 h-8 text-barbershop-gold" />
+              <Clock className="w-6 h-6 md:w-8 md:h-8 text-barbershop-gold" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Confirmadas</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-xs md:text-sm text-muted-foreground">Confirmadas</p>
+                <p className="text-lg md:text-2xl font-bold text-green-600">
                   {appointments.filter(apt => apt.status === 'confirmada').length}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Ingresos</p>
-                <p className="text-2xl font-bold text-barbershop-gold">${totalRevenue}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Ingresos</p>
+                <p className="text-lg md:text-2xl font-bold text-barbershop-gold">${totalRevenue}</p>
               </div>
-              <User className="w-8 h-8 text-barbershop-gold" />
+              <User className="w-6 h-6 md:w-8 md:h-8 text-barbershop-gold" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-6">
+      {/* Filters - Responsive */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
         <Button 
           variant={filter === 'all' ? 'default' : 'outline'}
           onClick={() => setFilter('all')}
-          className={filter === 'all' ? 'bg-barbershop-gold text-barbershop-dark' : ''}
+          className={`${filter === 'all' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
+          size="sm"
         >
           Todas
         </Button>
         <Button 
           variant={filter === 'confirmada' ? 'default' : 'outline'}
           onClick={() => setFilter('confirmada')}
-          className={filter === 'confirmada' ? 'bg-barbershop-gold text-barbershop-dark' : ''}
+          className={`${filter === 'confirmada' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
+          size="sm"
         >
           Confirmadas
         </Button>
         <Button 
           variant={filter === 'completada' ? 'default' : 'outline'}
           onClick={() => setFilter('completada')}
-          className={filter === 'completada' ? 'bg-barbershop-gold text-barbershop-dark' : ''}
+          className={`${filter === 'completada' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
+          size="sm"
         >
           Completadas
         </Button>
         <Button 
           variant={filter === 'cancelada' ? 'default' : 'outline'}
           onClick={() => setFilter('cancelada')}
-          className={filter === 'cancelada' ? 'bg-barbershop-gold text-barbershop-dark' : ''}
+          className={`${filter === 'cancelada' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
+          size="sm"
         >
           Canceladas
         </Button>
       </div>
 
-      {/* Appointments List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Appointments List - Responsive Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div>
-          <h2 className="text-xl font-bold mb-4">Citas Programadas ({filteredAppointments.length})</h2>
-          <div className="space-y-4">
+          <h2 className="text-lg md:text-xl font-bold mb-4">Citas Programadas ({filteredAppointments.length})</h2>
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
             {filteredAppointments.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">
@@ -232,31 +236,31 @@ const AdminPanel = () => {
                 <Card key={appointment.id} className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-bold text-barbershop-dark">{appointment.customerName}</h3>
-                        <p className="text-sm text-muted-foreground">{getServiceName(appointment.service)}</p>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-barbershop-dark truncate">{appointment.customerName}</h3>
+                        <p className="text-sm text-muted-foreground truncate">{getServiceName(appointment.service)}</p>
                       </div>
-                      <Badge className={getStatusColor(appointment.status)}>
+                      <Badge className={`${getStatusColor(appointment.status)} ml-2 whitespace-nowrap`}>
                         {appointment.status}
                       </Badge>
                     </div>
                     
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center text-muted-foreground">
-                        <MapPin className="w-4 h-4 mr-2" />
-                        {getLocationName(appointment.location)}
+                        <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="truncate">{getLocationName(appointment.location)}</span>
                       </div>
                       <div className="flex items-center text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {appointment.date} a las {appointment.time}
+                        <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span>{appointment.date} a las {appointment.time}</span>
                       </div>
                       <div className="flex items-center text-muted-foreground">
-                        <User className="w-4 h-4 mr-2" />
-                        {getBarberName(appointment.barber)}
+                        <User className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="truncate">{getBarberName(appointment.barber)}</span>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2 mt-4 flex-wrap">
                       <Button 
                         size="sm" 
                         variant="outline"
@@ -273,7 +277,7 @@ const AdminPanel = () => {
                             className="bg-green-600 hover:bg-green-700 text-white"
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
-                            Completar
+                            <span className="hidden sm:inline">Completar</span>
                           </Button>
                           <Button 
                             size="sm" 
@@ -281,7 +285,7 @@ const AdminPanel = () => {
                             onClick={() => updateAppointmentStatus(appointment.id, 'cancelada')}
                           >
                             <X className="w-4 h-4 mr-1" />
-                            Cancelar
+                            <span className="hidden sm:inline">Cancelar</span>
                           </Button>
                         </>
                       )}
@@ -293,13 +297,13 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        {/* Appointment Details */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">Detalles de la Cita</h2>
+        {/* Appointment Details - Responsive */}
+        <div className="xl:sticky xl:top-24 xl:h-fit">
+          <h2 className="text-lg md:text-xl font-bold mb-4">Detalles de la Cita</h2>
           {selectedAppointment ? (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-base md:text-lg">
                   <span>#{selectedAppointment.id}</span>
                   <Badge className={getStatusColor(selectedAppointment.status)}>
                     {selectedAppointment.status}
@@ -308,41 +312,41 @@ const AdminPanel = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Información del Cliente</h4>
+                  <h4 className="font-semibold mb-2 text-sm md:text-base">Información del Cliente</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center">
-                      <User className="w-4 h-4 mr-2 text-muted-foreground" />
-                      {selectedAppointment.customerName}
+                      <User className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{selectedAppointment.customerName}</span>
                     </div>
                     <div className="flex items-center">
-                      <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
-                      {selectedAppointment.customerPhone}
+                      <Phone className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{selectedAppointment.customerPhone}</span>
                     </div>
                     <div className="flex items-center">
-                      <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
-                      {selectedAppointment.customerEmail}
+                      <Mail className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{selectedAppointment.customerEmail}</span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-2">Detalles del Servicio</h4>
+                  <h4 className="font-semibold mb-2 text-sm md:text-base">Detalles del Servicio</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
-                      {getLocationName(selectedAppointment.location)}
+                      <MapPin className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{getLocationName(selectedAppointment.location)}</span>
                     </div>
                     <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
-                      {selectedAppointment.date} a las {selectedAppointment.time}
+                      <Calendar className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
+                      <span>{selectedAppointment.date} a las {selectedAppointment.time}</span>
                     </div>
                     <div className="flex items-center">
-                      <User className="w-4 h-4 mr-2 text-muted-foreground" />
-                      {getBarberName(selectedAppointment.barber)}
+                      <User className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{getBarberName(selectedAppointment.barber)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>{getServiceName(selectedAppointment.service)}</span>
-                      <span className="font-bold text-barbershop-gold">
+                      <span className="truncate mr-2">{getServiceName(selectedAppointment.service)}</span>
+                      <span className="font-bold text-barbershop-gold whitespace-nowrap">
                         {getServicePrice(selectedAppointment.service)}
                       </span>
                     </div>
@@ -356,10 +360,11 @@ const AdminPanel = () => {
                 </div>
 
                 {selectedAppointment.status === 'confirmada' && (
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button 
                       onClick={() => updateAppointmentStatus(selectedAppointment.id, 'completada')}
                       className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                      size="sm"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Marcar como Completada
@@ -368,6 +373,7 @@ const AdminPanel = () => {
                       variant="destructive"
                       onClick={() => updateAppointmentStatus(selectedAppointment.id, 'cancelada')}
                       className="flex-1"
+                      size="sm"
                     >
                       <X className="w-4 h-4 mr-2" />
                       Cancelar Cita
