@@ -172,9 +172,9 @@ export const getClientBonuses = async (): Promise<ClientBonus[]> => {
 
 export const getAllClients = async (): Promise<Client[]> => {
   const { data, error } = await supabase
-    .from('clients')
+    .from('client_complete_summary')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('name', { ascending: true });
 
   if (error) {
     console.error('Error fetching clients:', error);
@@ -279,9 +279,33 @@ export const updateAppointmentStatus = async (appointmentId: string, status: str
 };
 
 export const createAppointment = async (appointmentData: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>): Promise<Appointment> => {
+  // Buscar o crear cliente si tiene información de contacto
+  let clientId = appointmentData.client_id;
+  
+  if (!clientId && appointmentData.customer_name && appointmentData.customer_phone && appointmentData.customer_email) {
+    console.log('Creating/finding client for appointment');
+    const { data: foundClientId, error: clientError } = await supabase
+      .rpc('find_or_create_client', {
+        p_name: appointmentData.customer_name,
+        p_phone: appointmentData.customer_phone,
+        p_email: appointmentData.customer_email
+      });
+
+    if (clientError) {
+      console.error('Error finding/creating client:', clientError);
+    } else {
+      clientId = foundClientId;
+    }
+  }
+
+  const finalAppointmentData = {
+    ...appointmentData,
+    client_id: clientId
+  };
+
   const { data, error } = await supabase
     .from('appointments')
-    .insert(appointmentData)
+    .insert(finalAppointmentData)
     .select()
     .single();
 
@@ -391,7 +415,6 @@ export const getClientCompleteData = async (clientId: string) => {
       .from('client_bonuses')
       .select('*')
       .eq('client_id', clientId)
-      .eq('status', 'activo')
       .order('purchase_date', { ascending: false });
 
     if (bonusesError) throw bonusesError;
@@ -424,34 +447,32 @@ export const getClientCompleteData = async (clientId: string) => {
 };
 
 export const createOrGetClient = async (name: string, phone: string, email: string): Promise<Client> => {
-  // Intentar encontrar cliente existente por email o teléfono
-  const { data: existingClient } = await supabase
+  // Usar la función de base de datos para buscar o crear cliente
+  const { data: clientId, error: functionError } = await supabase
+    .rpc('find_or_create_client', {
+      p_name: name,
+      p_phone: phone,
+      p_email: email
+    });
+
+  if (functionError) {
+    console.error('Error finding/creating client:', functionError);
+    throw functionError;
+  }
+
+  // Obtener los datos completos del cliente
+  const { data: client, error: clientError } = await supabase
     .from('clients')
     .select('*')
-    .or(`email.eq.${email},phone.eq.${phone}`)
+    .eq('id', clientId)
     .single();
 
-  if (existingClient) {
-    return existingClient;
+  if (clientError) {
+    console.error('Error fetching client data:', clientError);
+    throw clientError;
   }
 
-  // Crear nuevo cliente
-  const { data: newClient, error } = await supabase
-    .from('clients')
-    .insert({
-      name,
-      phone,
-      email
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating client:', error);
-    throw error;
-  }
-
-  return newClient;
+  return client;
 };
 
 export const sellBonus = async (bonusData: Omit<ClientBonus, 'id' | 'purchase_date'>): Promise<void> => {
@@ -518,6 +539,26 @@ export const createPayment = async (paymentData: Omit<Payment, 'id' | 'created_a
     console.error('Error creating payment:', error);
     throw error;
   }
+};
+
+export const getClientActiveBonuses = async (clientId: string): Promise<ClientBonus[]> => {
+  const { data, error } = await supabase
+    .from('client_bonuses')
+    .select('*')
+    .eq('client_id', clientId)
+    .eq('status', 'activo')
+    .gt('services_remaining', 0)
+    .order('purchase_date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching client bonuses:', error);
+    throw error;
+  }
+
+  return (data || []).map(bonus => ({
+    ...bonus,
+    status: bonus.status as 'activo' | 'agotado' | 'vencido'
+  }));
 };
 
 export const getAllServices = async (): Promise<Service[]> => {

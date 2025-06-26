@@ -11,6 +11,7 @@ import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import PaymentSystem from '@/components/PaymentSystem';
 import BonusManager from '@/components/BonusManager';
 import RevenueReports from '@/components/RevenueReports';
+import ClientManagement from '@/components/ClientManagement';
 
 const AdminIndex = () => {
   const [currentView, setCurrentView] = useState('admin');
@@ -31,6 +32,8 @@ const AdminIndex = () => {
         return <MarketingDashboard />;
       case 'bonus':
         return <BonusManager />;
+      case 'clients':
+        return <ClientManagement />;
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-4 md:py-8">
@@ -55,13 +58,6 @@ const AdminIndex = () => {
         return (
           <div className="container mx-auto px-4 py-4 md:py-8">
             <RevenueReports />
-          </div>
-        );
-      case 'clients':
-        return (
-          <div className="container mx-auto px-4 py-4 md:py-8">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">Gestión de Clientes</h2>
-            <p className="text-sm md:text-base text-muted-foreground">Base de datos de clientes y historial - En desarrollo</p>
           </div>
         );
       default:

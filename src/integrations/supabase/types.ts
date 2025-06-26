@@ -16,6 +16,9 @@ export type Database = {
           barber: string
           client_id: string | null
           created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
           id: string
           location: string
           price: number | null
@@ -29,6 +32,9 @@ export type Database = {
           barber: string
           client_id?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           location: string
           price?: number | null
@@ -42,6 +48,9 @@ export type Database = {
           barber?: string
           client_id?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           location?: string
           price?: number | null
@@ -50,6 +59,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_complete_summary"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_client_id_fkey"
             columns: ["client_id"]
@@ -292,6 +308,34 @@ export type Database = {
             foreignKeyName: "client_bonuses_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "client_complete_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_bonuses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_client_bonuses_bonus_package_id"
+            columns: ["bonus_package_id"]
+            isOneToOne: false
+            referencedRelation: "bonus_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_client_bonuses_client_id"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_complete_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_client_bonuses_client_id"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -302,6 +346,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          last_name: string | null
           name: string
           phone: string
           updated_at: string
@@ -310,6 +355,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          last_name?: string | null
           name: string
           phone: string
           updated_at?: string
@@ -318,6 +364,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          last_name?: string | null
           name?: string
           phone?: string
           updated_at?: string
@@ -358,6 +405,13 @@ export type Database = {
             columns: ["appointment_id"]
             isOneToOne: false
             referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_complete_summary"
             referencedColumns: ["id"]
           },
           {
@@ -405,6 +459,67 @@ export type Database = {
         }
         Relationships: []
       }
+      service_history: {
+        Row: {
+          appointment_id: string | null
+          barber_name: string
+          client_id: string | null
+          created_at: string
+          id: string
+          payment_method: string | null
+          service_date: string
+          service_name: string
+          service_price: number
+          used_bonus: boolean | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          barber_name: string
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          service_date: string
+          service_name: string
+          service_price: number
+          used_bonus?: boolean | null
+        }
+        Update: {
+          appointment_id?: string | null
+          barber_name?: string
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          service_date?: string
+          service_name?: string
+          service_price?: number
+          used_bonus?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_history_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_complete_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           active: boolean
@@ -443,10 +558,34 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      client_complete_summary: {
+        Row: {
+          active_bonus_services: number | null
+          client_since: string | null
+          completed_appointments: number | null
+          email: string | null
+          id: string | null
+          last_name: string | null
+          last_visit_date: string | null
+          name: string | null
+          phone: string | null
+          total_appointments: number | null
+          total_bonuses_purchased: number | null
+          total_spent: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      find_or_create_client: {
+        Args: {
+          p_name: string
+          p_phone: string
+          p_email: string
+          p_last_name?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, X, Eye } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, X, Eye, CreditCard } from 'lucide-react';
+import PaymentWithBonuses from '@/components/PaymentWithBonuses';
 
 interface Appointment {
   id: string;
@@ -16,12 +17,16 @@ interface Appointment {
   customerEmail: string;
   status: 'confirmada' | 'cancelada' | 'completada';
   createdAt: string;
+  client_id?: string;
+  price?: number;
 }
 
 const AdminPanel = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [filter, setFilter] = useState<'all' | 'confirmada' | 'cancelada' | 'completada'>('all');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAppointment, setPaymentAppointment] = useState<Appointment | null>(null);
 
   // Centros con nombres actualizados
   const locations = [
@@ -77,6 +82,19 @@ const AdminPanel = () => {
     );
     setAppointments(updatedAppointments);
     localStorage.setItem('appointments', JSON.stringify(updatedAppointments));
+  };
+
+  const handlePaymentClick = (appointment: Appointment) => {
+    setPaymentAppointment(appointment);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentComplete = () => {
+    if (paymentAppointment) {
+      updateAppointmentStatus(paymentAppointment.id, 'completada');
+    }
+    setShowPaymentModal(false);
+    setPaymentAppointment(null);
   };
 
   const filteredAppointments = appointments.filter(apt => 
@@ -273,11 +291,11 @@ const AdminPanel = () => {
                         <>
                           <Button 
                             size="sm"
-                            onClick={() => updateAppointmentStatus(appointment.id, 'completada')}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => handlePaymentClick(appointment)}
+                            className="bg-barbershop-gold hover:bg-barbershop-gold/90 text-barbershop-dark"
                           >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            <span className="hidden sm:inline">Completar</span>
+                            <CreditCard className="w-4 h-4 mr-1" />
+                            <span className="hidden sm:inline">Cobrar</span>
                           </Button>
                           <Button 
                             size="sm" 
@@ -391,6 +409,20 @@ const AdminPanel = () => {
           )}
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {paymentAppointment && (
+        <PaymentWithBonuses
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          appointmentId={paymentAppointment.id}
+          clientId={paymentAppointment.client_id || null}
+          serviceName={getServiceName(paymentAppointment.service)}
+          servicePrice={paymentAppointment.price || parseFloat(getServicePrice(paymentAppointment.service).replace('$', '')) || 0}
+          barber={getBarberName(paymentAppointment.barber)}
+          onPaymentComplete={handlePaymentComplete}
+        />
+      )}
     </div>
   );
 };
