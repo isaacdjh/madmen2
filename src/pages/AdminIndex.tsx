@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
@@ -12,6 +11,7 @@ import PaymentSystem from '@/components/PaymentSystem';
 import BonusManager from '@/components/BonusManager';
 import RevenueReports from '@/components/RevenueReports';
 import ClientManagement from '@/components/ClientManagement';
+import WhatsAppIntegration from '@/components/WhatsAppIntegration';
 
 interface AdminIndexProps {
   onLogout?: () => void;
@@ -38,6 +38,16 @@ const AdminIndex = ({ onLogout }: AdminIndexProps) => {
         return <BonusManager />;
       case 'clients':
         return <ClientManagement />;
+      case 'whatsapp':
+        return (
+          <div className="container mx-auto px-4 py-4 md:py-8">
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-barbershop-dark mb-2">Integración WhatsApp</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Automatiza las reservas de citas por WhatsApp</p>
+            </div>
+            <WhatsAppIntegration />
+          </div>
+        );
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-4 md:py-8">
