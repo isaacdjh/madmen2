@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -127,10 +128,10 @@ const AdminPanel = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmada': return 'bg-green-100 text-green-800';
-      case 'cancelada': return 'bg-red-100 text-red-800';
-      case 'completada': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'confirmada': return 'bg-green-600 text-white hover:bg-green-700';
+      case 'cancelada': return 'bg-red-600 text-white hover:bg-red-700';
+      case 'completada': return 'bg-blue-600 text-white hover:bg-blue-700';
+      default: return 'bg-gray-600 text-white hover:bg-gray-700';
     }
   };
 
@@ -143,69 +144,69 @@ const AdminPanel = () => {
     }, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-6 max-w-full">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl lg:text-4xl font-bold text-barbershop-dark mb-2">Panel Administrativo</h1>
-          <p className="text-gray-600">Gestión de citas y reservas de Mad Men Barbería</p>
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Panel Administrativo</h1>
+          <p className="text-gray-700">Gestión de citas y reservas de Mad Men Barbería</p>
         </div>
 
-        {/* Stats Cards - Better responsive grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
-          <Card className="bg-white shadow-sm border-0">
-            <CardContent className="p-4 lg:p-6">
+        {/* Stats Cards - Improved responsive grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6">
+          <Card className="bg-white shadow-md border border-gray-200">
+            <CardContent className="p-3 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Total Citas</p>
-                  <p className="text-2xl lg:text-3xl font-bold text-barbershop-dark">{appointments.length}</p>
+                  <p className="text-xs lg:text-sm text-gray-600 mb-1">Total Citas</p>
+                  <p className="text-xl lg:text-3xl font-bold text-gray-900">{appointments.length}</p>
                 </div>
-                <div className="p-2 bg-barbershop-gold/10 rounded-lg">
-                  <Calendar className="w-6 h-6 lg:w-8 lg:h-8 text-barbershop-gold" />
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Calendar className="w-5 h-5 lg:w-8 lg:h-8 text-blue-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-sm border-0">
-            <CardContent className="p-4 lg:p-6">
+          <Card className="bg-white shadow-md border border-gray-200">
+            <CardContent className="p-3 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Hoy</p>
-                  <p className="text-2xl lg:text-3xl font-bold text-barbershop-dark">{todayAppointments.length}</p>
+                  <p className="text-xs lg:text-sm text-gray-600 mb-1">Hoy</p>
+                  <p className="text-xl lg:text-3xl font-bold text-gray-900">{todayAppointments.length}</p>
                 </div>
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <Clock className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" />
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Clock className="w-5 h-5 lg:w-8 lg:h-8 text-green-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-sm border-0">
-            <CardContent className="p-4 lg:p-6">
+          <Card className="bg-white shadow-md border border-gray-200">
+            <CardContent className="p-3 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Confirmadas</p>
-                  <p className="text-2xl lg:text-3xl font-bold text-green-600">
+                  <p className="text-xs lg:text-sm text-gray-600 mb-1">Confirmadas</p>
+                  <p className="text-xl lg:text-3xl font-bold text-green-600">
                     {appointments.filter(apt => apt.status === 'confirmada').length}
                   </p>
                 </div>
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <CheckCircle className="w-6 h-6 lg:w-8 lg:h-8 text-green-600" />
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <CheckCircle className="w-5 h-5 lg:w-8 lg:h-8 text-green-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-sm border-0">
-            <CardContent className="p-4 lg:p-6">
+          <Card className="bg-white shadow-md border border-gray-200">
+            <CardContent className="p-3 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Ingresos</p>
-                  <p className="text-2xl lg:text-3xl font-bold text-barbershop-gold">${totalRevenue}</p>
+                  <p className="text-xs lg:text-sm text-gray-600 mb-1">Ingresos</p>
+                  <p className="text-xl lg:text-3xl font-bold text-orange-600">${totalRevenue}</p>
                 </div>
-                <div className="p-2 bg-barbershop-gold/10 rounded-lg">
-                  <User className="w-6 h-6 lg:w-8 lg:h-8 text-barbershop-gold" />
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <User className="w-5 h-5 lg:w-8 lg:h-8 text-orange-600" />
                 </div>
               </div>
             </CardContent>
@@ -217,7 +218,7 @@ const AdminPanel = () => {
           <Button 
             variant={filter === 'all' ? 'default' : 'outline'}
             onClick={() => setFilter('all')}
-            className={`${filter === 'all' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            className={`${filter === 'all' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} text-sm`}
             size="sm"
           >
             Todas ({appointments.length})
@@ -225,7 +226,7 @@ const AdminPanel = () => {
           <Button 
             variant={filter === 'confirmada' ? 'default' : 'outline'}
             onClick={() => setFilter('confirmada')}
-            className={`${filter === 'confirmada' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            className={`${filter === 'confirmada' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} text-sm`}
             size="sm"
           >
             Confirmadas ({appointments.filter(apt => apt.status === 'confirmada').length})
@@ -233,7 +234,7 @@ const AdminPanel = () => {
           <Button 
             variant={filter === 'completada' ? 'default' : 'outline'}
             onClick={() => setFilter('completada')}
-            className={`${filter === 'completada' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            className={`${filter === 'completada' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} text-sm`}
             size="sm"
           >
             Completadas ({appointments.filter(apt => apt.status === 'completada').length})
@@ -241,67 +242,67 @@ const AdminPanel = () => {
           <Button 
             variant={filter === 'cancelada' ? 'default' : 'outline'}
             onClick={() => setFilter('cancelada')}
-            className={`${filter === 'cancelada' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            className={`${filter === 'cancelada' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} text-sm`}
             size="sm"
           >
             Canceladas ({appointments.filter(apt => apt.status === 'cancelada').length})
           </Button>
         </div>
 
-        {/* Main Content - Improved layout */}
-        <div className="flex flex-col xl:flex-row gap-6">
-          {/* Appointments List - Takes more space on desktop */}
-          <div className="flex-1 xl:flex-[2]">
-            <div className="bg-white rounded-lg shadow-sm border-0 p-6">
-              <h2 className="text-xl font-bold mb-4 text-barbershop-dark">
+        {/* Main Content - Improved layout without overlap */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Appointments List - Takes 2 columns on desktop */}
+          <div className="xl:col-span-2">
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 lg:p-6">
+              <h2 className="text-lg lg:text-xl font-bold mb-4 text-gray-900">
                 Citas Programadas ({filteredAppointments.length})
               </h2>
               
-              <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto pr-2">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                 {filteredAppointments.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
-                    <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium">No hay citas para mostrar</p>
-                    <p className="text-sm">Las citas aparecerán aquí cuando se realicen reservas</p>
+                    <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-lg font-medium text-gray-700">No hay citas para mostrar</p>
+                    <p className="text-sm text-gray-600">Las citas aparecerán aquí cuando se realicen reservas</p>
                   </div>
                 ) : (
                   filteredAppointments.map((appointment) => (
                     <Card 
                       key={appointment.id} 
-                      className={`hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 ${
+                      className={`hover:shadow-lg transition-all duration-200 cursor-pointer border-l-4 ${
                         selectedAppointment?.id === appointment.id 
-                          ? 'border-l-barbershop-gold bg-barbershop-gold/5' 
-                          : 'border-l-gray-200 hover:border-l-barbershop-gold/50'
+                          ? 'border-l-blue-500 bg-blue-50 shadow-md' 
+                          : 'border-l-gray-300 hover:border-l-blue-400 bg-white'
                       }`}
                       onClick={() => setSelectedAppointment(appointment)}
                     >
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-3">
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-bold text-barbershop-dark text-lg truncate">
+                            <h3 className="font-bold text-gray-900 text-base lg:text-lg truncate">
                               {appointment.customerName}
                             </h3>
-                            <p className="text-gray-600 truncate">{getServiceName(appointment.service)}</p>
+                            <p className="text-gray-700 truncate text-sm lg:text-base">{getServiceName(appointment.service)}</p>
                           </div>
-                          <Badge className={`${getStatusColor(appointment.status)} ml-3 whitespace-nowrap`}>
+                          <Badge className={`${getStatusColor(appointment.status)} ml-3 whitespace-nowrap text-xs`}>
                             {appointment.status}
                           </Badge>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-4">
-                          <div className="flex items-center text-gray-600">
-                            <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <div className="flex items-center text-gray-700">
+                            <MapPin className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
                             <span className="truncate">{getLocationName(appointment.location)}</span>
                           </div>
-                          <div className="flex items-center text-gray-600">
-                            <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <div className="flex items-center text-gray-700">
+                            <Calendar className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
                             <span>{appointment.date} - {appointment.time}</span>
                           </div>
-                          <div className="flex items-center text-gray-600">
-                            <User className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <div className="flex items-center text-gray-700">
+                            <User className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
                             <span className="truncate">{getBarberName(appointment.barber)}</span>
                           </div>
-                          <div className="flex items-center font-semibold text-barbershop-gold">
+                          <div className="flex items-center font-semibold text-green-600">
                             <span>{getServicePrice(appointment.service)}</span>
                           </div>
                         </div>
@@ -314,7 +315,7 @@ const AdminPanel = () => {
                               e.stopPropagation();
                               setSelectedAppointment(appointment);
                             }}
-                            className="text-xs"
+                            className="text-xs border-gray-300 text-gray-700 hover:bg-gray-50"
                           >
                             <Eye className="w-3 h-3 mr-1" />
                             Ver Detalles
@@ -327,7 +328,7 @@ const AdminPanel = () => {
                                   e.stopPropagation();
                                   handlePaymentClick(appointment);
                                 }}
-                                className="bg-barbershop-gold hover:bg-barbershop-gold/90 text-barbershop-dark text-xs"
+                                className="bg-green-600 hover:bg-green-700 text-white text-xs"
                               >
                                 <CreditCard className="w-3 h-3 mr-1" />
                                 Cobrar
@@ -339,7 +340,7 @@ const AdminPanel = () => {
                                   e.stopPropagation();
                                   updateAppointmentStatus(appointment.id, 'cancelada');
                                 }}
-                                className="text-xs"
+                                className="text-xs bg-red-600 hover:bg-red-700"
                               >
                                 <X className="w-3 h-3 mr-1" />
                                 Cancelar
@@ -355,64 +356,64 @@ const AdminPanel = () => {
             </div>
           </div>
 
-          {/* Appointment Details - Proper sidebar */}
-          <div className="xl:flex-1 xl:max-w-md">
-            <div className="bg-white rounded-lg shadow-sm border-0 p-6 xl:sticky xl:top-6">
-              <h2 className="text-xl font-bold mb-4 text-barbershop-dark">Detalles de la Cita</h2>
+          {/* Appointment Details - Single column sidebar */}
+          <div className="xl:col-span-1">
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 lg:p-6 sticky top-6">
+              <h2 className="text-lg lg:text-xl font-bold mb-4 text-gray-900">Detalles de la Cita</h2>
               
               {selectedAppointment ? (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">ID: #{selectedAppointment.id}</span>
+                    <span className="text-sm text-gray-600">ID: #{selectedAppointment.id}</span>
                     <Badge className={getStatusColor(selectedAppointment.status)}>
                       {selectedAppointment.status}
                     </Badge>
                   </div>
 
                   <div>
-                    <h4 className="font-semibold mb-3 text-barbershop-dark">Información del Cliente</h4>
+                    <h4 className="font-semibold mb-3 text-gray-900">Información del Cliente</h4>
                     <div className="space-y-3">
                       <div className="flex items-center">
-                        <User className="w-4 h-4 mr-3 text-gray-400" />
-                        <span className="font-medium">{selectedAppointment.customerName}</span>
+                        <User className="w-4 h-4 mr-3 text-gray-500" />
+                        <span className="font-medium text-gray-900">{selectedAppointment.customerName}</span>
                       </div>
                       <div className="flex items-center">
-                        <Phone className="w-4 h-4 mr-3 text-gray-400" />
-                        <span className="text-sm text-gray-600">{selectedAppointment.customerPhone}</span>
+                        <Phone className="w-4 h-4 mr-3 text-gray-500" />
+                        <span className="text-sm text-gray-700">{selectedAppointment.customerPhone}</span>
                       </div>
                       <div className="flex items-center">
-                        <Mail className="w-4 h-4 mr-3 text-gray-400" />
-                        <span className="text-sm text-gray-600 truncate">{selectedAppointment.customerEmail}</span>
+                        <Mail className="w-4 h-4 mr-3 text-gray-500" />
+                        <span className="text-sm text-gray-700 truncate">{selectedAppointment.customerEmail}</span>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="font-semibold mb-3 text-barbershop-dark">Detalles del Servicio</h4>
+                    <h4 className="font-semibold mb-3 text-gray-900">Detalles del Servicio</h4>
                     <div className="space-y-3">
                       <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-3 text-gray-400" />
-                        <span className="text-sm">{getLocationName(selectedAppointment.location)}</span>
+                        <MapPin className="w-4 h-4 mr-3 text-gray-500" />
+                        <span className="text-sm text-gray-700">{getLocationName(selectedAppointment.location)}</span>
                       </div>
                       <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-3 text-gray-400" />
-                        <span className="text-sm">{selectedAppointment.date} a las {selectedAppointment.time}</span>
+                        <Calendar className="w-4 h-4 mr-3 text-gray-500" />
+                        <span className="text-sm text-gray-700">{selectedAppointment.date} a las {selectedAppointment.time}</span>
                       </div>
                       <div className="flex items-center">
-                        <User className="w-4 h-4 mr-3 text-gray-400" />
-                        <span className="text-sm">{getBarberName(selectedAppointment.barber)}</span>
+                        <User className="w-4 h-4 mr-3 text-gray-500" />
+                        <span className="text-sm text-gray-700">{getBarberName(selectedAppointment.barber)}</span>
                       </div>
-                      <div className="flex justify-between items-center pt-2 border-t">
-                        <span className="font-medium">{getServiceName(selectedAppointment.service)}</span>
-                        <span className="font-bold text-lg text-barbershop-gold">
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                        <span className="font-medium text-gray-900">{getServiceName(selectedAppointment.service)}</span>
+                        <span className="font-bold text-lg text-green-600">
                           {getServicePrice(selectedAppointment.service)}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <p className="text-xs text-gray-500 mb-4">
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="text-xs text-gray-600 mb-4">
                       Creada: {new Date(selectedAppointment.createdAt).toLocaleString()}
                     </p>
 
@@ -429,7 +430,7 @@ const AdminPanel = () => {
                         <Button 
                           variant="destructive"
                           onClick={() => updateAppointmentStatus(selectedAppointment.id, 'cancelada')}
-                          className="w-full"
+                          className="w-full bg-red-600 hover:bg-red-700"
                           size="sm"
                         >
                           <X className="w-4 h-4 mr-2" />
@@ -441,9 +442,9 @@ const AdminPanel = () => {
                 </div>
               ) : (
                 <div className="text-center py-12 text-gray-500">
-                  <Eye className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="font-medium">Selecciona una cita</p>
-                  <p className="text-sm">Haz clic en cualquier cita para ver sus detalles completos</p>
+                  <Eye className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="font-medium text-gray-700">Selecciona una cita</p>
+                  <p className="text-sm text-gray-600">Haz clic en cualquier cita para ver sus detalles completos</p>
                 </div>
               )}
             </div>
