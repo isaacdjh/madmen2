@@ -143,270 +143,311 @@ const AdminPanel = () => {
     }, 0);
 
   return (
-    <div className="container mx-auto px-4 py-4 md:py-8">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-barbershop-dark mb-2">Panel Administrativo</h1>
-        <p className="text-sm md:text-base text-muted-foreground">Gestión de citas y reservas de Mad Men Barbería</p>
-      </div>
-
-      {/* Stats Cards - Responsive Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs md:text-sm text-muted-foreground">Total Citas</p>
-                <p className="text-lg md:text-2xl font-bold text-barbershop-dark">{appointments.length}</p>
-              </div>
-              <Calendar className="w-6 h-6 md:w-8 md:h-8 text-barbershop-gold" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs md:text-sm text-muted-foreground">Hoy</p>
-                <p className="text-lg md:text-2xl font-bold text-barbershop-dark">{todayAppointments.length}</p>
-              </div>
-              <Clock className="w-6 h-6 md:w-8 md:h-8 text-barbershop-gold" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs md:text-sm text-muted-foreground">Confirmadas</p>
-                <p className="text-lg md:text-2xl font-bold text-green-600">
-                  {appointments.filter(apt => apt.status === 'confirmada').length}
-                </p>
-              </div>
-              <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs md:text-sm text-muted-foreground">Ingresos</p>
-                <p className="text-lg md:text-2xl font-bold text-barbershop-gold">${totalRevenue}</p>
-              </div>
-              <User className="w-6 h-6 md:w-8 md:h-8 text-barbershop-gold" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters - Responsive */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        <Button 
-          variant={filter === 'all' ? 'default' : 'outline'}
-          onClick={() => setFilter('all')}
-          className={`${filter === 'all' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
-          size="sm"
-        >
-          Todas
-        </Button>
-        <Button 
-          variant={filter === 'confirmada' ? 'default' : 'outline'}
-          onClick={() => setFilter('confirmada')}
-          className={`${filter === 'confirmada' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
-          size="sm"
-        >
-          Confirmadas
-        </Button>
-        <Button 
-          variant={filter === 'completada' ? 'default' : 'outline'}
-          onClick={() => setFilter('completada')}
-          className={`${filter === 'completada' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
-          size="sm"
-        >
-          Completadas
-        </Button>
-        <Button 
-          variant={filter === 'cancelada' ? 'default' : 'outline'}
-          onClick={() => setFilter('cancelada')}
-          className={`${filter === 'cancelada' ? 'bg-barbershop-gold text-barbershop-dark' : ''} whitespace-nowrap text-xs md:text-sm`}
-          size="sm"
-        >
-          Canceladas
-        </Button>
-      </div>
-
-      {/* Appointments List - Responsive Layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div>
-          <h2 className="text-lg md:text-xl font-bold mb-4">Citas Programadas ({filteredAppointments.length})</h2>
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-            {filteredAppointments.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
-                  No hay citas para mostrar
-                </CardContent>
-              </Card>
-            ) : (
-              filteredAppointments.map((appointment) => (
-                <Card key={appointment.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-barbershop-dark truncate">{appointment.customerName}</h3>
-                        <p className="text-sm text-muted-foreground truncate">{getServiceName(appointment.service)}</p>
-                      </div>
-                      <Badge className={`${getStatusColor(appointment.status)} ml-2 whitespace-nowrap`}>
-                        {appointment.status}
-                      </Badge>
-                    </div>
-                    
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center text-muted-foreground">
-                        <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="truncate">{getLocationName(appointment.location)}</span>
-                      </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span>{appointment.date} a las {appointment.time}</span>
-                      </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <User className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="truncate">{getBarberName(appointment.barber)}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 mt-4 flex-wrap">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => setSelectedAppointment(appointment)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Ver
-                      </Button>
-                      {appointment.status === 'confirmada' && (
-                        <>
-                          <Button 
-                            size="sm"
-                            onClick={() => handlePaymentClick(appointment)}
-                            className="bg-barbershop-gold hover:bg-barbershop-gold/90 text-barbershop-dark"
-                          >
-                            <CreditCard className="w-4 h-4 mr-1" />
-                            <span className="hidden sm:inline">Cobrar</span>
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => updateAppointmentStatus(appointment.id, 'cancelada')}
-                          >
-                            <X className="w-4 h-4 mr-1" />
-                            <span className="hidden sm:inline">Cancelar</span>
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold text-barbershop-dark mb-2">Panel Administrativo</h1>
+          <p className="text-gray-600">Gestión de citas y reservas de Mad Men Barbería</p>
         </div>
 
-        {/* Appointment Details - Responsive */}
-        <div className="xl:sticky xl:top-24 xl:h-fit">
-          <h2 className="text-lg md:text-xl font-bold mb-4">Detalles de la Cita</h2>
-          {selectedAppointment ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base md:text-lg">
-                  <span>#{selectedAppointment.id}</span>
-                  <Badge className={getStatusColor(selectedAppointment.status)}>
-                    {selectedAppointment.status}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+        {/* Stats Cards - Better responsive grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+          <Card className="bg-white shadow-sm border-0">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-semibold mb-2 text-sm md:text-base">Información del Cliente</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <User className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{selectedAppointment.customerName}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Phone className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{selectedAppointment.customerPhone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Mail className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{selectedAppointment.customerEmail}</span>
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 mb-1">Total Citas</p>
+                  <p className="text-2xl lg:text-3xl font-bold text-barbershop-dark">{appointments.length}</p>
                 </div>
-
-                <div>
-                  <h4 className="font-semibold mb-2 text-sm md:text-base">Detalles del Servicio</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{getLocationName(selectedAppointment.location)}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
-                      <span>{selectedAppointment.date} a las {selectedAppointment.time}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <User className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{getBarberName(selectedAppointment.barber)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="truncate mr-2">{getServiceName(selectedAppointment.service)}</span>
-                      <span className="font-bold text-barbershop-gold whitespace-nowrap">
-                        {getServicePrice(selectedAppointment.service)}
-                      </span>
-                    </div>
-                  </div>
+                <div className="p-2 bg-barbershop-gold/10 rounded-lg">
+                  <Calendar className="w-6 h-6 lg:w-8 lg:h-8 text-barbershop-gold" />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
 
+          <Card className="bg-white shadow-sm border-0">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">
-                    Creada: {new Date(selectedAppointment.createdAt).toLocaleString()}
+                  <p className="text-sm text-gray-500 mb-1">Hoy</p>
+                  <p className="text-2xl lg:text-3xl font-bold text-barbershop-dark">{todayAppointments.length}</p>
+                </div>
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Clock className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm border-0">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Confirmadas</p>
+                  <p className="text-2xl lg:text-3xl font-bold text-green-600">
+                    {appointments.filter(apt => apt.status === 'confirmada').length}
                   </p>
                 </div>
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <CheckCircle className="w-6 h-6 lg:w-8 lg:h-8 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                {selectedAppointment.status === 'confirmada' && (
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button 
-                      onClick={() => updateAppointmentStatus(selectedAppointment.id, 'completada')}
-                      className="bg-green-600 hover:bg-green-700 text-white flex-1"
-                      size="sm"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Marcar como Completada
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      onClick={() => updateAppointmentStatus(selectedAppointment.id, 'cancelada')}
-                      className="flex-1"
-                      size="sm"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Cancelar Cita
-                    </Button>
+          <Card className="bg-white shadow-sm border-0">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Ingresos</p>
+                  <p className="text-2xl lg:text-3xl font-bold text-barbershop-gold">${totalRevenue}</p>
+                </div>
+                <div className="p-2 bg-barbershop-gold/10 rounded-lg">
+                  <User className="w-6 h-6 lg:w-8 lg:h-8 text-barbershop-gold" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters - Better mobile layout */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Button 
+            variant={filter === 'all' ? 'default' : 'outline'}
+            onClick={() => setFilter('all')}
+            className={`${filter === 'all' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            size="sm"
+          >
+            Todas ({appointments.length})
+          </Button>
+          <Button 
+            variant={filter === 'confirmada' ? 'default' : 'outline'}
+            onClick={() => setFilter('confirmada')}
+            className={`${filter === 'confirmada' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            size="sm"
+          >
+            Confirmadas ({appointments.filter(apt => apt.status === 'confirmada').length})
+          </Button>
+          <Button 
+            variant={filter === 'completada' ? 'default' : 'outline'}
+            onClick={() => setFilter('completada')}
+            className={`${filter === 'completada' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            size="sm"
+          >
+            Completadas ({appointments.filter(apt => apt.status === 'completada').length})
+          </Button>
+          <Button 
+            variant={filter === 'cancelada' ? 'default' : 'outline'}
+            onClick={() => setFilter('cancelada')}
+            className={`${filter === 'cancelada' ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' : 'bg-white hover:bg-gray-50'} text-sm`}
+            size="sm"
+          >
+            Canceladas ({appointments.filter(apt => apt.status === 'cancelada').length})
+          </Button>
+        </div>
+
+        {/* Main Content - Improved layout */}
+        <div className="flex flex-col xl:flex-row gap-6">
+          {/* Appointments List - Takes more space on desktop */}
+          <div className="flex-1 xl:flex-[2]">
+            <div className="bg-white rounded-lg shadow-sm border-0 p-6">
+              <h2 className="text-xl font-bold mb-4 text-barbershop-dark">
+                Citas Programadas ({filteredAppointments.length})
+              </h2>
+              
+              <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto pr-2">
+                {filteredAppointments.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg font-medium">No hay citas para mostrar</p>
+                    <p className="text-sm">Las citas aparecerán aquí cuando se realicen reservas</p>
                   </div>
+                ) : (
+                  filteredAppointments.map((appointment) => (
+                    <Card 
+                      key={appointment.id} 
+                      className={`hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 ${
+                        selectedAppointment?.id === appointment.id 
+                          ? 'border-l-barbershop-gold bg-barbershop-gold/5' 
+                          : 'border-l-gray-200 hover:border-l-barbershop-gold/50'
+                      }`}
+                      onClick={() => setSelectedAppointment(appointment)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-barbershop-dark text-lg truncate">
+                              {appointment.customerName}
+                            </h3>
+                            <p className="text-gray-600 truncate">{getServiceName(appointment.service)}</p>
+                          </div>
+                          <Badge className={`${getStatusColor(appointment.status)} ml-3 whitespace-nowrap`}>
+                            {appointment.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-4">
+                          <div className="flex items-center text-gray-600">
+                            <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span className="truncate">{getLocationName(appointment.location)}</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span>{appointment.date} - {appointment.time}</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <User className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span className="truncate">{getBarberName(appointment.barber)}</span>
+                          </div>
+                          <div className="flex items-center font-semibold text-barbershop-gold">
+                            <span>{getServicePrice(appointment.service)}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 flex-wrap">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedAppointment(appointment);
+                            }}
+                            className="text-xs"
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            Ver Detalles
+                          </Button>
+                          {appointment.status === 'confirmada' && (
+                            <>
+                              <Button 
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePaymentClick(appointment);
+                                }}
+                                className="bg-barbershop-gold hover:bg-barbershop-gold/90 text-barbershop-dark text-xs"
+                              >
+                                <CreditCard className="w-3 h-3 mr-1" />
+                                Cobrar
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateAppointmentStatus(appointment.id, 'cancelada');
+                                }}
+                                className="text-xs"
+                              >
+                                <X className="w-3 h-3 mr-1" />
+                                Cancelar
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
                 )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center text-muted-foreground">
-                Selecciona una cita para ver los detalles
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </div>
+          </div>
+
+          {/* Appointment Details - Proper sidebar */}
+          <div className="xl:flex-1 xl:max-w-md">
+            <div className="bg-white rounded-lg shadow-sm border-0 p-6 xl:sticky xl:top-6">
+              <h2 className="text-xl font-bold mb-4 text-barbershop-dark">Detalles de la Cita</h2>
+              
+              {selectedAppointment ? (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">ID: #{selectedAppointment.id}</span>
+                    <Badge className={getStatusColor(selectedAppointment.status)}>
+                      {selectedAppointment.status}
+                    </Badge>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-3 text-barbershop-dark">Información del Cliente</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center">
+                        <User className="w-4 h-4 mr-3 text-gray-400" />
+                        <span className="font-medium">{selectedAppointment.customerName}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Phone className="w-4 h-4 mr-3 text-gray-400" />
+                        <span className="text-sm text-gray-600">{selectedAppointment.customerPhone}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Mail className="w-4 h-4 mr-3 text-gray-400" />
+                        <span className="text-sm text-gray-600 truncate">{selectedAppointment.customerEmail}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-3 text-barbershop-dark">Detalles del Servicio</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center">
+                        <MapPin className="w-4 h-4 mr-3 text-gray-400" />
+                        <span className="text-sm">{getLocationName(selectedAppointment.location)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-3 text-gray-400" />
+                        <span className="text-sm">{selectedAppointment.date} a las {selectedAppointment.time}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <User className="w-4 h-4 mr-3 text-gray-400" />
+                        <span className="text-sm">{getBarberName(selectedAppointment.barber)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t">
+                        <span className="font-medium">{getServiceName(selectedAppointment.service)}</span>
+                        <span className="font-bold text-lg text-barbershop-gold">
+                          {getServicePrice(selectedAppointment.service)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <p className="text-xs text-gray-500 mb-4">
+                      Creada: {new Date(selectedAppointment.createdAt).toLocaleString()}
+                    </p>
+
+                    {selectedAppointment.status === 'confirmada' && (
+                      <div className="space-y-2">
+                        <Button 
+                          onClick={() => updateAppointmentStatus(selectedAppointment.id, 'completada')}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                          size="sm"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar como Completada
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => updateAppointmentStatus(selectedAppointment.id, 'cancelada')}
+                          className="w-full"
+                          size="sm"
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Cancelar Cita
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Eye className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="font-medium">Selecciona una cita</p>
+                  <p className="text-sm">Haz clic en cualquier cita para ver sus detalles completos</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
