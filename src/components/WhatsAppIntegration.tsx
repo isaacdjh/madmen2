@@ -32,7 +32,7 @@ const WhatsAppIntegration = () => {
     if (savedConfig) {
       const parsed = JSON.parse(savedConfig);
       setConfig(parsed);
-      setIsConnected(parsed.isActive && parsed.accessToken);
+      setIsConnected(parsed.isActive && Boolean(parsed.accessToken));
     }
 
     // Simular estadísticas
@@ -46,7 +46,7 @@ const WhatsAppIntegration = () => {
 
   const handleSaveConfig = () => {
     localStorage.setItem('whatsapp_config', JSON.stringify(config));
-    setIsConnected(config.isActive && config.accessToken);
+    setIsConnected(config.isActive && Boolean(config.accessToken));
     toast.success('Configuración de WhatsApp guardada correctamente');
   };
 
