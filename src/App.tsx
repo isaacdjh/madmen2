@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from 'sonner';
 import Index from '@/pages/Index';
-import AdminIndex from '@/pages/AdminIndex';
+import AdminPortal from '@/pages/AdminPortal';
 import NotFound from '@/pages/NotFound';
 import {
   QueryClient,
@@ -23,7 +23,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/admin" element={<AdminIndex />} />
+            <Route path="/admin" element={<AdminPortal />} />
             <Route path="/barber" element={<BarberPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

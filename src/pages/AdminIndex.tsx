@@ -13,7 +13,11 @@ import BonusManager from '@/components/BonusManager';
 import RevenueReports from '@/components/RevenueReports';
 import ClientManagement from '@/components/ClientManagement';
 
-const AdminIndex = () => {
+interface AdminIndexProps {
+  onLogout?: () => void;
+}
+
+const AdminIndex = ({ onLogout }: AdminIndexProps) => {
   const [currentView, setCurrentView] = useState('admin');
 
   const renderCurrentView = () => {
@@ -67,7 +71,11 @@ const AdminIndex = () => {
 
   return (
     <div className="min-h-screen w-full bg-background">
-      <Navigation currentView={currentView} onViewChange={setCurrentView} />
+      <Navigation 
+        currentView={currentView} 
+        onViewChange={setCurrentView}
+        onLogout={onLogout}
+      />
       <div className="w-full">
         {renderCurrentView()}
       </div>

@@ -1,95 +1,129 @@
 
-import React, { useState } from 'react';
-import { Home, Calendar, Clock, Users, Scissors, Gift, CreditCard, TrendingUp, BarChart3, Megaphone, UserCircle, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { 
+  Home, 
+  Calendar, 
+  Users, 
+  Settings, 
+  BarChart3, 
+  CreditCard, 
+  Gift,
+  UserCheck,
+  Menu,
+  LogOut,
+  Scissors
+} from 'lucide-react';
 
 interface NavigationProps {
   currentView: string;
   onViewChange: (view: string) => void;
+  onLogout?: () => void;
 }
 
-const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const Navigation = ({ currentView, onViewChange, onLogout }: NavigationProps) => {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const navItems = [
-    { id: 'admin', label: 'Admin Panel', icon: Home },
+  const navigationItems = [
+    { id: 'admin', label: 'Panel Principal', icon: Home },
     { id: 'calendar', label: 'Calendario', icon: Calendar },
-    { id: 'booking', label: 'Reservas', icon: Clock },
+    { id: 'booking', label: 'Reservas', icon: UserCheck },
+    { id: 'clients', label: 'Clientes', icon: Users },
     { id: 'staff', label: 'Personal', icon: Users },
     { id: 'services', label: 'Servicios', icon: Scissors },
     { id: 'bonus', label: 'Bonos', icon: Gift },
-    { id: 'payments', label: 'Cobros', icon: CreditCard },
-    { id: 'reports', label: 'Reportes', icon: TrendingUp },
+    { id: 'payments', label: 'Pagos', icon: CreditCard },
     { id: 'analytics', label: 'Estadísticas', icon: BarChart3 },
-    { id: 'marketing', label: 'Marketing', icon: Megaphone },
-    { id: 'clients', label: 'Clientes', icon: UserCircle },
+    { id: 'reports', label: 'Reportes', icon: Settings },
+    { id: 'marketing', label: 'Marketing', icon: Settings },
   ];
 
-  const handleMenuItemClick = (itemId: string) => {
-    onViewChange(itemId);
-    setIsMobileMenuOpen(false);
+  const handleNavigation = (view: string) => {
+    onViewChange(view);
+    setIsSheetOpen(false);
   };
 
-  return (
-    <nav className="bg-gray-100 border-b sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3">
-        {/* Desktop Navigation */}
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-barbershop-dark">Panel de Administración</span>
-          
-          {/* Desktop Menu */}
-          <ul className="hidden lg:flex space-x-2 xl:space-x-4">
-            {navItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => handleMenuItemClick(item.id)}
-                  className={`flex items-center space-x-2 px-2 xl:px-3 py-2 rounded-md text-xs xl:text-sm font-medium transition-colors ${
-                    currentView === item.id
-                      ? 'bg-barbershop-gold text-white'
-                      : 'text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span className="hidden xl:inline">{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    setIsSheetOpen(false);
+  };
 
-          {/* Mobile Menu Button */}
+  const NavContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-semibold text-barbershop-dark">Panel Administrativo</h2>
+      </div>
+      
+      <nav className="flex-1 p-4 space-y-2">
+        {navigationItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentView === item.id;
+          
+          return (
+            <Button
+              key={item.id}
+              variant={isActive ? "default" : "ghost"}
+              className={`w-full justify-start ${
+                isActive 
+                  ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90' 
+                  : 'text-gray-600 hover:text-barbershop-dark hover:bg-gray-100'
+              }`}
+              onClick={() => handleNavigation(item.id)}
+            >
+              <Icon className="mr-2 h-4 w-4" />
+              {item.label}
+            </Button>
+          );
+        })}
+      </nav>
+
+      {onLogout && (
+        <div className="p-4 border-t">
           <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            variant="outline"
+            className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+            onClick={handleLogout}
           >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <LogOut className="mr-2 h-4 w-4" />
+            Cerrar Sesión
           </Button>
         </div>
+      )}
+    </div>
+  );
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden mt-4 pb-4 border-t border-gray-200">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleMenuItemClick(item.id)}
-                  className={`flex flex-col items-center space-y-1 p-3 rounded-md text-xs font-medium transition-colors ${
-                    currentView === item.id
-                      ? 'bg-barbershop-gold text-white'
-                      : 'text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+  return (
+    <>
+      {/* Desktop Navigation */}
+      <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-white border-r shadow-sm z-50">
+        <NavContent />
       </div>
-    </nav>
+
+      {/* Mobile Navigation */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b shadow-sm z-50 p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-semibold text-barbershop-dark">Admin Panel</h1>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <NavContent />
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
+      {/* Spacer for fixed navigation */}
+      <div className="lg:ml-64 lg:pt-0 pt-20">
+        {/* Content goes here */}
+      </div>
+    </>
   );
 };
 
