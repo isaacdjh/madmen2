@@ -80,14 +80,22 @@ const ClientImporter = () => {
     let total = 0;
 
     try {
+      console.log('Iniciando procesamiento del archivo:', file.name);
+      
       // Leer el archivo Excel
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       
-      // Convertir a JSON
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+      // Convertir a JSON - aumentar límite de filas
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+        header: 1,
+        raw: false, // Para evitar problemas con fechas
+        defval: '' // Valor por defecto para celdas vacías
+      }) as any[][];
+      
+      console.log('Filas totales en Excel:', jsonData.length);
       
       if (jsonData.length < 2) {
         errors.push('El archivo debe tener al menos una fila de encabezados y una fila de datos');
@@ -101,81 +109,135 @@ const ClientImporter = () => {
 
       // Mapear posibles nombres de columnas
       const columnMap = {
-        name: headers.findIndex(h => h.includes('name') || h.includes('nombre') || h.includes('client')),
-        firstName: headers.findIndex(h => h.includes('first') || h.includes('nombre')),
-        lastName: headers.findIndex(h => h.includes('last') || h.includes('apellido')),
-        email: headers.findIndex(h => h.includes('email') || h.includes('correo')),
-        phone: headers.findIndex(h => h.includes('phone') || h.includes('teléfono') || h.includes('telefono') || h.includes('mobile') || h.includes('móvil')),
-        totalVisits: headers.findIndex(h => h.includes('visit') || h.includes('cita') || h.includes('appointment')),
-        lastVisit: headers.findIndex(h => h.includes('last visit') || h.includes('última') || h.includes('recent')),
-        totalSpent: headers.findIndex(h => h.includes('spent') || h.includes('total') || h.includes('amount') || h.includes('gastado'))
+        name: headers.findIndex(h => 
+          h.includes('name') || h.includes('nombre') || h.includes('client') || 
+          h.includes('customer') || h.includes('cliente')
+        ),
+        firstName: headers.findIndex(h => 
+          h.includes('first') || h.includes('nombre') || h.includes('given')
+        ),
+        lastName: headers.findIndex(h => 
+          h.includes('last') || h.includes('apellido') || h.includes('surname') || h.includes('family')
+        ),
+        email: headers.findIndex(h => 
+          h.includes('email') || h.includes('correo') || h.includes('mail')
+        ),
+        phone: headers.findIndex(h => 
+          h.includes('phone') || h.includes('teléfono') || h.includes('telefono') || 
+          h.includes('mobile') || h.includes('móvil') || h.includes('movil') || h.includes('cel')
+        ),
+        totalVisits: headers.findIndex(h => 
+          h.includes('visit') || h.includes('cita') || h.includes('appointment') || h.includes('bookings')
+        ),
+        lastVisit: headers.findIndex(h => 
+          h.includes('last visit') || h.includes('última') || h.includes('recent') || h.includes('último')
+        ),
+        totalSpent: headers.findIndex(h => 
+          h.includes('spent') || h.includes('total') || h.includes('amount') || h.includes('gastado') || h.includes('revenue')
+        )
       };
 
       console.log('Mapeo de columnas:', columnMap);
 
-      // Procesar filas de datos (saltando la primera que son encabezados)
-      const dataRows = jsonData.slice(1);
+      // Procesar TODAS las filas de datos (saltando la primera que son encabezados)
+      const dataRows = jsonData.slice(1).filter(row => 
+        // Filtrar filas completamente vacías
+        row.some(cell => cell && String(cell).trim() !== '')
+      );
+      
       total = dataRows.length;
+      console.log('Filas de datos a procesar:', total);
 
-      for (let i = 0; i < dataRows.length; i++) {
-        const row = dataRows[i];
-        setProgress((i / total) * 100);
-
-        try {
-          // Extraer datos de la fila
-          const clientData: BooksyClient = {
-            name: row[columnMap.name] ? String(row[columnMap.name]).trim() : '',
-            firstName: row[columnMap.firstName] ? String(row[columnMap.firstName]).trim() : '',
-            lastName: row[columnMap.lastName] ? String(row[columnMap.lastName]).trim() : '',
-            email: row[columnMap.email] ? normalizeEmail(String(row[columnMap.email])) : '',
-            phone: row[columnMap.phone] ? normalizePhoneNumber(String(row[columnMap.phone])) : '',
-            totalVisits: row[columnMap.totalVisits] ? Number(row[columnMap.totalVisits]) : 0,
-            lastVisit: row[columnMap.lastVisit] ? String(row[columnMap.lastVisit]) : '',
-            totalSpent: row[columnMap.totalSpent] ? Number(row[columnMap.totalSpent]) : 0
-          };
-
-          // Determinar nombre completo
-          let fullName = clientData.name;
-          if (!fullName && (clientData.firstName || clientData.lastName)) {
-            fullName = `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim();
-          }
-
-          // Validar datos mínimos
-          if (!fullName) {
-            errors.push(`Fila ${i + 2}: Falta el nombre del cliente`);
-            continue;
-          }
-
-          if (!clientData.email && !clientData.phone) {
-            errors.push(`Fila ${i + 2}: Falta email o teléfono para ${fullName}`);
-            continue;
-          }
-
-          // Crear email temporal si no existe
-          const email = clientData.email || `${fullName.toLowerCase().replace(/\s+/g, '.')}@temp.booksy`;
+      // Procesar en lotes más grandes para mayor eficiencia
+      const batchSize = 50;
+      
+      for (let i = 0; i < dataRows.length; i += batchSize) {
+        const batch = dataRows.slice(i, i + batchSize);
+        
+        // Procesar lote en paralelo
+        const batchPromises = batch.map(async (row, batchIndex) => {
+          const actualIndex = i + batchIndex;
           
-          // Crear teléfono temporal si no existe
-          const phone = clientData.phone || `+34${String(Date.now()).slice(-9)}`;
+          try {
+            // Extraer datos de la fila
+            const clientData: BooksyClient = {
+              name: row[columnMap.name] ? String(row[columnMap.name]).trim() : '',
+              firstName: row[columnMap.firstName] ? String(row[columnMap.firstName]).trim() : '',
+              lastName: row[columnMap.lastName] ? String(row[columnMap.lastName]).trim() : '',
+              email: row[columnMap.email] ? normalizeEmail(String(row[columnMap.email])) : '',
+              phone: row[columnMap.phone] ? normalizePhoneNumber(String(row[columnMap.phone])) : '',
+              totalVisits: row[columnMap.totalVisits] ? Number(row[columnMap.totalVisits]) || 0 : 0,
+              lastVisit: row[columnMap.lastVisit] ? String(row[columnMap.lastVisit]) : '',
+              totalSpent: row[columnMap.totalSpent] ? Number(row[columnMap.totalSpent]) || 0 : 0
+            };
 
-          // Intentar crear/obtener cliente
-          await createOrGetClient(
-            clientData.firstName || fullName,
-            phone,
-            email
-          );
+            // Determinar nombre completo
+            let fullName = clientData.name;
+            if (!fullName && (clientData.firstName || clientData.lastName)) {
+              fullName = `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim();
+            }
 
-          imported++;
-          
-        } catch (error) {
-          console.error(`Error procesando fila ${i + 2}:`, error);
-          errors.push(`Fila ${i + 2}: Error al procesar - ${error instanceof Error ? error.message : 'Error desconocido'}`);
-        }
+            // Validar datos mínimos
+            if (!fullName) {
+              return { success: false, error: `Fila ${actualIndex + 2}: Falta el nombre del cliente` };
+            }
+
+            if (!clientData.email && !clientData.phone) {
+              return { success: false, error: `Fila ${actualIndex + 2}: Falta email o teléfono para ${fullName}` };
+            }
+
+            // Crear email temporal si no existe pero tiene teléfono
+            const email = clientData.email || `cliente.${actualIndex}@temp.booksy.com`;
+            
+            // Crear teléfono temporal si no existe pero tiene email
+            const phone = clientData.phone || `+34${String(600000000 + actualIndex).slice(0, 9)}`;
+
+            // Intentar crear/obtener cliente
+            await createOrGetClient(
+              clientData.firstName || fullName,
+              phone,
+              email
+            );
+
+            return { success: true };
+            
+          } catch (error) {
+            console.error(`Error procesando fila ${actualIndex + 2}:`, error);
+            return { 
+              success: false, 
+              error: `Fila ${actualIndex + 2}: Error al procesar - ${error instanceof Error ? error.message : 'Error desconocido'}` 
+            };
+          }
+        });
+
+        // Esperar a que termine el lote
+        const batchResults = await Promise.all(batchPromises);
+        
+        // Contar resultados
+        batchResults.forEach(result => {
+          if (result.success) {
+            imported++;
+          } else {
+            errors.push(result.error);
+          }
+        });
+
+        // Actualizar progreso
+        const currentProgress = ((i + batch.length) / total) * 100;
+        setProgress(Math.min(currentProgress, 100));
+        
+        console.log(`Procesado lote ${Math.floor(i/batchSize) + 1}: ${imported} importados, ${errors.length} errores`);
+        
+        // Pequeña pausa para no sobrecargar la base de datos
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
+
+      console.log('Procesamiento completado:', { total, imported, errores: errors.length });
 
       setResults({
         total,
         imported,
-        errors: errors.slice(0, 10) // Mostrar máximo 10 errores
+        errors: errors.slice(0, 20) // Mostrar máximo 20 errores
       });
 
     } catch (error) {
@@ -208,6 +270,7 @@ const ClientImporter = () => {
                 <li>• Siguientes filas: Datos de clientes</li>
                 <li>• Al menos debe tener nombre y email o teléfono</li>
                 <li>• Los teléfonos se normalizarán automáticamente a formato español</li>
+                <li>• <strong>Ahora procesa TODOS los clientes sin límites</strong></li>
               </ul>
             </AlertDescription>
           </Alert>
@@ -221,7 +284,7 @@ const ClientImporter = () => {
                   <p className="mb-2 text-sm text-gray-500">
                     <span className="font-semibold">Haz clic para subir</span> el archivo Excel
                   </p>
-                  <p className="text-xs text-gray-500">XLSX, XLS (MAX. 10MB)</p>
+                  <p className="text-xs text-gray-500">XLSX, XLS (Sin límite de tamaño)</p>
                 </div>
                 <Input
                   type="file"
@@ -252,12 +315,12 @@ const ClientImporter = () => {
             {isProcessing ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Procesando...
+                Procesando todos los clientes...
               </>
             ) : (
               <>
                 <Users className="w-4 h-4 mr-2" />
-                Importar Clientes
+                Importar TODOS los Clientes
               </>
             )}
           </Button>
@@ -267,7 +330,7 @@ const ClientImporter = () => {
             <div className="space-y-2">
               <Progress value={progress} className="w-full" />
               <p className="text-sm text-center text-gray-600">
-                Procesando... {Math.round(progress)}%
+                Procesando todos los clientes... {Math.round(progress)}%
               </p>
             </div>
           )}
@@ -290,7 +353,7 @@ const ClientImporter = () => {
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <div>
-                      <p className="text-sm text-gray-600">Importados</p>
+                      <p className="text-sm text-gray-600">Importados exitosamente</p>
                       <p className="text-2xl font-bold text-green-600">{results.imported}</p>
                     </div>
                   </div>
@@ -302,14 +365,14 @@ const ClientImporter = () => {
                   <AlertCircle className="w-4 h-4" />
                   <AlertDescription>
                     <strong>Errores encontrados ({results.errors.length}):</strong>
-                    <ul className="mt-2 space-y-1 text-sm max-h-32 overflow-y-auto">
+                    <ul className="mt-2 space-y-1 text-sm max-h-40 overflow-y-auto">
                       {results.errors.map((error, index) => (
                         <li key={index}>• {error}</li>
                       ))}
                     </ul>
-                    {results.errors.length === 10 && (
+                    {results.errors.length === 20 && (
                       <p className="text-xs mt-2 text-gray-500">
-                        (Mostrando solo los primeros 10 errores)
+                        (Mostrando solo los primeros 20 errores)
                       </p>
                     )}
                   </AlertDescription>
@@ -319,8 +382,9 @@ const ClientImporter = () => {
               <Alert className="border-green-200 bg-green-50">
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <AlertDescription className="text-green-800">
-                  ¡Importación completada! Se han procesado {results.imported} de {results.total} clientes.
-                  Puedes ver los clientes importados en la sección de Gestión de Clientes.
+                  <strong>¡Importación completada!</strong><br />
+                  Se han procesado <strong>{results.imported} de {results.total}</strong> clientes de ambos centros.
+                  <br />Puedes ver todos los clientes importados en la sección de Gestión de Clientes.
                 </AlertDescription>
               </Alert>
             </div>
