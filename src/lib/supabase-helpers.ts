@@ -176,17 +176,32 @@ export const getClientBonuses = async (): Promise<ClientBonus[]> => {
 };
 
 export const getAllClients = async (): Promise<any[]> => {
+  console.log('Cargando clientes desde la base de datos...');
+  
+  // Primero consultar directamente la tabla clients
   const { data, error } = await supabase
-    .from('client_complete_summary')
+    .from('clients')
     .select('*')
-    .order('name', { ascending: true });
+    .order('created_at', { ascending: false })
+    .limit(1000); // Temporal para debugging
 
   if (error) {
     console.error('Error fetching clients:', error);
     throw error;
   }
 
-  return data || [];
+  console.log(`Clientes cargados: ${data?.length || 0}`);
+  
+  // Mapear los datos para compatibilidad con ClientManagement
+  return (data || []).map(client => ({
+    ...client,
+    client_since: client.created_at,
+    total_appointments: 0,
+    completed_appointments: 0,
+    active_bonus_services: 0,
+    total_bonuses_purchased: 0,
+    total_spent: 0
+  }));
 };
 
 export const getAllBarbers = async (): Promise<Barber[]> => {
