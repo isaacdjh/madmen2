@@ -199,11 +199,18 @@ const ClientImporter = () => {
             const phone = clientData.phone || `+34${String(600000000 + Date.now() + actualIndex).slice(-9)}`;
 
             // Buscar cliente existente primero
-            const { data: existingClients } = await supabase
+            const { data: existingClients, error: searchError } = await supabase
               .from('clients')
               .select('id')
-              .or(`phone.eq.${phone},email.eq.${email}`);
+              .or(`phone.eq."${phone}",email.eq."${email}"`);
 
+            if (searchError) {
+              console.error(`Error buscando cliente ${fullName}:`, searchError);
+              errors.push(`Fila ${actualIndex + 2}: Error buscando ${fullName}`);
+              continue;
+            }
+
+            let wasUpdated = false;
             if (existingClients && existingClients.length > 0) {
               // Cliente existe, eliminarlo completamente
               const { error: deleteError } = await supabase
@@ -213,7 +220,10 @@ const ClientImporter = () => {
 
               if (deleteError) {
                 console.error(`Error eliminando cliente duplicado ${fullName}:`, deleteError);
+                errors.push(`Fila ${actualIndex + 2}: Error eliminando duplicado ${fullName}`);
+                continue;
               }
+              wasUpdated = true;
             }
 
             // Crear cliente nuevo (siempre)
@@ -234,8 +244,13 @@ const ClientImporter = () => {
               continue;
             }
 
-            imported++;
-            console.log(`Cliente importado: ${fullName}`);
+            if (wasUpdated) {
+              updated++;
+              console.log(`Cliente sustituido: ${fullName}`);
+            } else {
+              imported++;
+              console.log(`Cliente nuevo: ${fullName}`);
+            }
             
           } catch (error) {
             console.error(`Error procesando fila ${actualIndex + 2}:`, error);
