@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import AdminPanel from '@/components/AdminPanel';
@@ -80,16 +81,13 @@ const AdminIndex = ({ onLogout }: AdminIndexProps) => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background">
-      <Navigation 
-        currentView={currentView} 
-        onViewChange={setCurrentView}
-        onLogout={onLogout}
-      />
-      <div className="w-full">
-        {renderCurrentView()}
-      </div>
-    </div>
+    <Navigation 
+      currentView={currentView} 
+      onViewChange={setCurrentView}
+      onLogout={onLogout}
+    >
+      {renderCurrentView()}
+    </Navigation>
   );
 };
 
