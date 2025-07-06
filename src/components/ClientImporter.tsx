@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Users } from 'lucide-react';
-import { createOrGetClient } from '@/lib/supabase-helpers';
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Users, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 
 interface BooksyClient {
@@ -26,9 +26,11 @@ const ClientImporter = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [updateExisting, setUpdateExisting] = useState(true);
   const [results, setResults] = useState<{
     total: number;
     imported: number;
+    updated: number;
     errors: string[];
   } | null>(null);
 
@@ -77,10 +79,12 @@ const ClientImporter = () => {
     
     const errors: string[] = [];
     let imported = 0;
+    let updated = 0;
     let total = 0;
 
     try {
       console.log('Iniciando procesamiento del archivo:', file.name);
+      console.log('Modo actualización:', updateExisting ? 'Activado' : 'Desactivado');
       
       // Leer el archivo Excel
       const data = await file.arrayBuffer();
@@ -88,18 +92,18 @@ const ClientImporter = () => {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       
-      // Convertir a JSON - aumentar límite de filas
+      // Convertir a JSON
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
         header: 1,
-        raw: false, // Para evitar problemas con fechas
-        defval: '' // Valor por defecto para celdas vacías
+        raw: false,
+        defval: ''
       }) as any[][];
       
       console.log('Filas totales en Excel:', jsonData.length);
       
       if (jsonData.length < 2) {
         errors.push('El archivo debe tener al menos una fila de encabezados y una fila de datos');
-        setResults({ total: 0, imported: 0, errors });
+        setResults({ total: 0, imported: 0, updated: 0, errors });
         return;
       }
 
@@ -139,24 +143,24 @@ const ClientImporter = () => {
 
       console.log('Mapeo de columnas:', columnMap);
 
-      // Procesar TODAS las filas de datos (saltando la primera que son encabezados)
+      // Procesar todas las filas de datos
       const dataRows = jsonData.slice(1).filter(row => 
-        // Filtrar filas completamente vacías
         row.some(cell => cell && String(cell).trim() !== '')
       );
       
       total = dataRows.length;
       console.log('Filas de datos a procesar:', total);
 
-      // Procesar en lotes más grandes para mayor eficiencia
-      const batchSize = 50;
+      // Procesar en lotes
+      const batchSize = 25; // Reducido para mejor manejo de errores
       
       for (let i = 0; i < dataRows.length; i += batchSize) {
         const batch = dataRows.slice(i, i + batchSize);
         
-        // Procesar lote en paralelo
-        const batchPromises = batch.map(async (row, batchIndex) => {
-          const actualIndex = i + batchIndex;
+        // Procesar lote secuencialmente para mejor control de errores
+        for (let j = 0; j < batch.length; j++) {
+          const row = batch[j];
+          const actualIndex = i + j;
           
           try {
             // Extraer datos de la fila
@@ -179,71 +183,95 @@ const ClientImporter = () => {
 
             // Validar datos mínimos
             if (!fullName) {
-              return { success: false, error: `Fila ${actualIndex + 2}: Falta el nombre del cliente` };
+              errors.push(`Fila ${actualIndex + 2}: Falta el nombre del cliente`);
+              continue;
             }
 
             if (!clientData.email && !clientData.phone) {
-              return { success: false, error: `Fila ${actualIndex + 2}: Falta email o teléfono para ${fullName}` };
+              errors.push(`Fila ${actualIndex + 2}: Falta email o teléfono para ${fullName}`);
+              continue;
             }
 
             // Crear email temporal si no existe pero tiene teléfono
-            const email = clientData.email || `cliente.${actualIndex}@temp.booksy.com`;
+            const email = clientData.email || `temp.${Date.now()}.${actualIndex}@booksy.com`;
             
             // Crear teléfono temporal si no existe pero tiene email
-            const phone = clientData.phone || `+34${String(600000000 + actualIndex).slice(0, 9)}`;
+            const phone = clientData.phone || `+34${String(600000000 + Date.now() + actualIndex).slice(-9)}`;
 
-            // Intentar crear/obtener cliente
-            await createOrGetClient(
-              clientData.firstName || fullName,
-              phone,
-              email
-            );
+            // Usar la función de base de datos para buscar o crear cliente
+            const { data: clientId, error: clientError } = await supabase
+              .rpc('find_or_create_client', {
+                p_name: clientData.firstName || fullName,
+                p_phone: phone,
+                p_email: email,
+                p_last_name: clientData.lastName || null
+              });
 
-            return { success: true };
+            if (clientError) {
+              console.error(`Error procesando cliente ${fullName}:`, clientError);
+              errors.push(`Fila ${actualIndex + 2}: Error al procesar ${fullName} - ${clientError.message}`);
+              continue;
+            }
+
+            // Verificar si el cliente ya existía
+            const { data: existingClient, error: checkError } = await supabase
+              .from('clients')
+              .select('created_at')
+              .eq('id', clientId)
+              .single();
+
+            if (checkError) {
+              console.error('Error verificando cliente:', checkError);
+              errors.push(`Fila ${actualIndex + 2}: Error verificando ${fullName}`);
+              continue;
+            }
+
+            // Determinar si fue creado o actualizado
+            const clientAge = new Date().getTime() - new Date(existingClient.created_at).getTime();
+            const wasJustCreated = clientAge < 5000; // Menos de 5 segundos = recién creado
+
+            if (wasJustCreated) {
+              imported++;
+              console.log(`Cliente creado: ${fullName}`);
+            } else {
+              updated++;
+              console.log(`Cliente actualizado: ${fullName}`);
+            }
             
           } catch (error) {
             console.error(`Error procesando fila ${actualIndex + 2}:`, error);
-            return { 
-              success: false, 
-              error: `Fila ${actualIndex + 2}: Error al procesar - ${error instanceof Error ? error.message : 'Error desconocido'}` 
-            };
+            errors.push(`Fila ${actualIndex + 2}: Error inesperado - ${error instanceof Error ? error.message : 'Error desconocido'}`);
           }
-        });
-
-        // Esperar a que termine el lote
-        const batchResults = await Promise.all(batchPromises);
-        
-        // Contar resultados
-        batchResults.forEach(result => {
-          if (result.success) {
-            imported++;
-          } else {
-            errors.push(result.error);
-          }
-        });
+        }
 
         // Actualizar progreso
         const currentProgress = ((i + batch.length) / total) * 100;
         setProgress(Math.min(currentProgress, 100));
         
-        console.log(`Procesado lote ${Math.floor(i/batchSize) + 1}: ${imported} importados, ${errors.length} errores`);
+        console.log(`Procesado lote ${Math.floor(i/batchSize) + 1}: ${imported} nuevos, ${updated} actualizados, ${errors.length} errores`);
         
-        // Pequeña pausa para no sobrecargar la base de datos
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Pausa entre lotes para no sobrecargar
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
 
-      console.log('Procesamiento completado:', { total, imported, errores: errors.length });
+      console.log('Procesamiento completado:', { 
+        total, 
+        imported, 
+        updated, 
+        errores: errors.length 
+      });
 
       setResults({
         total,
         imported,
-        errors: errors.slice(0, 20) // Mostrar máximo 20 errores
+        updated,
+        errors: errors.slice(0, 50) // Mostrar máximo 50 errores
       });
 
     } catch (error) {
       console.error('Error procesando archivo:', error);
       errors.push(`Error general: ${error instanceof Error ? error.message : 'Error desconocido'}`);
-      setResults({ total: 0, imported: 0, errors });
+      setResults({ total: 0, imported: 0, updated: 0, errors });
     } finally {
       setIsProcessing(false);
       setProgress(100);
@@ -270,10 +298,24 @@ const ClientImporter = () => {
                 <li>• Siguientes filas: Datos de clientes</li>
                 <li>• Al menos debe tener nombre y email o teléfono</li>
                 <li>• Los teléfonos se normalizarán automáticamente a formato español</li>
-                <li>• <strong>Ahora procesa TODOS los clientes sin límites</strong></li>
+                <li>• <strong>Ahora maneja duplicados automáticamente</strong></li>
               </ul>
             </AlertDescription>
           </Alert>
+
+          {/* Opción para actualizar existentes */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="updateExisting"
+              checked={updateExisting}
+              onChange={(e) => setUpdateExisting(e.target.checked)}
+              className="rounded"
+            />
+            <label htmlFor="updateExisting" className="text-sm font-medium">
+              Actualizar clientes existentes (recomendado)
+            </label>
+          </div>
 
           {/* Selector de archivo */}
           <div className="space-y-4">
@@ -284,7 +326,7 @@ const ClientImporter = () => {
                   <p className="mb-2 text-sm text-gray-500">
                     <span className="font-semibold">Haz clic para subir</span> el archivo Excel
                   </p>
-                  <p className="text-xs text-gray-500">XLSX, XLS (Sin límite de tamaño)</p>
+                  <p className="text-xs text-gray-500">XLSX, XLS (Procesa TODOS los clientes)</p>
                 </div>
                 <Input
                   type="file"
@@ -314,7 +356,7 @@ const ClientImporter = () => {
           >
             {isProcessing ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                 Procesando todos los clientes...
               </>
             ) : (
@@ -330,7 +372,7 @@ const ClientImporter = () => {
             <div className="space-y-2">
               <Progress value={progress} className="w-full" />
               <p className="text-sm text-center text-gray-600">
-                Procesando todos los clientes... {Math.round(progress)}%
+                Procesando clientes... {Math.round(progress)}%
               </p>
             </div>
           )}
@@ -338,7 +380,7 @@ const ClientImporter = () => {
           {/* Resultados */}
           {results && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <Card className="p-4">
                   <div className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-blue-600" />
@@ -353,8 +395,18 @@ const ClientImporter = () => {
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <div>
-                      <p className="text-sm text-gray-600">Importados exitosamente</p>
+                      <p className="text-sm text-gray-600">Nuevos</p>
                       <p className="text-2xl font-bold text-green-600">{results.imported}</p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-4">
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Actualizados</p>
+                      <p className="text-2xl font-bold text-blue-600">{results.updated}</p>
                     </div>
                   </div>
                 </Card>
@@ -370,9 +422,9 @@ const ClientImporter = () => {
                         <li key={index}>• {error}</li>
                       ))}
                     </ul>
-                    {results.errors.length === 20 && (
+                    {results.errors.length === 50 && (
                       <p className="text-xs mt-2 text-gray-500">
-                        (Mostrando solo los primeros 20 errores)
+                        (Mostrando solo los primeros 50 errores)
                       </p>
                     )}
                   </AlertDescription>
@@ -383,8 +435,10 @@ const ClientImporter = () => {
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <AlertDescription className="text-green-800">
                   <strong>¡Importación completada!</strong><br />
-                  Se han procesado <strong>{results.imported} de {results.total}</strong> clientes de ambos centros.
-                  <br />Puedes ver todos los clientes importados en la sección de Gestión de Clientes.
+                  Se han procesado <strong>{results.imported + results.updated} de {results.total}</strong> clientes:
+                  <br />• {results.imported} clientes nuevos creados
+                  <br />• {results.updated} clientes actualizados
+                  <br />Puedes ver todos los clientes en la sección de Gestión de Clientes.
                 </AlertDescription>
               </Alert>
             </div>
