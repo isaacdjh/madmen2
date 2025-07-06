@@ -198,45 +198,44 @@ const ClientImporter = () => {
             // Crear teléfono temporal si no existe pero tiene email
             const phone = clientData.phone || `+34${String(600000000 + Date.now() + actualIndex).slice(-9)}`;
 
-            // Usar la función de base de datos para buscar o crear cliente
-            const { data: clientId, error: clientError } = await supabase
-              .rpc('find_or_create_client', {
-                p_name: clientData.firstName || fullName,
-                p_phone: phone,
-                p_email: email,
-                p_last_name: clientData.lastName || null
-              });
+            // Buscar cliente existente primero
+            const { data: existingClients } = await supabase
+              .from('clients')
+              .select('id')
+              .or(`phone.eq.${phone},email.eq.${email}`);
 
-            if (clientError) {
-              console.error(`Error procesando cliente ${fullName}:`, clientError);
-              errors.push(`Fila ${actualIndex + 2}: Error al procesar ${fullName} - ${clientError.message}`);
-              continue;
+            if (existingClients && existingClients.length > 0) {
+              // Cliente existe, eliminarlo completamente
+              const { error: deleteError } = await supabase
+                .from('clients')
+                .delete()
+                .eq('id', existingClients[0].id);
+
+              if (deleteError) {
+                console.error(`Error eliminando cliente duplicado ${fullName}:`, deleteError);
+              }
             }
 
-            // Verificar si el cliente ya existía
-            const { data: existingClient, error: checkError } = await supabase
+            // Crear cliente nuevo (siempre)
+            const { data: newClient, error: createError } = await supabase
               .from('clients')
-              .select('created_at')
-              .eq('id', clientId)
+              .insert({
+                name: clientData.firstName || fullName,
+                last_name: clientData.lastName || null,
+                phone: phone,
+                email: email
+              })
+              .select('id')
               .single();
 
-            if (checkError) {
-              console.error('Error verificando cliente:', checkError);
-              errors.push(`Fila ${actualIndex + 2}: Error verificando ${fullName}`);
+            if (createError) {
+              console.error(`Error creando cliente ${fullName}:`, createError);
+              errors.push(`Fila ${actualIndex + 2}: Error al crear ${fullName} - ${createError.message}`);
               continue;
             }
 
-            // Determinar si fue creado o actualizado
-            const clientAge = new Date().getTime() - new Date(existingClient.created_at).getTime();
-            const wasJustCreated = clientAge < 5000; // Menos de 5 segundos = recién creado
-
-            if (wasJustCreated) {
-              imported++;
-              console.log(`Cliente creado: ${fullName}`);
-            } else {
-              updated++;
-              console.log(`Cliente actualizado: ${fullName}`);
-            }
+            imported++;
+            console.log(`Cliente importado: ${fullName}`);
             
           } catch (error) {
             console.error(`Error procesando fila ${actualIndex + 2}:`, error);
