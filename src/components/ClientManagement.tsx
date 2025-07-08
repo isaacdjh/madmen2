@@ -120,11 +120,17 @@ const ClientManagement = ({ isBarberView = false }: ClientManagementProps) => {
 
   const loadClients = async () => {
     try {
+      console.log('ClientManagement: Iniciando loadClients...');
       const clientsData = await getAllClients();
+      console.log('ClientManagement: Datos recibidos:', clientsData);
+      console.log('ClientManagement: Número de clientes:', clientsData?.length || 0);
+      
       setClients(clientsData);
       setFilteredClients(clientsData);
+      
+      console.log('ClientManagement: Estado actualizado exitosamente');
     } catch (error) {
-      console.error('Error loading clients:', error);
+      console.error('ClientManagement: Error loading clients:', error);
     } finally {
       setIsLoading(false);
     }
