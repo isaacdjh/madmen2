@@ -123,13 +123,16 @@ const ClientManagement = ({ isBarberView = false }: ClientManagementProps) => {
     try {
       console.log('ClientManagement: Iniciando loadClients...');
       const clientsData = await getAllClients();
-      console.log('ClientManagement: Datos recibidos:', clientsData);
-      console.log('ClientManagement: Número de clientes:', clientsData?.length || 0);
+      console.log('ClientManagement: Datos recibidos:', clientsData?.length || 0, 'clientes');
       
-      setClients(clientsData);
-      setFilteredClients(clientsData);
+      if (clientsData && clientsData.length > 0) {
+        setClients(clientsData);
+        setFilteredClients(clientsData);
+        console.log('ClientManagement: Estado actualizado con', clientsData.length, 'clientes');
+      } else {
+        console.warn('ClientManagement: No se recibieron datos de clientes');
+      }
       
-      console.log('ClientManagement: Estado actualizado exitosamente');
     } catch (error) {
       console.error('ClientManagement: Error loading clients:', error);
     } finally {
