@@ -178,12 +178,11 @@ export const getClientBonuses = async (): Promise<ClientBonus[]> => {
 export const getAllClients = async (): Promise<any[]> => {
   console.log('Cargando clientes desde la base de datos...');
   
-  // Primero consultar directamente la tabla clients
+  // Consultar directamente la tabla clients SIN LÍMITE
   const { data, error } = await supabase
     .from('clients')
     .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1000); // Temporal para debugging
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching clients:', error);
