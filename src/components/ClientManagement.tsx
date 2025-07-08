@@ -22,6 +22,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { getAllClients, getClientCompleteData, sellBonus, getAllBonusPackages, createPayment, createOrGetClient } from '@/lib/supabase-helpers';
+import ClientsTable from './ClientsTable';
 import type { BonusPackage, ClientBonus } from '@/lib/supabase-helpers';
 
 interface ClientWithSummary {
@@ -369,232 +370,188 @@ const ClientManagement = ({ isBarberView = false }: ClientManagementProps) => {
         </div>
       )}
 
-      {/* Clients List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filteredClients.map((client) => (
-          <Card key={client.id} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start mb-3">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-bold text-barbershop-dark truncate">
-                    {client.name} {client.last_name || ''}
-                  </h3>
-                  <div className="flex items-center text-sm text-muted-foreground mt-1">
-                    <Phone className="w-3 h-3 mr-1" />
-                    <span className="truncate">{maskSensitiveData(client.phone, 'phone')}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground mt-1">
-                    <Mail className="w-3 h-3 mr-1" />
-                    <span className="truncate">{maskSensitiveData(client.email, 'email')}</span>
-                  </div>
-                </div>
-                {(client.active_bonus_services || 0) > 0 && (
-                  <Badge className="bg-green-100 text-green-800 ml-2">
-                    {client.active_bonus_services} bonos
-                  </Badge>
-                )}
-              </div>
+      {/* Nueva tabla de clientes */}
+      <ClientsTable 
+        clients={clients}
+        searchTerm={searchTerm}
+        onViewClient={loadClientDetails}
+        isBarberView={isBarberView}
+      />
 
-              <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground mb-4">
-                <div className="flex items-center">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  <span>{client.total_appointments || 0} citas</span>
-                </div>
+      {/* Modal de detalles del cliente */}
+      {selectedClient && (
+        <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Perfil de {selectedClient.client.name} {selectedClient.client.last_name || ''}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <Tabs defaultValue="info" className="w-full">
+              <TabsList className={`grid w-full ${isBarberView ? 'grid-cols-2' : 'grid-cols-4'}`}>
+                <TabsTrigger value="info">Información</TabsTrigger>
+                <TabsTrigger value="appointments">Citas</TabsTrigger>
                 {!isBarberView && (
-                  <div className="flex items-center">
-                    <CreditCard className="w-3 h-3 mr-1" />
-                    <span>€{(client.total_spent || 0).toFixed(2)}</span>
-                  </div>
+                  <>
+                    <TabsTrigger value="bonuses">Bonos</TabsTrigger>
+                    <TabsTrigger value="payments">Pagos</TabsTrigger>
+                  </>
                 )}
-              </div>
+              </TabsList>
 
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => loadClientDetails(client.id)}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Ver Detalles
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>
-                      Perfil de {selectedClient?.client.name} {selectedClient?.client.last_name || ''}
-                    </DialogTitle>
-                  </DialogHeader>
-                  
-                  {selectedClient && (
-                    <Tabs defaultValue="info" className="w-full">
-                      <TabsList className={`grid w-full ${isBarberView ? 'grid-cols-2' : 'grid-cols-4'}`}>
-                        <TabsTrigger value="info">Información</TabsTrigger>
-                        <TabsTrigger value="appointments">Citas</TabsTrigger>
-                        {!isBarberView && (
-                          <>
-                            <TabsTrigger value="bonuses">Bonos</TabsTrigger>
-                            <TabsTrigger value="payments">Pagos</TabsTrigger>
-                          </>
-                        )}
-                      </TabsList>
+              <TabsContent value="info" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Información Personal</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center">
+                      <User className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <span>{selectedClient.client.name} {selectedClient.client.last_name || ''}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <span>{maskSensitiveData(selectedClient.client.phone, 'phone')}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <span>{maskSensitiveData(selectedClient.client.email, 'email')}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <span>Cliente desde: {new Date(selectedClient.client.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                      <TabsContent value="info" className="space-y-4">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-lg">Información Personal</CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-2">
-                            <div className="flex items-center">
-                              <User className="w-4 h-4 mr-2 text-muted-foreground" />
-                              <span>{selectedClient.client.name} {selectedClient.client.last_name || ''}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-barbershop-dark">
+                        {selectedClient.appointments.filter(a => a.status === 'completada').length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Servicios Completados</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {selectedClient.bonuses.reduce((sum, b) => sum + b.services_remaining, 0)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Servicios en Bonos</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="appointments" className="space-y-4">
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {selectedClient.appointments.map((appointment) => (
+                    <Card key={appointment.id}>
+                      <CardContent className="p-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">{appointment.service}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {appointment.appointment_date} - {appointment.appointment_time}
                             </div>
-                            <div className="flex items-center">
-                              <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
-                              <span>{maskSensitiveData(selectedClient.client.phone, 'phone')}</span>
+                            <div className="text-sm text-muted-foreground">
+                              Barbero: {appointment.barber}
                             </div>
-                            <div className="flex items-center">
-                              <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
-                              <span>{maskSensitiveData(selectedClient.client.email, 'email')}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
-                              <span>Cliente desde: {new Date(selectedClient.client.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <Badge 
+                            className={
+                              appointment.status === 'completada' 
+                                ? 'bg-green-100 text-green-800'
+                                : appointment.status === 'confirmada'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-red-100 text-red-800'
+                            }
+                          >
+                            {appointment.status}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {!isBarberView && (
+                <>
+                  <TabsContent value="bonuses" className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">Bonos del Cliente</h3>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowSellBonusDialog(true)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Vender Bono
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {selectedClient.bonuses.map((bonus) => (
+                        <Card key={bonus.id}>
+                          <CardContent className="p-3">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <div className="font-medium">Bono de Servicios</div>
+                                <div className="text-sm text-muted-foreground">
+                                  Servicios restantes: {bonus.services_remaining}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Vendido por: {bonus.sold_by_barber}
+                                </div>
+                              </div>
+                              <Badge 
+                                className={
+                                  bonus.status === 'activo' 
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }
+                              >
+                                {bonus.status}
+                              </Badge>
                             </div>
                           </CardContent>
                         </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <Card>
-                            <CardContent className="p-4 text-center">
-                              <div className="text-2xl font-bold text-barbershop-dark">
-                                {selectedClient.appointments.filter(a => a.status === 'completada').length}
-                              </div>
-                              <div className="text-sm text-muted-foreground">Servicios Completados</div>
-                            </CardContent>
-                          </Card>
-                          <Card>
-                            <CardContent className="p-4 text-center">
-                              <div className="text-2xl font-bold text-green-600">
-                                {selectedClient.bonuses.reduce((sum, b) => sum + b.services_remaining, 0)}
-                              </div>
-                              <div className="text-sm text-muted-foreground">Servicios en Bonos</div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="appointments" className="space-y-4">
-                        <div className="max-h-60 overflow-y-auto space-y-2">
-                          {selectedClient.appointments.map((appointment) => (
-                            <Card key={appointment.id}>
-                              <CardContent className="p-3">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <div className="font-medium">{appointment.service}</div>
-                                    <div className="text-sm text-muted-foreground">
-                                      {appointment.appointment_date} - {appointment.appointment_time}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      Barbero: {appointment.barber}
-                                    </div>
-                                  </div>
-                                  <Badge 
-                                    className={
-                                      appointment.status === 'completada' 
-                                        ? 'bg-green-100 text-green-800'
-                                        : appointment.status === 'confirmada'
-                                        ? 'bg-blue-100 text-blue-800'
-                                        : 'bg-red-100 text-red-800'
-                                    }
-                                  >
-                                    {appointment.status}
-                                  </Badge>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </TabsContent>
-
-                      {!isBarberView && (
-                        <>
-                          <TabsContent value="bonuses" className="space-y-4">
+                  <TabsContent value="payments" className="space-y-4">
+                    <div className="max-h-60 overflow-y-auto space-y-2">
+                      {selectedClient.payments.map((payment) => (
+                        <Card key={payment.id}>
+                          <CardContent className="p-3">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-lg font-semibold">Bonos del Cliente</h3>
-                              <Button
-                                size="sm"
-                                onClick={() => setShowSellBonusDialog(true)}
-                              >
-                                <Plus className="w-4 h-4 mr-2" />
-                                Vender Bono
-                              </Button>
+                              <div>
+                                <div className="font-medium">€{payment.amount}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {payment.payment_method}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {new Date(payment.created_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                              <Badge className="bg-green-100 text-green-800">
+                                {payment.payment_status}
+                              </Badge>
                             </div>
-                            
-                            <div className="space-y-2">
-                              {selectedClient.bonuses.map((bonus) => (
-                                <Card key={bonus.id}>
-                                  <CardContent className="p-3">
-                                    <div className="flex justify-between items-center">
-                                      <div>
-                                        <div className="font-medium">Bono de Servicios</div>
-                                        <div className="text-sm text-muted-foreground">
-                                          Servicios restantes: {bonus.services_remaining}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                          Vendido por: {bonus.sold_by_barber}
-                                        </div>
-                                      </div>
-                                      <Badge 
-                                        className={
-                                          bonus.status === 'activo' 
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-gray-100 text-gray-800'
-                                        }
-                                      >
-                                        {bonus.status}
-                                      </Badge>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="payments" className="space-y-4">
-                            <div className="max-h-60 overflow-y-auto space-y-2">
-                              {selectedClient.payments.map((payment) => (
-                                <Card key={payment.id}>
-                                  <CardContent className="p-3">
-                                    <div className="flex justify-between items-center">
-                                      <div>
-                                        <div className="font-medium">€{payment.amount}</div>
-                                        <div className="text-sm text-muted-foreground">
-                                          {payment.payment_method}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                          {new Date(payment.created_at).toLocaleDateString()}
-                                        </div>
-                                      </div>
-                                      <Badge className="bg-green-100 text-green-800">
-                                        {payment.payment_status}
-                                      </Badge>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          </TabsContent>
-                        </>
-                      )}
-                    </Tabs>
-                  )}
-                </DialogContent>
-              </Dialog>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </>
+              )}
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Sell Bonus Dialog - Solo para admin */}
       {!isBarberView && (
