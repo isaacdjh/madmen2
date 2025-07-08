@@ -178,21 +178,37 @@ export const getClientBonuses = async (): Promise<ClientBonus[]> => {
 export const getAllClients = async (): Promise<any[]> => {
   console.log('Cargando clientes desde la base de datos...');
   
-  // Consultar directamente la tabla clients SIN LÍMITE
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .order('created_at', { ascending: false });
+  let allClients: any[] = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
 
-  if (error) {
-    console.error('Error fetching clients:', error);
-    throw error;
+    if (error) {
+      console.error('Error fetching clients:', error);
+      throw error;
+    }
+
+    if (data && data.length > 0) {
+      allClients = [...allClients, ...data];
+      hasMore = data.length === pageSize;
+      page++;
+      console.log(`Página ${page} cargada: ${data.length} clientes. Total acumulado: ${allClients.length}`);
+    } else {
+      hasMore = false;
+    }
   }
 
-  console.log(`Clientes cargados: ${data?.length || 0}`);
+  console.log(`Todos los clientes cargados: ${allClients.length}`);
   
   // Mapear los datos para compatibilidad con ClientManagement
-  return (data || []).map(client => ({
+  return allClients.map(client => ({
     ...client,
     client_since: client.created_at,
     total_appointments: 0,
