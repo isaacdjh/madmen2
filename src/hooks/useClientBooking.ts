@@ -42,7 +42,7 @@ export const useClientBooking = (onBack: () => void) => {
       time,
       location
     }));
-    setStep(3);
+    setStep(4);
   };
 
   const sendConfirmationEmail = async (appointmentData: any, appointmentId: string) => {
