@@ -190,8 +190,8 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-barbershop-gold mx-auto"></div>
-        <p className="mt-2 text-gray-600">Cargando disponibilidad...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-2 text-muted-foreground">Cargando disponibilidad...</p>
       </div>
     );
   }
@@ -201,9 +201,9 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
   if (barbers.length === 0) {
     return (
       <div className="text-center py-8">
-        <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-600 mb-2">No hay barberos disponibles</h3>
-        <p className="text-gray-500">No hay barberos activos en la sede seleccionada</p>
+        <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-muted-foreground mb-2">No hay barberos disponibles</h3>
+        <p className="text-muted-foreground">No hay barberos activos en la sede seleccionada</p>
       </div>
     );
   }
@@ -221,11 +221,11 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
 
         <Card>
           <CardContent className="p-8 text-center">
-            <User className="w-16 h-16 text-barbershop-gold mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-barbershop-dark mb-2">
+            <User className="w-16 h-16 text-primary mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               {barbers.find(b => b.id === preferredBarber)?.name} no tiene horarios disponibles
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               Tu barbero preferido no tiene horarios disponibles para {format(selectedDate, 'dd \'de\' MMMM', { locale: es })}. 
               Prueba con otro día.
             </p>
@@ -248,11 +248,11 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
 
         <Card>
           <CardContent className="p-8 text-center">
-            <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            <Clock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-muted-foreground mb-2">
               No hay horarios disponibles para hoy
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               Los horarios de hoy ya han pasado o están ocupados. Por favor selecciona otro día.
             </p>
           </CardContent>
@@ -272,8 +272,8 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
       />
 
       {isToday(selectedDate) && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-blue-700">
+        <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
             <Clock className="w-5 h-5" />
             <span className="font-medium text-sm">
               Solo se muestran horarios disponibles con al menos 30 minutos de anticipación
@@ -283,9 +283,9 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
       )}
 
       {preferredBarber && (
-        <div className="bg-barbershop-gold/10 border border-barbershop-gold/30 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-barbershop-dark">
-            <User className="w-5 h-5 text-barbershop-gold" />
+        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-foreground">
+            <User className="w-5 h-5 text-primary" />
             <span className="font-medium">
               Mostrando horarios disponibles para: <strong>{barbers.find(b => b.id === preferredBarber)?.name}</strong>
             </span>
@@ -295,8 +295,8 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Calendar className="w-5 h-5 text-barbershop-gold" />
+          <CardTitle className="flex items-center gap-2 text-lg text-card-foreground">
+            <Calendar className="w-5 h-5 text-primary" />
             {preferredBarber ? 
               `Horarios de ${barbers.find(b => b.id === preferredBarber)?.name}` :
               `Selecciona una Hora - ${locations.find(l => l.id === selectedLocation)?.name}`

@@ -23,17 +23,17 @@ const ScheduleStep = ({
   };
 
   return (
-    <Card>
+    <Card className="bg-card text-card-foreground">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-barbershop-gold" />
+        <CardTitle className="flex items-center gap-2 text-card-foreground">
+          <Calendar className="w-5 h-5 text-primary" />
           Selecciona Fecha y Hora
         </CardTitle>
         {formData.preferredBarber && (
-          <div className="text-sm text-barbershop-gold bg-barbershop-gold/10 p-3 rounded-lg">
+          <div className="text-sm text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
             <User className="w-4 h-4 inline mr-2" />
             Barbero seleccionado: <strong>{getBarberName(formData.preferredBarber)}</strong>
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Solo se mostrarán los horarios disponibles de este barbero.
             </p>
           </div>
@@ -49,6 +49,7 @@ const ScheduleStep = ({
           <Button 
             variant="outline" 
             onClick={onPrevious}
+            className="border-border text-foreground hover:bg-muted"
           >
             Anterior
           </Button>

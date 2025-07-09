@@ -36,10 +36,10 @@ const TimeSlotGrid = ({
             className={`
               h-12 sm:h-14 flex flex-col justify-center items-center text-xs sm:text-sm font-medium
               ${isSelected 
-                ? 'bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 border-2 border-barbershop-gold' 
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-primary' 
                 : isAvailable 
-                  ? 'border-barbershop-gold/50 text-barbershop-dark hover:bg-barbershop-gold/10 hover:border-barbershop-gold' 
-                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'border-border text-foreground hover:bg-muted hover:border-primary' 
+                  : 'border-border text-muted-foreground cursor-not-allowed'
               }
             `}
           >

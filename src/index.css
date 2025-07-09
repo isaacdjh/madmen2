@@ -7,6 +7,53 @@
 
 @layer base {
   :root {
+    /* Modo claro por defecto */
+    --background: 0 0% 100%;
+    --foreground: 140 15% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 140 15% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 140 15% 10%;
+
+    --primary: 140 60% 25%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 140 30% 90%;
+    --secondary-foreground: 140 15% 15%;
+
+    --muted: 140 20% 92%;
+    --muted-foreground: 140 8% 46%;
+
+    --accent: 45 100% 50%;
+    --accent-foreground: 140 50% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 140 25% 85%;
+    --input: 140 25% 85%;
+    --ring: 140 70% 45%;
+
+    --radius: 0.75rem;
+
+    --barbershop-gold: 45 100% 50%;
+    --barbershop-dark: 140 60% 25%;
+    --barbershop-navy: 140 50% 20%;
+    --barbershop-bg: 0 0% 100%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 140 15% 10%;
+    --sidebar-primary: 140 60% 25%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 140 20% 92%;
+    --sidebar-accent-foreground: 140 15% 15%;
+    --sidebar-border: 140 25% 85%;
+    --sidebar-ring: 140 70% 45%;
+  }
+
+  .dark {
     --background: 140 15% 8%;
     --foreground: 0 0% 95%;
 
@@ -35,8 +82,6 @@
     --input: 140 30% 22%;
     --ring: 140 70% 45%;
 
-    --radius: 0.75rem;
-
     --barbershop-gold: 45 100% 60%;
     --barbershop-dark: 140 60% 25%;
     --barbershop-navy: 140 50% 20%;
@@ -51,41 +96,6 @@
     --sidebar-border: 140 30% 22%;
     --sidebar-ring: 140 70% 45%;
   }
-
-  .light {
-    --background: 140 20% 95%;
-    --foreground: 140 15% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 140 15% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 140 15% 10%;
-
-    --primary: 140 60% 25%;
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 140 30% 90%;
-    --secondary-foreground: 140 15% 15%;
-
-    --muted: 140 20% 92%;
-    --muted-foreground: 140 8% 46%;
-
-    --accent: 45 100% 60%;
-    --accent-foreground: 140 50% 10%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 140 25% 85%;
-    --input: 140 25% 85%;
-    --ring: 140 70% 45%;
-
-    --barbershop-gold: 45 100% 50%;
-    --barbershop-dark: 140 60% 25%;
-    --barbershop-navy: 140 50% 20%;
-    --barbershop-bg: 140 20% 95%;
-  }
 }
 
 @layer base {
@@ -94,7 +104,7 @@
   }
 
   body {
-    @apply bg-barbershop-bg text-foreground font-sans;
+    @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
