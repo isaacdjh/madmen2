@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getBarbersWithSchedules } from '@/lib/supabase-helpers';
 import { useClientBooking } from '@/hooks/useClientBooking';
 import BookingProgressIndicator from './client/booking/BookingProgressIndicator';
+import ServiceSelectionStep from './client/booking/ServiceSelectionStep';
 import LocationStep from './client/booking/LocationStep';
 import BarberSelectionStep from './client/booking/BarberSelectionStep';
 import ScheduleStep from './client/booking/ScheduleStep';
@@ -67,6 +68,15 @@ const ClientBookingForm = ({ onBack }: ClientBookingFormProps) => {
         </div>
 
         <BookingProgressIndicator currentStep={step} />
+
+        {step === 0 && (
+          <ServiceSelectionStep
+            formData={formData}
+            setFormData={setFormData}
+            services={services}
+            onNext={() => setStep(1)}
+          />
+        )}
 
         {step === 1 && (
           <LocationStep

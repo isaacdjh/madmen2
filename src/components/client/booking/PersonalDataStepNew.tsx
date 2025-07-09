@@ -25,7 +25,7 @@ const PersonalDataStepNew = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <User className="w-5 h-5 text-primary" />
-          Datos Personales y Servicio
+          Datos Personales
         </CardTitle>
         <p className="text-muted-foreground">Completa tus datos para confirmar la reserva</p>
       </CardHeader>
@@ -66,24 +66,6 @@ const PersonalDataStepNew = ({
           />
         </div>
 
-        <div>
-          <Label htmlFor="service" className="text-foreground">Servicio *</Label>
-          <Select value={formData.service} onValueChange={(value) => setFormData(prev => ({ ...prev, service: value }))}>
-            <SelectTrigger className="bg-background border-border text-foreground">
-              <SelectValue placeholder="Selecciona un servicio" />
-            </SelectTrigger>
-            <SelectContent className="bg-background border-border">
-              {services.map((service) => (
-                <SelectItem key={service.id} value={service.id} className="text-foreground hover:bg-muted">
-                  <div className="flex justify-between items-center w-full">
-                    <span>{service.name}</span>
-                    <span className="text-primary font-medium ml-4">{service.price}€</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
         <div className="flex justify-between pt-4">
           <Button 
@@ -95,7 +77,7 @@ const PersonalDataStepNew = ({
           </Button>
           <Button 
             onClick={onNext}
-            disabled={!formData.name || !formData.phone || !formData.email || !formData.service}
+            disabled={!formData.name || !formData.phone || !formData.email}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             Continuar

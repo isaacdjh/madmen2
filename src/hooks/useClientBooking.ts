@@ -5,12 +5,14 @@ import { createOrGetClient, createAppointment } from '@/lib/supabase-helpers';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useClientBooking = (onBack: () => void) => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
+    service: '',
+    servicePrice: 0,
+    serviceDuration: 0,
     name: '',
     phone: '',
     email: '',
-    service: '',
     preferredBarber: '',
     barber: '',
     location: '',
@@ -20,11 +22,11 @@ export const useClientBooking = (onBack: () => void) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const services = [
-    { id: 'classic-cut', name: 'Corte Clásico', price: 45, duration: 30 },
-    { id: 'beard-trim', name: 'Arreglo de Barba', price: 25, duration: 20 },
-    { id: 'cut-beard', name: 'Corte + Barba', price: 65, duration: 45 },
-    { id: 'shave', name: 'Afeitado Tradicional', price: 35, duration: 30 },
-    { id: 'treatments', name: 'Tratamientos Especiales', price: 40, duration: 40 }
+    { id: 'classic-cut', name: 'Corte Clásico', price: 45, duration: 30, category: 'corte', description: 'Corte tradicional con tijeras y máquina', active: true },
+    { id: 'beard-trim', name: 'Arreglo de Barba', price: 25, duration: 20, category: 'barba', description: 'Perfilado y arreglo de barba con navaja', active: true },
+    { id: 'cut-beard', name: 'Corte + Barba', price: 65, duration: 45, category: 'combo', description: 'Servicio completo de corte y barba', active: true },
+    { id: 'shave', name: 'Afeitado Tradicional', price: 35, duration: 30, category: 'barba', description: 'Afeitado completo con navaja y toalla caliente', active: true },
+    { id: 'treatments', name: 'Tratamientos Especiales', price: 40, duration: 40, category: 'tratamiento', description: 'Mascarillas y tratamientos capilares', active: true }
   ];
 
   const locations = [
@@ -114,17 +116,19 @@ export const useClientBooking = (onBack: () => void) => {
       toast.success('¡Cita reservada con éxito! Te hemos enviado un email de confirmación.');
       
       setFormData({
+        service: '',
+        servicePrice: 0,
+        serviceDuration: 0,
         name: '',
         phone: '',
         email: '',
-        service: '',
         preferredBarber: '',
         barber: '',
         location: '',
         date: '',
         time: ''
       });
-      setStep(1);
+      setStep(0);
       onBack();
       
     } catch (error) {

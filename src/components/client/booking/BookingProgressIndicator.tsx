@@ -5,6 +5,7 @@ interface BookingProgressIndicatorProps {
 
 const BookingProgressIndicator = ({ currentStep }: BookingProgressIndicatorProps) => {
   const steps = [
+    { number: 0, title: 'Servicio' },
     { number: 1, title: 'Ubicación' },
     { number: 2, title: 'Barbero' },
     { number: 3, title: 'Horario' },

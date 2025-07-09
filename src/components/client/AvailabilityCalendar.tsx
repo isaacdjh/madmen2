@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, User } from 'lucide-react';
-import { format, getDay, isToday, isBefore } from 'date-fns';
+import { format, getDay, isToday, isBefore, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAvailabilityCalendar } from '@/hooks/useAvailabilityCalendar';
 import DateNavigator from './calendar/DateNavigator';
@@ -25,6 +25,24 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
 
   const { appointments, blockedSlots, isLoading, barbers } = useAvailabilityCalendar(selectedLocation);
+
+  // Efecto para avanzar automáticamente al siguiente día si no hay horarios disponibles
+  useEffect(() => {
+    if (!isLoading && barbers.length > 0) {
+      const timeSlots = getTimeSlotsWithAvailability();
+      if (timeSlots.length === 0) {
+        // Si no hay horarios disponibles, avanzar al siguiente día (máximo 7 días)
+        let nextDate = addDays(selectedDate, 1);
+        let attempts = 0;
+        while (attempts < 7) {
+          setSelectedDate(nextDate);
+          attempts++;
+          nextDate = addDays(nextDate, 1);
+          break; // Salir del bucle para que el useEffect se ejecute nuevamente
+        }
+      }
+    }
+  }, [selectedDate, isLoading, barbers.length, selectedLocation]);
 
   const locations = [
     { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
@@ -176,7 +194,12 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
         onSlotSelect(preferredBarber, dateStr, timeSlot, selectedLocation);
       }
     } else {
-      setSelectedTimeSlot(timeSlot);
+      // Si no hay barbero preferido, buscar el primer barbero disponible para esa hora
+      const availableBarber = barbers.find(barber => isSlotAvailable(barber.id, timeSlot));
+      if (availableBarber && onSlotSelect) {
+        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+        onSlotSelect(availableBarber.id, dateStr, timeSlot, selectedLocation);
+      }
     }
   };
 
@@ -310,15 +333,6 @@ const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCal
             preferredBarber={preferredBarber}
             onTimeSlotClick={handleTimeSlotClick}
           />
-
-          {selectedTimeSlot && !preferredBarber && (
-            <BarberSelector
-              barbers={barbers}
-              selectedTimeSlot={selectedTimeSlot}
-              isSlotAvailable={isSlotAvailable}
-              onBarberSelection={handleBarberSelection}
-            />
-          )}
         </CardContent>
       </Card>
     </div>
