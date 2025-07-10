@@ -8,7 +8,7 @@ import { Calendar, Clock, User, Phone, Mail, MapPin, DollarSign, Gift, ChevronLe
 import { format, addDays, subDays, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
-import PaymentModal from './PaymentModal';
+import PaymentModalWithCash from './PaymentModalWithCash';
 import { 
   getAllAppointments, 
   updateAppointmentStatus, 
@@ -628,7 +628,7 @@ const CalendarGridView = () => {
       </Dialog>
 
       {/* Modal de pago */}
-      <PaymentModal
+      <PaymentModalWithCash
         appointment={paymentAppointment}
         isOpen={!!paymentAppointment}
         onClose={() => setPaymentAppointment(null)}
