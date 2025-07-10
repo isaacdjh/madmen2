@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLogin from '@/components/AdminLogin';
-import AdminIndex from '@/pages/AdminIndex';
+import AdminPanel from '@/components/AdminPanel';
 
 const AdminPortal = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -40,7 +40,7 @@ const AdminPortal = () => {
   return (
     <div>
       {isLoggedIn ? (
-        <AdminIndex onLogout={handleLogout} />
+        <AdminPanel />
       ) : (
         <AdminLogin onLogin={handleLogin} />
       )}

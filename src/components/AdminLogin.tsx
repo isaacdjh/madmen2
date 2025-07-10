@@ -21,7 +21,7 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
   // Credenciales de administrador (en un entorno real, esto debería estar en una base de datos segura)
   const ADMIN_CREDENTIALS = {
     username: 'admin',
-    password: 'admin123' // Cambiar por una contraseña segura
+    password: 'madmen2024' // Contraseña actualizada
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,7 +126,7 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
             <p className="text-sm text-amber-800">
               <strong>Credenciales por defecto:</strong><br />
               Usuario: admin<br />
-              Contraseña: admin123
+              Contraseña: madmen2024
             </p>
             <p className="text-xs text-amber-600 mt-2">
               ⚠️ Recuerde cambiar estas credenciales en producción

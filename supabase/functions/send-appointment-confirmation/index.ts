@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
     const formattedDate = formatDate(appointment.date);
 
     // URL de cancelación con el dominio correcto
-    const cancelUrl = `https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/cancel-appointment/${appointment.appointmentId}`;
+    const cancelUrl = `https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/cancel/${appointment.appointmentId}`;
 
     console.log("=== Preparando envío de email ===");
     console.log("De:", "Mad Men Barbershop <noreply@madmenbarberia.com>");
