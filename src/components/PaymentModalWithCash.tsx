@@ -455,13 +455,6 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
                     <span className="font-semibold">{serviceInfo.name}</span>
                     <span className="text-2xl font-bold text-primary">{formatCurrency(servicePrice)}</span>
                   </div>
-                  {appointment.price === null && (
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <p className="text-sm text-yellow-800">
-                        ℹ️ Precio obtenido del catálogo de servicios (la cita no tenía precio asignado)
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
