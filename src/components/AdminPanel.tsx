@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, X, Eye, CreditCard } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, Phone, Mail, CheckCircle, X, Eye, CreditCard, Plus } from 'lucide-react';
 import PaymentWithBonuses from '@/components/PaymentWithBonuses';
+import CobroExpress from '@/components/CobroExpress';
 
 interface Appointment {
   id: string;
@@ -28,6 +29,7 @@ const AdminPanel = () => {
   const [filter, setFilter] = useState<'all' | 'confirmada' | 'cancelada' | 'completada'>('all');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAppointment, setPaymentAppointment] = useState<Appointment | null>(null);
+  const [showCobroExpress, setShowCobroExpress] = useState(false);
 
   // Centros con nombres actualizados
   const locations = [
@@ -147,9 +149,19 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6 max-w-full">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Panel Administrativo</h1>
-          <p className="text-gray-700">Gestión de citas y reservas de Mad Men Barbería</p>
+        <div className="mb-6 flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Panel Administrativo</h1>
+            <p className="text-gray-700">Gestión de citas y reservas de Mad Men Barbería</p>
+          </div>
+          <Button 
+            onClick={() => setShowCobroExpress(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white"
+            size="lg"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Cobro Express
+          </Button>
         </div>
 
         {/* Stats Cards - Improved responsive grid */}
@@ -465,6 +477,12 @@ const AdminPanel = () => {
           onPaymentComplete={handlePaymentComplete}
         />
       )}
+
+      {/* Cobro Express Modal */}
+      <CobroExpress
+        isOpen={showCobroExpress}
+        onClose={() => setShowCobroExpress(false)}
+      />
     </div>
   );
 };
