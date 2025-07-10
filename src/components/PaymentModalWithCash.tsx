@@ -535,19 +535,25 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
                       </Label>
                     </div>
 
-                    {/* Bono */}
-                    {availableBonuses.length > 0 && (
-                      <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50">
-                        <RadioGroupItem value="bonus" id="bonus" />
-                        <Label htmlFor="bonus" className="flex items-center gap-2 cursor-pointer flex-1">
-                          <Gift className="w-5 h-5 text-primary" />
-                          <span className="font-medium">Usar Bono</span>
+                    {/* Bono de sesiones */}
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50">
+                      <RadioGroupItem value="bonus" id="bonus" />
+                      <Label htmlFor="bonus" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <Gift className="w-5 h-5 text-primary" />
+                        <span className="font-medium">Bono de sesiones</span>
+                        {availableBonuses.length > 0 && (
                           <Badge className="bg-green-100 text-green-800">
                             {availableBonuses.length} disponible{availableBonuses.length > 1 ? 's' : ''}
                           </Badge>
-                        </Label>
-                      </div>
-                    )}
+                        )}
+                        {availableBonuses.length === 0 && clientData.client && (
+                          <span className="text-sm text-muted-foreground">Sin bonos disponibles</span>
+                        )}
+                        {!clientData.client && (
+                          <span className="text-sm text-muted-foreground">Buscar cliente primero</span>
+                        )}
+                      </Label>
+                    </div>
                   </RadioGroup>
 
                   {/* Detalles del pago mixto */}
