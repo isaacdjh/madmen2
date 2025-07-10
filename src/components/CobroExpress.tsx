@@ -18,6 +18,14 @@ interface Service {
   duration: number;
 }
 
+interface BonusPackage {
+  id: string;
+  name: string;
+  price: number;
+  services_included: number;
+  description?: string;
+}
+
 interface Client {
   id: string;
   name: string;
@@ -42,8 +50,11 @@ interface CobroExpressProps {
 }
 
 const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
+  const [itemType, setItemType] = useState<'service' | 'bonus'>('service');
   const [services, setServices] = useState<Service[]>([]);
+  const [bonusPackages, setBonusPackages] = useState<BonusPackage[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedBonusPackage, setSelectedBonusPackage] = useState<BonusPackage | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [clientSearch, setClientSearch] = useState('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -76,6 +87,7 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
   useEffect(() => {
     if (isOpen) {
       loadServices();
+      loadBonusPackages();
     }
   }, [isOpen]);
 
@@ -100,6 +112,26 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
       toast({
         title: "Error",
         description: "No se pudieron cargar los servicios",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadBonusPackages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bonus_packages')
+        .select('*')
+        .eq('active', true)
+        .order('name');
+
+      if (error) throw error;
+      setBonusPackages(data || []);
+    } catch (error) {
+      console.error('Error loading bonus packages:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los paquetes de bonos",
         variant: "destructive",
       });
     }
@@ -196,18 +228,46 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
     }
   };
 
-  const canProceedWithPayment = () => {
-    if (!selectedService || !selectedBarber) return false;
+  const handleItemTypeChange = (type: 'service' | 'bonus') => {
+    setItemType(type);
+    setSelectedService(null);
+    setSelectedBonusPackage(null);
+    setPaymentMethod('');
+    setSelectedBonus('');
     
-    if (paymentMethod === 'bonus') {
-      return selectedClient && selectedBonus;
+    // Si cambia a venta de bonos, requiere cliente
+    if (type === 'bonus' && !selectedClient) {
+      toast({
+        title: "Cliente requerido",
+        description: "Debe seleccionar un cliente para vender bonos",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const canProceedWithPayment = () => {
+    if (!selectedBarber) return false;
+    
+    if (itemType === 'service') {
+      if (!selectedService) return false;
+      if (paymentMethod === 'bonus') {
+        return selectedClient && selectedBonus;
+      }
+      return paymentMethod !== '';
+    } else if (itemType === 'bonus') {
+      return selectedBonusPackage && selectedClient && paymentMethod !== '' && paymentMethod !== 'bonus';
     }
     
-    return paymentMethod !== '';
+    return false;
   };
 
   const handleProcessPayment = async () => {
     if (!canProceedWithPayment()) return;
+
+    if (itemType === 'bonus') {
+      await processBonusPackageSale();
+      return;
+    }
 
     if (paymentMethod === 'cash') {
       // Crear cita temporal para el modal de efectivo
@@ -342,8 +402,57 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
     }
   };
 
+  const processBonusPackageSale = async () => {
+    if (!selectedBonusPackage || !selectedClient) return;
+
+    try {
+      // Crear pago del paquete de bonos
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          client_id: selectedClient.id,
+          amount: selectedBonusPackage.price,
+          payment_method: paymentMethod,
+          payment_status: 'completado'
+        });
+
+      if (paymentError) throw paymentError;
+
+      // Crear bono para el cliente
+      const { error: bonusError } = await supabase
+        .from('client_bonuses')
+        .insert({
+          client_id: selectedClient.id,
+          bonus_package_id: selectedBonusPackage.id,
+          services_remaining: selectedBonusPackage.services_included,
+          sold_by_barber: selectedBarber,
+          status: 'activo'
+        });
+
+      if (bonusError) throw bonusError;
+
+      toast({
+        title: "Bono vendido",
+        description: `Paquete ${selectedBonusPackage.name} vendido por €${selectedBonusPackage.price}`,
+        variant: "default",
+      });
+
+      resetForm();
+      onClose();
+    } catch (error) {
+      console.error('Error processing bonus sale:', error);
+      toast({
+        title: "Error",
+        description: "Error al vender el paquete de bonos",
+        variant: "destructive",
+      });
+    }
+  };
+
   const resetForm = () => {
+    setItemType('service');
     setSelectedService(null);
+    setSelectedBonusPackage(null);
     setPaymentMethod('');
     setClientSearch('');
     setSelectedClient(null);
@@ -405,47 +514,116 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
               </div>
             </div>
 
-            {/* Selección de servicio */}
+            {/* Selección de tipo de venta */}
             <div>
-              <Label htmlFor="service">Servicio</Label>
-              <Select 
-                value={selectedService?.id || ''} 
-                onValueChange={(value) => {
-                  const service = services.find(s => s.id === value);
-                  setSelectedService(service || null);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar servicio" />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      <div className="flex justify-between w-full">
-                        <span>{service.name}</span>
-                        <span className="font-semibold">€{service.price}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedService && (
-                <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{selectedService.name}</span>
-                    <span className="font-bold text-blue-600">€{selectedService.price}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 mt-1">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {selectedService.duration} minutos
-                  </div>
+              <Label>Tipo de Venta</Label>
+              <RadioGroup value={itemType} onValueChange={handleItemTypeChange} className="mt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="service" id="service-type" />
+                  <Label htmlFor="service-type" className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    Servicio
+                  </Label>
                 </div>
-              )}
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="bonus" id="bonus-type" />
+                  <Label htmlFor="bonus-type" className="flex items-center gap-2">
+                    <Gift className="w-4 h-4" />
+                    Paquete de Bonos
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
 
-            {/* Búsqueda de cliente (solo para bonos) */}
+            {/* Selección de servicio */}
+            {itemType === 'service' && (
+              <div>
+                <Label htmlFor="service">Servicio</Label>
+                <Select 
+                  value={selectedService?.id || ''} 
+                  onValueChange={(value) => {
+                    const service = services.find(s => s.id === value);
+                    setSelectedService(service || null);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar servicio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {services.map((service) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        <div className="flex justify-between w-full">
+                          <span>{service.name}</span>
+                          <span className="font-semibold">€{service.price}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedService && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">{selectedService.name}</span>
+                      <span className="font-bold text-blue-600">€{selectedService.price}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600 mt-1">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {selectedService.duration} minutos
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Selección de paquete de bonos */}
+            {itemType === 'bonus' && (
+              <div>
+                <Label htmlFor="bonus-package">Paquete de Bonos</Label>
+                <Select 
+                  value={selectedBonusPackage?.id || ''} 
+                  onValueChange={(value) => {
+                    const bonusPackage = bonusPackages.find(b => b.id === value);
+                    setSelectedBonusPackage(bonusPackage || null);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar paquete de bonos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bonusPackages.map((bonusPackage) => (
+                      <SelectItem key={bonusPackage.id} value={bonusPackage.id}>
+                        <div className="flex justify-between w-full">
+                          <span>{bonusPackage.name} ({bonusPackage.services_included} servicios)</span>
+                          <span className="font-semibold">€{bonusPackage.price}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedBonusPackage && (
+                  <div className="mt-2 p-3 bg-green-50 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">{selectedBonusPackage.name}</span>
+                      <span className="font-bold text-green-600">€{selectedBonusPackage.price}</span>
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {selectedBonusPackage.services_included} servicios incluidos
+                    </div>
+                    {selectedBonusPackage.description && (
+                      <div className="text-sm text-gray-600 mt-1">
+                        {selectedBonusPackage.description}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Búsqueda de cliente */}
             <div>
-              <Label htmlFor="client">Cliente (opcional, requerido para bonos)</Label>
+              <Label htmlFor="client">
+                Cliente {itemType === 'bonus' ? '(requerido para venta de bonos)' : '(opcional, requerido para usar bonos)'}
+              </Label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                 <Input
@@ -523,24 +701,26 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
                     Pago Mixto
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem 
-                    value="bonus" 
-                    id="bonus" 
-                    disabled={!selectedClient}
-                  />
-                  <Label 
-                    htmlFor="bonus" 
-                    className={`flex items-center gap-2 ${!selectedClient ? 'opacity-50' : ''}`}
-                  >
-                    <Gift className="w-4 h-4" />
-                    Bono de sesiones {!selectedClient && '(requiere cliente)'}
-                  </Label>
-                </div>
+                {itemType === 'service' && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem 
+                      value="bonus" 
+                      id="bonus" 
+                      disabled={!selectedClient}
+                    />
+                    <Label 
+                      htmlFor="bonus" 
+                      className={`flex items-center gap-2 ${!selectedClient ? 'opacity-50' : ''}`}
+                    >
+                      <Gift className="w-4 h-4" />
+                      Bono de sesiones {!selectedClient && '(requiere cliente)'}
+                    </Label>
+                  </div>
+                )}
               </RadioGroup>
 
               {/* Selección de bono */}
-              {paymentMethod === 'bonus' && selectedClient && (
+              {paymentMethod === 'bonus' && selectedClient && itemType === 'service' && (
                 <div className="mt-4">
                   {clientBonuses.length > 0 ? (
                     <div>
@@ -567,28 +747,48 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
                   )}
                 </div>
               )}
+
+              {/* Mensaje para venta de bonos */}
+              {itemType === 'bonus' && !selectedClient && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">
+                    Debe seleccionar un cliente para vender paquetes de bonos.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Resumen del pago */}
-            {selectedService && (
+            {(selectedService || selectedBonusPackage) && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Resumen del Pago</CardTitle>
+                  <CardTitle className="text-lg">
+                    {itemType === 'service' ? 'Resumen del Pago' : 'Resumen de Venta de Bono'}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span>Servicio:</span>
-                      <span>{selectedService.name}</span>
+                      <span>{itemType === 'service' ? 'Servicio:' : 'Paquete:'}</span>
+                      <span>{itemType === 'service' ? selectedService?.name : selectedBonusPackage?.name}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Barbero:</span>
                       <span>{selectedBarber}</span>
                     </div>
+                    {selectedClient && (
+                      <div className="flex justify-between">
+                        <span>Cliente:</span>
+                        <span>{selectedClient.name} {selectedClient.last_name || ''}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between font-bold border-t pt-2">
                       <span>Total:</span>
                       <span>
-                        {paymentMethod === 'bonus' ? 'BONO' : `€${selectedService.price}`}
+                        {itemType === 'service' && paymentMethod === 'bonus' 
+                          ? 'BONO' 
+                          : `€${itemType === 'service' ? selectedService?.price : selectedBonusPackage?.price}`
+                        }
                       </span>
                     </div>
                   </div>
@@ -614,14 +814,14 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
       </Dialog>
 
       {/* Modal de pago en efectivo */}
-      {showCashModal && selectedService && (
+      {showCashModal && (selectedService || selectedBonusPackage) && (
         <PaymentModalWithCash
           isOpen={showCashModal}
           onClose={() => setShowCashModal(false)}
           appointment={{
             id: `temp-${Date.now()}`,
-            service: selectedService.name,
-            price: selectedService.price,
+            service: itemType === 'service' ? selectedService!.name : `Venta Bono: ${selectedBonusPackage!.name}`,
+            price: itemType === 'service' ? selectedService!.price : selectedBonusPackage!.price,
             barber: selectedBarber,
             location: selectedLocation,
             client_id: selectedClient?.id || null,
