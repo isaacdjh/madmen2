@@ -18,6 +18,7 @@ import {
   type ChangeCalculation
 } from '@/lib/cashRegisterHelpers';
 import { Calculator, Euro, TrendingUp, FileText } from 'lucide-react';
+import CashInventoryManager from './CashInventoryManager';
 
 const CashRegisterSystem: React.FC = () => {
   const { toast } = useToast();
@@ -182,10 +183,14 @@ const CashRegisterSystem: React.FC = () => {
       </div>
 
       <Tabs defaultValue="pos" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="pos" className="flex items-center gap-2">
             <Calculator className="w-4 h-4" />
             Punto de Venta
+          </TabsTrigger>
+          <TabsTrigger value="inventory" className="flex items-center gap-2">
+            <Euro className="w-4 h-4" />
+            Inventario
           </TabsTrigger>
           <TabsTrigger value="cash" className="flex items-center gap-2">
             <Euro className="w-4 h-4" />
@@ -283,6 +288,10 @@ const CashRegisterSystem: React.FC = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="inventory" className="space-y-6">
+          <CashInventoryManager />
+        </TabsContent>
+
         <TabsContent value="cash" className="space-y-6">
           <Card>
             <CardHeader>
@@ -304,16 +313,10 @@ const CashRegisterSystem: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const newQuantity = parseInt(e.target.value) || 0;
-                          updateCashQuantity(item.denomination_id, newQuantity);
-                        }}
-                        className="w-20"
-                      />
-                      <span className="text-sm text-muted-foreground">uds</span>
+                      <span className="font-semibold">{item.quantity} uds</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({formatCurrency(item.quantity * item.denomination.value)})
+                      </span>
                     </div>
                   </div>
                 ))}
