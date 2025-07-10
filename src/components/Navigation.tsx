@@ -17,7 +17,8 @@ import {
   User,
   MessageSquare,
   FileText,
-  TrendingUp
+  TrendingUp,
+  Calculator
 } from 'lucide-react';
 import {
   Sidebar,
@@ -51,6 +52,7 @@ const menuItems = [
   { id: 'clients', label: 'Clientes', icon: User },
   { id: 'bonus', label: 'Bonos', icon: Gift },
   { id: 'payments', label: 'Cobros', icon: CreditCard },
+  { id: 'cash-register', label: 'Caja', icon: Calculator },
   { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
   { id: 'analytics', label: 'Análisis', icon: BarChart3 },
   { id: 'reports', label: 'Reportes', icon: FileText },

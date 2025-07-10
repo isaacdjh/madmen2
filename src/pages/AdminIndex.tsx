@@ -13,6 +13,7 @@ import BonusManager from '@/components/BonusManager';
 import RevenueReports from '@/components/RevenueReports';
 import ClientManagement from '@/components/ClientManagement';
 import WhatsAppIntegration from '@/components/WhatsAppIntegration';
+import CashRegisterSystem from '@/components/CashRegisterSystem';
 
 interface AdminIndexProps {
   onLogout?: () => void;
@@ -49,6 +50,8 @@ const AdminIndex = ({ onLogout }: AdminIndexProps) => {
             <WhatsAppIntegration />
           </div>
         );
+      case 'cash-register':
+        return <CashRegisterSystem />;
       case 'payments':
         return (
           <div className="container mx-auto px-4 py-4 md:py-8">

@@ -273,6 +273,131 @@ export type Database = {
           },
         ]
       }
+      cash_register_entries: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          barber_name: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          entry_type: string
+          id: string
+          location: string
+          payment_id: string | null
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          barber_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entry_type: string
+          id?: string
+          location?: string
+          payment_id?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          barber_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entry_type?: string
+          id?: string
+          location?: string
+          payment_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_register_entries_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_register_entries_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_register_state: {
+        Row: {
+          denomination_id: string
+          id: string
+          location: string
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          denomination_id: string
+          id?: string
+          location?: string
+          quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          denomination_id?: string
+          id?: string
+          location?: string
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_register_state_denomination_id_fkey"
+            columns: ["denomination_id"]
+            isOneToOne: false
+            referencedRelation: "denominations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      change_given: {
+        Row: {
+          cash_register_entry_id: string
+          created_at: string
+          denomination_id: string
+          id: string
+          quantity: number
+        }
+        Insert: {
+          cash_register_entry_id: string
+          created_at?: string
+          denomination_id: string
+          id?: string
+          quantity: number
+        }
+        Update: {
+          cash_register_entry_id?: string
+          created_at?: string
+          denomination_id?: string
+          id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_given_cash_register_entry_id_fkey"
+            columns: ["cash_register_entry_id"]
+            isOneToOne: false
+            referencedRelation: "cash_register_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "change_given_denomination_id_fkey"
+            columns: ["denomination_id"]
+            isOneToOne: false
+            referencedRelation: "denominations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_bonuses: {
         Row: {
           bonus_package_id: string | null
@@ -373,6 +498,33 @@ export type Database = {
           name?: string
           phone?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      denominations: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency: string
+          id: string
+          type: string
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          id?: string
+          type: string
+          value: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          id?: string
+          type?: string
+          value?: number
         }
         Relationships: []
       }
@@ -588,6 +740,17 @@ export type Database = {
           p_phone: string
           p_email: string
           p_last_name?: string
+        }
+        Returns: string
+      }
+      process_sale_transaction: {
+        Args: {
+          p_appointment_id: string
+          p_amount: number
+          p_payment_received: number
+          p_change_given: Json
+          p_location?: string
+          p_barber_name?: string
         }
         Returns: string
       }
