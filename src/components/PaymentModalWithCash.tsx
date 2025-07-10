@@ -100,7 +100,13 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
     { id: 'beard-trim', name: 'Arreglo de Barba', price: 25 },
     { id: 'cut-beard', name: 'Corte + Barba', price: 65 },
     { id: 'shave', name: 'Afeitado Tradicional', price: 35 },
-    { id: 'treatments', name: 'Tratamientos Especiales', price: 40 }
+    { id: 'treatments', name: 'Tratamientos Especiales', price: 40 },
+    // Mapeos adicionales para nombres de servicios
+    { id: 'Corte Clásico', name: 'Corte Clásico', price: 45 },
+    { id: 'Arreglo de Barba', name: 'Arreglo de Barba', price: 25 },
+    { id: 'Corte + Barba', name: 'Corte + Barba', price: 65 },
+    { id: 'Afeitado Tradicional', name: 'Afeitado Tradicional', price: 35 },
+    { id: 'Tratamientos Especiales', name: 'Tratamientos Especiales', price: 40 }
   ];
 
   const locations = [
@@ -116,14 +122,26 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
   }, [appointment, isOpen]);
 
   useEffect(() => {
-    if (appointment?.price) {
-      const servicePrice = appointment.price;
-      setPaymentBreakdown(prev => ({
-        ...prev,
-        total: servicePrice,
-        cashAmount: prev.method === 'cash' ? servicePrice : prev.method === 'mixed' ? servicePrice : 0,
-        cardAmount: prev.method === 'card' ? servicePrice : 0
-      }));
+    if (appointment) {
+      // Obtener precio del servicio, ya sea del appointment o del mapeo de servicios
+      const serviceInfo = getServiceInfo(appointment.service);
+      const servicePrice = appointment.price || serviceInfo.price;
+      
+      setPaymentBreakdown(prev => {
+        const newBreakdown = {
+          ...prev,
+          total: servicePrice,
+          cashAmount: prev.method === 'cash' ? servicePrice : prev.method === 'mixed' ? servicePrice : 0,
+          cardAmount: prev.method === 'card' ? servicePrice : 0
+        };
+        
+        // Activar automáticamente el sistema de caja si el método es efectivo
+        if (prev.method === 'cash' || prev.method === 'mixed') {
+          setShowCashRegister(true);
+        }
+        
+        return newBreakdown;
+      });
     }
   }, [appointment]);
 
@@ -166,7 +184,8 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
   };
 
   const handlePaymentMethodChange = (method: PaymentMethod) => {
-    const servicePrice = appointment?.price || 0;
+    const serviceInfo = getServiceInfo(appointment?.service || '');
+    const servicePrice = appointment?.price || serviceInfo.price;
     
     setPaymentBreakdown(prev => ({
       ...prev,
@@ -176,7 +195,7 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
       selectedBonusId: method === 'bonus' ? (availableBonuses[0]?.id || null) : null
     }));
 
-    // Mostrar sistema de caja solo si el pago incluye efectivo
+    // Mostrar sistema de caja automáticamente si el pago incluye efectivo
     setShowCashRegister(method === 'cash' || method === 'mixed');
     
     // Limpiar cálculos de cambio
@@ -226,7 +245,8 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
 
   const handleMixedPaymentChange = (type: 'cash' | 'card', value: string) => {
     const numValue = parseFloat(value) || 0;
-    const servicePrice = appointment?.price || 0;
+    const serviceInfo = getServiceInfo(appointment?.service || '');
+    const servicePrice = appointment?.price || serviceInfo.price;
     
     setPaymentBreakdown(prev => {
       const newBreakdown = { ...prev };
@@ -250,7 +270,8 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
   };
 
   const validatePayment = () => {
-    const servicePrice = appointment?.price || 0;
+    const serviceInfo = getServiceInfo(appointment?.service || '');
+    const servicePrice = appointment?.price || serviceInfo.price;
     
     if (paymentBreakdown.method === 'bonus') {
       if (!paymentBreakdown.selectedBonusId) {
@@ -434,6 +455,13 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
                     <span className="font-semibold">{serviceInfo.name}</span>
                     <span className="text-2xl font-bold text-primary">{formatCurrency(servicePrice)}</span>
                   </div>
+                  {appointment.price === null && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        ℹ️ Precio obtenido del catálogo de servicios (la cita no tenía precio asignado)
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
