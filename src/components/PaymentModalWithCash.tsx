@@ -305,13 +305,23 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
       return false;
     }
 
-    // Validar que se haya calculado el cambio si es necesario
-    if (showCashRegister && paymentBreakdown.cashAmount > 0) {
+    // Para pagos en efectivo, es OBLIGATORIO usar el sistema de caja
+    if (paymentBreakdown.cashAmount > 0) {
       const received = parseFloat(paymentReceived);
       if (isNaN(received) || received < paymentBreakdown.cashAmount) {
         toast({
           title: "Error",
-          description: "Debe ingresar el monto recibido y calcular el cambio",
+          description: "Para pagos en efectivo debe ingresar el monto recibido y calcular el cambio en el Sistema de Caja",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      // Verificar que se haya calculado el cambio
+      if (suggestedChange.length === 0 && received > paymentBreakdown.cashAmount) {
+        toast({
+          title: "Error", 
+          description: "Debe calcular el cambio exacto con billetes y monedas",
           variant: "destructive"
         });
         return false;
@@ -430,7 +440,7 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
               <TabsTrigger value="payment">Pago</TabsTrigger>
               <TabsTrigger value="cash-register" disabled={!showCashRegister}>
                 <Calculator className="w-4 h-4 mr-2" />
-                Sistema de Caja
+                Sistema de Caja {showCashRegister && <span className="text-red-500">*</span>}
               </TabsTrigger>
             </TabsList>
 
@@ -498,6 +508,7 @@ const PaymentModalWithCash: React.FC<PaymentModalWithCashProps> = ({
                       <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
                         <Banknote className="w-5 h-5 text-green-600" />
                         <span className="font-medium">Efectivo completo</span>
+                        <span className="text-sm text-red-500">(Requiere Sistema de Caja)</span>
                         <span className="text-muted-foreground">- {formatCurrency(servicePrice)}</span>
                       </Label>
                     </div>
