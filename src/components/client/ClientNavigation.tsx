@@ -75,14 +75,23 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
             </button>
           </div>
 
-          {/* Desktop Booking Button */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Booking Buttons */}
+          <div className="hidden md:flex items-center space-x-2">
             <Button 
-              onClick={onBookingClick}
+              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
+              size="sm"
               className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
             >
-              <Calendar className="w-4 h-4 mr-2" />
-              Reservar Cita
+              <Calendar className="w-4 h-4 mr-1" />
+              Río Rosa
+            </Button>
+            <Button 
+              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
+              size="sm"
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
+            >
+              <Calendar className="w-4 h-4 mr-1" />
+              Salamanca
             </Button>
             
             {/* Menu Drawer Trigger */}
@@ -144,13 +153,20 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
           </div>
 
           {/* Mobile Menu */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="md:hidden flex items-center space-x-1">
             <Button 
-              onClick={onBookingClick}
+              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
               size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold text-xs px-2"
             >
-              <Calendar className="w-4 h-4" />
+              RR
+            </Button>
+            <Button 
+              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
+              size="sm"
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold text-xs px-2"
+            >
+              SAL
             </Button>
             <Drawer>
               <DrawerTrigger asChild>

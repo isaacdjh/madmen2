@@ -89,14 +89,24 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
               ¿Listo para la experiencia Mad Men? Reserva tu cita ahora y descubre 
               por qué somos la barbería preferida de caballeros distinguidos.
             </p>
-            <Button 
-              size="lg" 
-              className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
-              onClick={onBookingClick}
-            >
-              <Calendar className="w-5 h-5 mr-2" />
-              Reservar Ahora
-            </Button>
+            <div className="space-y-3">
+              <Button 
+                size="lg" 
+                className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
+                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Reservar Río Rosa
+              </Button>
+              <Button 
+                size="lg" 
+                className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
+                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Reservar Salamanca
+              </Button>
+            </div>
           </div>
         </div>
       </div>
