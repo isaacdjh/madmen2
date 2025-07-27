@@ -40,7 +40,7 @@ const AdminPortal = () => {
   return (
     <div>
       {isLoggedIn ? (
-        <AdminPanel />
+        <AdminPanel onLogout={handleLogout} />
       ) : (
         <AdminLogin onLogin={handleLogin} />
       )}
