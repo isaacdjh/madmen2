@@ -4,6 +4,7 @@ import ClientBookingForm from './ClientBookingForm';
 import ClientHeroSection from './client/ClientHeroSection';
 import LocationsSection from './client/LocationsSection';
 import ServicesSection from './client/ServicesSection';
+import BonusSection from './client/BonusSection';
 import BarbersSection from './client/BarbersSection';
 import ProductsSection from './client/ProductsSection';
 import TestimonialsSection from './client/TestimonialsSection';
@@ -27,6 +28,7 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
       <LocationsSection />
       <ServicesSection />
+      <BonusSection />
       <ProductsSection />
       <BarbersSection />
       <TestimonialsSection />
