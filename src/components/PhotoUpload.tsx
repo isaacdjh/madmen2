@@ -39,7 +39,18 @@ const PhotoUpload = ({ currentPhotoUrl, onPhotoUpdate, barberName }: PhotoUpload
       }
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${barberName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.${fileExt}`;
+      // Clean the barber name to remove special characters and normalize for storage
+      const cleanName = barberName
+        .toLowerCase()
+        .replace(/[ñ]/g, 'n')
+        .replace(/[áàäâã]/g, 'a')
+        .replace(/[éèëê]/g, 'e')
+        .replace(/[íìïî]/g, 'i')
+        .replace(/[óòöôõ]/g, 'o')
+        .replace(/[úùüû]/g, 'u')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-');
+      const fileName = `${cleanName}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
       // Delete previous photo if exists
