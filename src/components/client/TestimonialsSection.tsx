@@ -4,9 +4,31 @@ import { Star } from 'lucide-react';
 
 const TestimonialsSection = () => {
   const testimonials = [
-    { name: 'Juan Carlos', rating: 5, text: 'Excelente servicio, siempre salgo satisfecho. Carlos es un artista.' },
-    { name: 'Roberto Silva', rating: 5, text: 'La mejor barbería de la ciudad. Ambiente tradicional y profesional.' },
-    { name: 'Diego Morales', rating: 5, text: 'Miguel hace el mejor afeitado con navaja que he experimentado.' },
+    { 
+      name: 'Carlos M.', 
+      rating: 5, 
+      text: 'Te ofrecen refrescos, café además de un servicio perfecto. El trato es excepcional y el resultado siempre impecable.' 
+    },
+    { 
+      name: 'Miguel R.', 
+      rating: 5, 
+      text: 'La mejor barbería tradicional de Madrid. Ambiente auténtico y profesionales de primera. Siempre salgo como nuevo.' 
+    },
+    { 
+      name: 'David L.', 
+      rating: 5, 
+      text: 'Llevo años viniendo y nunca me decepciona. El corte clásico que buscaba y un afeitado con navaja espectacular.' 
+    },
+    { 
+      name: 'Antonio G.', 
+      rating: 5, 
+      text: 'Profesionalidad y calidad en cada visita. El ambiente tradicional y la atención personalizada son únicos.' 
+    },
+    { 
+      name: 'Roberto F.', 
+      rating: 5, 
+      text: 'Barbería de toda la vida con técnicas modernas. Los mejores en Cristóbal Bordiú, sin duda recomendable 100%.' 
+    },
   ];
 
   return (

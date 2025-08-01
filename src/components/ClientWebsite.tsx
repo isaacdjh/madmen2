@@ -8,6 +8,7 @@ import BonusSection from './client/BonusSection';
 import BarbersSection from './client/BarbersSection';
 import ProductsSection from './client/ProductsSection';
 import TestimonialsSection from './client/TestimonialsSection';
+import OffersSection from './client/OffersSection';
 import ContactSection from './client/ContactSection';
 import ClientNavigation from './client/ClientNavigation';
 
@@ -26,6 +27,7 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
     <div className="min-h-screen">
       <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
+      <OffersSection onViewBonuses={() => window.open('/bonos', '_blank')} />
       <TestimonialsSection />
       <ContactSection onBookingClick={() => setShowBookingForm(true)} />
     </div>
