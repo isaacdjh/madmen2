@@ -103,10 +103,10 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Menu className="w-5 h-5" />
                 </Button>
               </DrawerTrigger>
-              <DrawerContent className="bg-barbershop-dark border-barbershop-gold/30">
+              <DrawerContent className="bg-barbershop-navy border-primary/30">
                 <DrawerHeader>
-                  <DrawerTitle className="text-barbershop-gold text-center">Más Información</DrawerTitle>
-                  <DrawerDescription className="text-white/70 text-center">
+                  <DrawerTitle className="text-primary text-center text-lg font-bold">Más Información</DrawerTitle>
+                  <DrawerDescription className="text-primary/80 text-center">
                     Descubre todo lo que Mad Men tiene para ofrecerte
                   </DrawerDescription>
                 </DrawerHeader>
@@ -114,7 +114,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/productos">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       Productos STMNT
                     </Button>
@@ -122,7 +122,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/bonos">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       Bonos de Ahorro
                     </Button>
@@ -130,7 +130,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Button 
                     onClick={sendCurriculum}
                     variant="outline" 
-                    className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
@@ -138,7 +138,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Button 
                     onClick={() => window.open('mailto:madmenmadrid@outlook.es', '_blank')}
                     variant="outline" 
-                    className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                   >
                     <Mail className="w-4 h-4 mr-2" />
                     Contacto
@@ -146,7 +146,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/contacto">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       <Phone className="w-4 h-4 mr-2" />
                       Información Completa
@@ -155,7 +155,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
-                    <Button className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                       Cerrar
                     </Button>
                   </DrawerClose>
@@ -186,10 +186,10 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Menu className="w-6 h-6" />
                 </Button>
               </DrawerTrigger>
-              <DrawerContent className="bg-barbershop-dark border-barbershop-gold/30">
+              <DrawerContent className="bg-barbershop-navy border-primary/30">
                 <DrawerHeader>
-                  <DrawerTitle className="text-barbershop-gold text-center">Mad Men</DrawerTitle>
-                  <DrawerDescription className="text-white/70 text-center">
+                  <DrawerTitle className="text-primary text-center text-lg font-bold">Mad Men</DrawerTitle>
+                  <DrawerDescription className="text-primary/80 text-center">
                     Barbería Tradicional
                   </DrawerDescription>
                 </DrawerHeader>
@@ -197,7 +197,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                      className="w-full justify-start text-primary hover:text-accent hover:bg-primary/10"
                     >
                       Inicio
                     </Button>
@@ -205,7 +205,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/ubicaciones">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                      className="w-full justify-start text-primary hover:text-accent hover:bg-primary/10"
                     >
                       Ubicaciones
                     </Button>
@@ -213,7 +213,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/servicios">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                      className="w-full justify-start text-primary hover:text-accent hover:bg-primary/10"
                     >
                       Servicios
                     </Button>
@@ -221,7 +221,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/productos">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                      className="w-full justify-start text-primary hover:text-accent hover:bg-primary/10"
                     >
                       Productos
                     </Button>
@@ -229,7 +229,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/bonos">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                      className="w-full justify-start text-primary hover:text-accent hover:bg-primary/10"
                     >
                       Bonos de Ahorro
                     </Button>
@@ -237,7 +237,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/equipo">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                      className="w-full justify-start text-primary hover:text-accent hover:bg-primary/10"
                     >
                       Equipo
                     </Button>
@@ -245,7 +245,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Button 
                     onClick={sendCurriculum}
                     variant="outline" 
-                    className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
@@ -253,7 +253,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/contacto">
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                      className="w-full justify-start text-primary hover:text-accent hover:bg-primary/10"
                     >
                       Contacto
                     </Button>
@@ -261,7 +261,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
-                    <Button className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                       Cerrar
                     </Button>
                   </DrawerClose>
