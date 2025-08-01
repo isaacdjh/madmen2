@@ -53,7 +53,7 @@ const BonusSection = () => {
     {
       icon: <MapPin className="h-5 w-5" />,
       title: "Válido en ambas tiendas",
-      description: "Cristóbal Bordiu y Hermanos García Noblejas"
+      description: "Calle Cristóbal Bordiu 29 y Calle General Pardiñas 101"
     },
     {
       icon: <User className="h-5 w-5" />,

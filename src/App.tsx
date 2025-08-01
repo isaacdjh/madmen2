@@ -11,6 +11,12 @@ import BarberPortal from "./pages/BarberPortal";
 import CancelAppointment from "./pages/CancelAppointment";
 import ImportClients from "./pages/ImportClients";
 import NotFound from "./pages/NotFound";
+import Bonos from "./pages/Bonos";
+import Equipo from "./pages/Equipo";
+import Ubicaciones from "./pages/Ubicaciones";
+import Productos from "./pages/Productos";
+import Servicios from "./pages/Servicios";
+import Contacto from "./pages/Contacto";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +29,12 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/bonos" element={<Bonos />} />
+          <Route path="/equipo" element={<Equipo />} />
+          <Route path="/ubicaciones" element={<Ubicaciones />} />
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/servicios" element={<Servicios />} />
+          <Route path="/contacto" element={<Contacto />} />
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/barber" element={<BarberPortal />} />
           <Route path="/cancel/:appointmentId" element={<CancelAppointment />} />

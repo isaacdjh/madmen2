@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Calendar, Menu, X, Mail, Briefcase, Phone } from 'lucide-react';
 import {
@@ -19,6 +20,7 @@ interface ClientNavigationProps {
 
 const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -49,30 +51,30 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <button 
-              onClick={() => scrollToSection('inicio')}
-              className="text-white hover:text-barbershop-gold transition-colors font-medium"
+            <Link 
+              to="/"
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/' ? 'text-barbershop-gold' : ''}`}
             >
               Inicio
-            </button>
-            <button 
-              onClick={() => scrollToSection('ubicaciones')}
-              className="text-white hover:text-barbershop-gold transition-colors font-medium"
+            </Link>
+            <Link 
+              to="/ubicaciones"
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/ubicaciones' ? 'text-barbershop-gold' : ''}`}
             >
               Ubicaciones
-            </button>
-            <button 
-              onClick={() => scrollToSection('servicios')}
-              className="text-white hover:text-barbershop-gold transition-colors font-medium"
+            </Link>
+            <Link 
+              to="/servicios"
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/servicios' ? 'text-barbershop-gold' : ''}`}
             >
               Servicios
-            </button>
-            <button 
-              onClick={() => scrollToSection('equipo')}
-              className="text-white hover:text-barbershop-gold transition-colors font-medium"
+            </Link>
+            <Link 
+              to="/equipo"
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/equipo' ? 'text-barbershop-gold' : ''}`}
             >
               Equipo
-            </button>
+            </Link>
           </div>
 
           {/* Desktop Booking Buttons */}
@@ -109,13 +111,22 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   </DrawerDescription>
                 </DrawerHeader>
                 <div className="px-6 space-y-4">
-                  <Button 
-                    onClick={() => scrollToSection('productos')}
-                    variant="outline" 
-                    className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
-                  >
-                    Productos STMNT
-                  </Button>
+                  <Link to="/productos">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                    >
+                      Productos STMNT
+                    </Button>
+                  </Link>
+                  <Link to="/bonos">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                    >
+                      Bonos de Ahorro
+                    </Button>
+                  </Link>
                   <Button 
                     onClick={sendCurriculum}
                     variant="outline" 
@@ -132,14 +143,15 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                     <Mail className="w-4 h-4 mr-2" />
                     Contacto
                   </Button>
-                  <Button 
-                    onClick={() => scrollToSection('contacto')}
-                    variant="outline" 
-                    className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    Información Completa
-                  </Button>
+                  <Link to="/contacto">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start border-barbershop-gold/50 text-white hover:bg-barbershop-gold hover:text-barbershop-dark"
+                    >
+                      <Phone className="w-4 h-4 mr-2" />
+                      Información Completa
+                    </Button>
+                  </Link>
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
@@ -182,41 +194,54 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   </DrawerDescription>
                 </DrawerHeader>
                 <div className="px-6 space-y-3">
-                  <Button 
-                    onClick={() => scrollToSection('inicio')}
-                    variant="ghost" 
-                    className="w-full justify-start text-white hover:text-barbershop-gold"
-                  >
-                    Inicio
-                  </Button>
-                  <Button 
-                    onClick={() => scrollToSection('ubicaciones')}
-                    variant="ghost" 
-                    className="w-full justify-start text-white hover:text-barbershop-gold"
-                  >
-                    Ubicaciones
-                  </Button>
-                  <Button 
-                    onClick={() => scrollToSection('servicios')}
-                    variant="ghost" 
-                    className="w-full justify-start text-white hover:text-barbershop-gold"
-                  >
-                    Servicios
-                  </Button>
-                  <Button 
-                    onClick={() => scrollToSection('productos')}
-                    variant="ghost" 
-                    className="w-full justify-start text-white hover:text-barbershop-gold"
-                  >
-                    Productos
-                  </Button>
-                  <Button 
-                    onClick={() => scrollToSection('equipo')}
-                    variant="ghost" 
-                    className="w-full justify-start text-white hover:text-barbershop-gold"
-                  >
-                    Equipo
-                  </Button>
+                  <Link to="/">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                    >
+                      Inicio
+                    </Button>
+                  </Link>
+                  <Link to="/ubicaciones">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                    >
+                      Ubicaciones
+                    </Button>
+                  </Link>
+                  <Link to="/servicios">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                    >
+                      Servicios
+                    </Button>
+                  </Link>
+                  <Link to="/productos">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                    >
+                      Productos
+                    </Button>
+                  </Link>
+                  <Link to="/bonos">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                    >
+                      Bonos de Ahorro
+                    </Button>
+                  </Link>
+                  <Link to="/equipo">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                    >
+                      Equipo
+                    </Button>
+                  </Link>
                   <Button 
                     onClick={sendCurriculum}
                     variant="outline" 
@@ -225,13 +250,14 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
                   </Button>
-                  <Button 
-                    onClick={() => scrollToSection('contacto')}
-                    variant="ghost" 
-                    className="w-full justify-start text-white hover:text-barbershop-gold"
-                  >
-                    Contacto
-                  </Button>
+                  <Link to="/contacto">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-white hover:text-barbershop-gold"
+                    >
+                      Contacto
+                    </Button>
+                  </Link>
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
