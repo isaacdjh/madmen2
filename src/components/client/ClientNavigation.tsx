@@ -106,7 +106,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
               <DrawerContent className="bg-barbershop-navy border-primary/30">
                 <DrawerHeader>
                   <DrawerTitle className="text-white text-center text-lg font-bold">Más Información</DrawerTitle>
-                  <DrawerDescription className="text-white/90 text-center font-medium">
+                  <DrawerDescription className="text-white text-center font-medium">
                     Descubre todo lo que Mad Men tiene para ofrecerte
                   </DrawerDescription>
                 </DrawerHeader>
@@ -114,7 +114,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/productos">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start border-white/50 text-white hover:bg-white hover:text-barbershop-navy"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       Productos STMNT
                     </Button>
@@ -122,7 +122,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/bonos">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start border-white/50 text-white hover:bg-white hover:text-barbershop-navy"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       Bonos de Ahorro
                     </Button>
@@ -130,7 +130,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Button 
                     onClick={sendCurriculum}
                     variant="outline" 
-                    className="w-full justify-start border-white/50 text-white hover:bg-white hover:text-barbershop-navy"
+                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
@@ -138,7 +138,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Button 
                     onClick={() => window.open('mailto:madmenmadrid@outlook.es', '_blank')}
                     variant="outline" 
-                    className="w-full justify-start border-white/50 text-white hover:bg-white hover:text-barbershop-navy"
+                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                   >
                     <Mail className="w-4 h-4 mr-2" />
                     Contacto
@@ -146,7 +146,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/contacto">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start border-white/50 text-white hover:bg-white hover:text-barbershop-navy"
+                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground"
                     >
                       <Phone className="w-4 h-4 mr-2" />
                       Información Completa
@@ -155,7 +155,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
-                    <Button className="bg-white text-barbershop-navy hover:bg-white/90 font-semibold">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                       Cerrar
                     </Button>
                   </DrawerClose>
