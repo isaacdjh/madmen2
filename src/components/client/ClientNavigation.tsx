@@ -175,7 +175,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
               <DrawerContent className="bg-barbershop-navy border-primary/30">
                 <DrawerHeader>
                   <DrawerTitle className="text-white text-center text-lg font-bold">Mad Men</DrawerTitle>
-                  <DrawerDescription className="text-white/90 text-center font-medium">
+                  <DrawerDescription className="text-white text-center font-medium">
                     Barbería Tradicional
                   </DrawerDescription>
                 </DrawerHeader>
