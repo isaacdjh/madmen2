@@ -79,13 +79,7 @@ const GoogleAnalytics = () => {
         `}
       </script>
       <noscript>
-        <img
-          height="1"
-          width="1"
-          style={{ display: 'none' }}
-          src="https://www.facebook.com/tr?id=XXXXXXXXXXXXXXXXX&ev=PageView&noscript=1"
-          alt=""
-        />
+        {`<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=XXXXXXXXXXXXXXXXX&ev=PageView&noscript=1" />`}
       </noscript>
     </Helmet>
   );
