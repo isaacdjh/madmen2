@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Calendar, Menu, X, Mail, Briefcase, Phone } from 'lucide-react';
@@ -21,6 +21,13 @@ interface ClientNavigationProps {
 const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+
+  // Reset scroll position when route changes on mobile
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Also ensure body overflow is reset
+    document.body.style.overflow = 'auto';
+  }, [location.pathname]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -179,55 +186,67 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                     Barbería Tradicional
                   </DrawerDescription>
                 </DrawerHeader>
-                <div className="px-6 space-y-3">
-                  <Link to="/">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                    >
-                      Inicio
-                    </Button>
-                  </Link>
-                  <Link to="/ubicaciones">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                    >
-                      Ubicaciones
-                    </Button>
-                  </Link>
-                  <Link to="/servicios">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                    >
-                      Servicios
-                    </Button>
-                  </Link>
-                  <Link to="/productos">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                    >
-                      Productos
-                    </Button>
-                  </Link>
-                  <Link to="/bonos">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                    >
-                      Bonos de Ahorro
-                    </Button>
-                  </Link>
-                  <Link to="/equipo">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                    >
-                      Equipo
-                    </Button>
-                  </Link>
+                 <div className="px-6 space-y-3">
+                   <DrawerClose asChild>
+                     <Link to="/">
+                       <Button 
+                         variant="ghost" 
+                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                       >
+                         Inicio
+                       </Button>
+                     </Link>
+                   </DrawerClose>
+                   <DrawerClose asChild>
+                     <Link to="/ubicaciones">
+                       <Button 
+                         variant="ghost" 
+                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                       >
+                         Ubicaciones
+                       </Button>
+                     </Link>
+                   </DrawerClose>
+                   <DrawerClose asChild>
+                     <Link to="/servicios">
+                       <Button 
+                         variant="ghost" 
+                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                       >
+                         Servicios
+                       </Button>
+                     </Link>
+                   </DrawerClose>
+                   <DrawerClose asChild>
+                     <Link to="/productos">
+                       <Button 
+                         variant="ghost" 
+                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                       >
+                         Productos
+                       </Button>
+                     </Link>
+                   </DrawerClose>
+                   <DrawerClose asChild>
+                     <Link to="/bonos">
+                       <Button 
+                         variant="ghost" 
+                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                       >
+                         Bonos de Ahorro
+                       </Button>
+                     </Link>
+                   </DrawerClose>
+                   <DrawerClose asChild>
+                     <Link to="/equipo">
+                       <Button 
+                         variant="ghost" 
+                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                       >
+                         Equipo
+                       </Button>
+                     </Link>
+                   </DrawerClose>
                   <Button 
                     onClick={sendCurriculum}
                     variant="outline" 
@@ -236,14 +255,16 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
                   </Button>
-                  <Link to="/contacto">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                    >
-                      Contacto
-                    </Button>
-                  </Link>
+                   <DrawerClose asChild>
+                     <Link to="/contacto">
+                       <Button 
+                         variant="ghost" 
+                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                       >
+                         Contacto
+                       </Button>
+                     </Link>
+                   </DrawerClose>
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
