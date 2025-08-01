@@ -18,7 +18,6 @@ import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Contacto from "./pages/Contacto";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import MapaPage from "@/pages/Mapa";
 import BlogPage from "@/pages/Blog";
 
 const queryClient = new QueryClient();
@@ -40,7 +39,6 @@ const App = () => (
           <Route path="/productos" element={<Productos />} />
           <Route path="/servicios" element={<Servicios />} />
             <Route path="/contacto" element={<Contacto />} />
-            <Route path="/mapa" element={<MapaPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/admin" element={<AdminPortal />} />
             <Route path="/barber" element={<BarberPortal />} />

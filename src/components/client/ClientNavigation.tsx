@@ -134,14 +134,6 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                       Bonos de Ahorro
                     </Button>
                   </Link>
-                  <Link to="/mapa">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
-                      Mapa Interactivo
-                    </Button>
-                  </Link>
                   <Link to="/blog">
                     <Button 
                       variant="outline" 
@@ -252,16 +244,6 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                          Bonos de Ahorro
                        </Button>
                      </Link>
-                    </DrawerClose>
-                    <DrawerClose asChild>
-                      <Link to="/mapa">
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                        >
-                          Mapa Interactivo
-                        </Button>
-                      </Link>
                     </DrawerClose>
                     <DrawerClose asChild>
                       <Link to="/blog">
