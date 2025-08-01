@@ -17,13 +17,18 @@ import Ubicaciones from "./pages/Ubicaciones";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Contacto from "./pages/Contacto";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import MapaPage from "@/pages/Mapa";
+import BlogPage from "@/pages/Blog";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="barbershop-ui-theme">
-      <TooltipProvider>
+  <div className="min-h-screen">
+    <GoogleAnalytics />
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="barbershop-ui-theme">
+        <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -34,17 +39,20 @@ const App = () => (
           <Route path="/ubicaciones" element={<Ubicaciones />} />
           <Route path="/productos" element={<Productos />} />
           <Route path="/servicios" element={<Servicios />} />
-          <Route path="/contacto" element={<Contacto />} />
-          <Route path="/admin" element={<AdminPortal />} />
-          <Route path="/barber" element={<BarberPortal />} />
-          <Route path="/cancel/:appointmentId" element={<CancelAppointment />} />
-          <Route path="/import-clients" element={<ImportClients />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+            <Route path="/contacto" element={<Contacto />} />
+            <Route path="/mapa" element={<MapaPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/admin" element={<AdminPortal />} />
+            <Route path="/barber" element={<BarberPortal />} />
+            <Route path="/cancel/:appointmentId" element={<CancelAppointment />} />
+            <Route path="/import-clients" element={<ImportClients />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+      </ThemeProvider>
+          </QueryClientProvider>
+  </div>
 );
 
 export default App;
