@@ -10,32 +10,41 @@ interface OffersSectionProps {
 const OffersSection = ({ onViewBonuses }: OffersSectionProps) => {
   const offers = [
     {
-      title: 'Bono 5 Servicios',
-      description: 'Ahorra comprando por adelantado',
-      discount: '15% OFF',
-      price: '85€',
-      originalPrice: '100€',
+      title: "Bono Corte de Pelo",
+      description: "4 cortes por 60€",
+      discount: "Ahorro: 16€",
+      price: "60€",
+      originalPrice: "76€",
       icon: Scissors,
       popular: true,
     },
     {
-      title: 'Bono 10 Servicios',
-      description: 'La mejor oferta para clientes frecuentes',
-      discount: '25% OFF',
-      price: '150€',
-      originalPrice: '200€',
+      title: "Bono Corte + Barba", 
+      description: "4 servicios por 100€",
+      discount: "Ahorro: 28€",
+      price: "100€",
+      originalPrice: "128€",
       icon: Star,
       popular: false,
     },
     {
-      title: 'Bono Regalo',
-      description: 'Regalo perfecto para alguien especial',
-      discount: 'Válido 1 año',
-      price: 'Desde 20€',
-      originalPrice: '',
-      icon: Gift,
+      title: "Bono Arreglo de Barba",
+      description: "4 arreglos por 48€", 
+      discount: "Ahorro: 16€",
+      price: "48€",
+      originalPrice: "64€",
+      icon: Scissors,
       popular: false,
     },
+    {
+      title: "Bono Rapado + Barba",
+      description: "4 servicios por 80€",
+      discount: "Ahorro: 28€",
+      price: "80€",
+      originalPrice: "108€", 
+      icon: Gift,
+      popular: false,
+    }
   ];
 
   return (
@@ -46,14 +55,14 @@ const OffersSection = ({ onViewBonuses }: OffersSectionProps) => {
             Ofertas Especiales
           </Badge>
           <h2 className="text-4xl font-bold text-primary mb-4">
-            Descuentos Exclusivos
+            Bonos de Ahorro MAD MEN
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Aprovecha nuestros bonos y promociones especiales. Ahorra más mientras cuidas tu imagen.
+            4 servicios con descuentos reales. Sin caducidad y válidos en ambas barberías.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {offers.map((offer, index) => {
             const IconComponent = offer.icon;
             return (
@@ -111,7 +120,7 @@ const OffersSection = ({ onViewBonuses }: OffersSectionProps) => {
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
-            * Bonos válidos por 12 meses desde la fecha de compra
+            💈 Ahorro real garantizado • Sin caducidad • Válido en ambas tiendas
           </p>
         </div>
       </div>
