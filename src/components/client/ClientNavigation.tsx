@@ -165,21 +165,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
           </div>
 
           {/* Mobile Menu */}
-          <div className="md:hidden flex items-center space-x-2">
-            <Button 
-              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
-              size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold text-xs px-3 py-2 min-w-[45px]"
-            >
-              Río
-            </Button>
-            <Button 
-              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
-              size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold text-xs px-3 py-2 min-w-[45px]"
-            >
-              Sal
-            </Button>
+          <div className="md:hidden flex items-center">
             <Drawer>
               <DrawerTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-white">

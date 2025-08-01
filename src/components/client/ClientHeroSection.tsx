@@ -36,6 +36,26 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
             El arte de la barbería tradicional perfeccionado en Madrid.
           </p>
 
+          {/* Botones móviles para reservas - solo visible en móviles */}
+          <div className="md:hidden flex gap-4 justify-center mb-8">
+            <Button 
+              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
+              size="sm"
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-4 py-2"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Río Rosa
+            </Button>
+            <Button 
+              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
+              size="sm"
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-4 py-2"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Salamanca
+            </Button>
+          </div>
+
           {/* Características destacadas */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
