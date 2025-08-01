@@ -5,6 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Package } from 'lucide-react';
 import { getAllProducts, type Product } from '@/lib/supabase-helpers';
 
+// Import product images
+import mattePasteImg from '@/assets/stmnt-matte-paste.jpg';
+import hardWaxImg from '@/assets/stmnt-hard-wax.jpg';
+import texturesprayImg from '@/assets/stmnt-texture-spray.jpg';
+import beardOilImg from '@/assets/stmnt-beard-oil.jpg';
+import stylingPasteImg from '@/assets/stmnt-styling-paste.jpg';
+
 const ProductsSection = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +45,37 @@ const ProductsSection = () => {
       case 'aceite': return 'Aceites STMNT';
       case 'otros': return 'Otros Productos STMNT';
       default: return 'Productos STMNT';
+    }
+  };
+
+  const getProductImage = (category: string, name: string) => {
+    const lowerName = name.toLowerCase();
+    const lowerCategory = category.toLowerCase();
+    
+    if (lowerName.includes('matte') || lowerName.includes('mate')) {
+      return mattePasteImg;
+    }
+    if (lowerCategory === 'cera' || lowerName.includes('wax') || lowerName.includes('cera')) {
+      return hardWaxImg;
+    }
+    if (lowerName.includes('spray') || lowerName.includes('textura')) {
+      return texturesprayImg;
+    }
+    if (lowerCategory === 'aceite' || lowerName.includes('aceite') || lowerName.includes('oil')) {
+      return beardOilImg;
+    }
+    if (lowerCategory === 'pasta' || lowerName.includes('pasta')) {
+      return stylingPasteImg;
+    }
+    
+    // Default fallback based on category
+    switch (lowerCategory) {
+      case 'pomada': return mattePasteImg;
+      case 'cera': return hardWaxImg;
+      case 'pasta': return stylingPasteImg;
+      case 'aceite': return beardOilImg;
+      case 'acabado': return texturesprayImg;
+      default: return stylingPasteImg;
     }
   };
 
@@ -88,8 +126,12 @@ const ProductsSection = () => {
                   {categoryProducts.map((product) => (
                     <Card key={product.id} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
-                        <div className="w-16 h-16 bg-barbershop-gold/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-                          <Package className="w-8 h-8 text-barbershop-gold" />
+                        <div className="w-32 h-32 mx-auto mb-4 overflow-hidden rounded-lg bg-white shadow-sm">
+                          <img 
+                            src={getProductImage(product.category, product.name)} 
+                            alt={product.name}
+                            className="w-full h-full object-contain"
+                          />
                         </div>
                         <CardTitle className="text-center text-lg">{product.name}</CardTitle>
                       </CardHeader>
