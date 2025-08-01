@@ -94,10 +94,10 @@ const BarbersSection = () => {
 
   if (isLoading) {
     return (
-      <section id="barberos" className="py-20 bg-gradient-to-b from-slate-50 to-white">
+      <section id="barberos" className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-barbershop-gold mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Cargando nuestro equipo...</p>
           </div>
         </div>
@@ -106,13 +106,13 @@ const BarbersSection = () => {
   }
 
   return (
-    <section id="barberos" className="py-20 bg-gradient-to-b from-slate-50 to-white">
+    <section id="barberos" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <div className="inline-block p-3 bg-barbershop-gold/20 rounded-full mb-4">
-            <Users className="w-8 h-8 text-barbershop-gold" />
+          <div className="inline-block p-3 bg-primary/20 rounded-full mb-4">
+            <Users className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-4xl font-bold text-barbershop-dark mb-4">Nuestro Equipo</h2>
+          <h2 className="text-4xl font-bold text-foreground mb-4">Nuestro Equipo</h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Conoce a nuestros barberos profesionales, cada uno con años de experiencia y pasión por su oficio
           </p>
@@ -125,7 +125,7 @@ const BarbersSection = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {barbers.map((barber, index) => (
-              <Card key={barber.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-barbershop-gold/50">
+              <Card key={barber.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/50 bg-card">
                 <CardContent className="p-8 text-center">
                   <div className="mb-6">
                     <Avatar className="w-24 h-24 mx-auto group-hover:scale-110 transition-transform duration-300">
@@ -134,14 +134,14 @@ const BarbersSection = () => {
                         alt={barber.name}
                         className="object-cover"
                       />
-                      <AvatarFallback className="bg-gradient-to-br from-barbershop-gold to-barbershop-navy text-white font-bold text-lg">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold text-lg">
                         {getInitials(barber.name)}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                   
-                  <h3 className="text-xl font-bold text-barbershop-dark mb-2">{barber.name}</h3>
-                  <p className="text-barbershop-gold font-medium mb-2">{getSpecialty(index)}</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">{barber.name}</h3>
+                  <p className="text-primary font-medium mb-2">{getSpecialty(index)}</p>
                   <p className="text-sm text-muted-foreground mb-4">{getExperience(index)} de experiencia</p>
                   
                   <div className="flex items-center justify-center mb-4">
@@ -154,15 +154,15 @@ const BarbersSection = () => {
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
-                          className="w-4 h-4 text-barbershop-gold fill-current" 
+                          className="w-4 h-4 text-primary fill-current" 
                         />
                       ))}
                     </div>
-                    <span className="text-sm font-bold text-barbershop-gold">{getRating(index)}</span>
+                    <span className="text-sm font-bold text-primary">{getRating(index)}</span>
                   </div>
 
                   <Button 
-                    className="w-full bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 group-hover:scale-105 transition-transform duration-300"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 group-hover:scale-105 transition-transform duration-300"
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     Reservar con {barber.name.split(' ')[0]}
