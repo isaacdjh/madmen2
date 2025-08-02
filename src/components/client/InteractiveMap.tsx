@@ -25,18 +25,18 @@ const InteractiveMap = () => {
     {
       id: 1,
       name: 'Mad Men Barbería - Cristóbal Bordiú 29',
-      address: 'Calle Cristóbal Bordiú, 29, 28003 Madrid',
+      address: 'C. de Cristóbal Bordiú, 29, Chamberí, 28003 Madrid',
       phone: '+34 916832731',
-      coordinates: [40.4357, -3.7076] as [number, number],
+      coordinates: [40.434190, -3.704250] as [number, number], // Chamberí, Cristóbal Bordiú 29
       hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
-      description: 'Nuestra ubicación principal en el barrio Ríos Rosas'
+      description: 'Nuestra ubicación principal en el barrio Chamberí'
     },
     {
       id: 2,
       name: 'Mad Men Barbería - General Pardiñas 101',
-      address: 'Calle General Pardiñas, 101, 28006 Madrid',
+      address: 'Calle del Gral. Pardiñas, 101, Salamanca, 28006 Madrid',
       phone: '+34 910597766',
-      coordinates: [40.4312, -3.6777] as [number, number],
+      coordinates: [40.431200, -3.677700] as [number, number], // Salamanca, General Pardiñas 101
       hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
       description: 'Nuestra segunda ubicación en el exclusivo barrio de Salamanca'
     }
