@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
 const GoogleAnalytics = () => {
-  const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // Placeholder - usuario debe reemplazar
+  const GA_MEASUREMENT_ID = 'G-SKYK9EFR5Y';
 
   return (
     <Helmet>
