@@ -5,6 +5,8 @@ const GoogleAnalytics = () => {
 
   return (
     <Helmet>
+      <title>Mad Men Barbería - Barbería Tradicional Madrid | Corte y Afeitado Profesional</title>
+      <meta name="description" content="Mad Men Barbería - El arte de la barbería tradicional perfeccionado en Madrid. Corte clásico, afeitado con navaja y cuidado masculino premium." />
       {/* Google Analytics */}
       <script
         async
