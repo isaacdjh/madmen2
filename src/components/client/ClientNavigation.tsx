@@ -49,8 +49,8 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
           <div className="flex items-center">
             <div className="w-16 h-16 flex items-center justify-center">
               <img 
-                src="/lovable-uploads/abef21ef-e8bf-4631-a2c1-f781e0a01eed.png" 
-                alt="Mad Men Barbería Tradicional" 
+                src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
+                alt="Mad Men Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
