@@ -24,8 +24,8 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
           {/* Logo Principal - Centrado donde estaban las letras amarillas */}
           <div className="mb-6">
             <img 
-              src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
-              alt="Mad Men Logo" 
+              src="/lovable-uploads/abef21ef-e8bf-4631-a2c1-f781e0a01eed.png" 
+              alt="Mad Men Barbería Tradicional" 
               className="w-32 h-32 md:w-40 md:h-40 mx-auto object-contain"
             />
           </div>
