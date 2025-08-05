@@ -44,11 +44,11 @@ const LocationsSection = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 left-4 bg-barbershop-dark/90 backdrop-blur-sm rounded-lg p-2">
-                  <img 
-                    src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
-                    alt="Mad Men Logo" 
-                    className="w-8 h-8 object-contain"
-                  />
+                    <img 
+                      src="/lovable-uploads/a025ce2d-5659-4cd2-b67d-2ca1dd14a5b2.png" 
+                      alt="Mad Men Logo" 
+                      className="w-8 h-8 object-contain"
+                    />
                 </div>
               </div>
               
