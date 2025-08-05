@@ -1,126 +1,36 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Scissors } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 
 interface BarberLoginProps {
   onLogin: (barberId: string, barberName: string) => void;
 }
 
 const BarberLogin = ({ onLogin }: BarberLoginProps) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { user, profile, isAuthenticated, isBarber } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    // Cargar barberos del localStorage
-    const storedBarbers = localStorage.getItem('barbers');
-    let barberCredentials: any = {};
-
-    if (storedBarbers) {
-      const barbers = JSON.parse(storedBarbers);
-      barbers.forEach((barber: any) => {
-        barberCredentials[barber.username] = {
-          password: 'madmen2024', // Contraseña por defecto
-          id: barber.id,
-          name: barber.name,
-          location: barber.location
-        };
-      });
-    } else {
-      // Credenciales por defecto si no hay barberos en localStorage
-      barberCredentials = {
-        'luis.bracho': { password: 'madmen2024', id: 'luis-bracho', name: 'Luis Bracho', location: 'cristobal-bordiu' },
-        'jesus.hernandez': { password: 'madmen2024', id: 'jesus-hernandez', name: 'Jesús Hernández', location: 'cristobal-bordiu' },
-        'luis.alfredo': { password: 'madmen2024', id: 'luis-alfredo', name: 'Luis Alfredo', location: 'cristobal-bordiu' },
-        'dionys.bracho': { password: 'madmen2024', id: 'dionys-bracho', name: 'Dionys Bracho', location: 'cristobal-bordiu' },
-        'isaac.hernandez': { password: 'madmen2024', id: 'isaac-hernandez', name: 'Isaac Hernández', location: 'general-pardinas' },
-        'carlos.lopez': { password: 'madmen2024', id: 'carlos-lopez', name: 'Carlos López', location: 'general-pardinas' },
-        'luis.urbinez': { password: 'madmen2024', id: 'luis-urbinez', name: 'Luis Urbiñez', location: 'general-pardinas' },
-        'randy.valdespino': { password: 'madmen2024', id: 'randy-valdespino', name: 'Randy Valdespino', location: 'general-pardinas' }
-      };
+  useEffect(() => {
+    if (isAuthenticated() && isBarber() && profile) {
+      onLogin(profile.id, profile.full_name || profile.email);
     }
+  }, [user, profile, onLogin, isAuthenticated, isBarber]);
 
-    const barber = barberCredentials[username];
-    
-    if (barber && barber.password === password) {
-      localStorage.setItem('barberSession', JSON.stringify({
-        id: barber.id,
-        name: barber.name,
-        location: barber.location,
-        loginTime: new Date().toISOString()
-      }));
-      onLogin(barber.id, barber.name);
-    } else {
-      setError('Usuario o contraseña incorrectos');
-    }
-  };
+  if (!isAuthenticated()) {
+    return <Navigate to="/auth" replace />;
+  }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-barbershop-gold p-3 rounded-full">
-              <Scissors className="w-8 h-8 text-barbershop-dark" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold text-barbershop-dark">
-            Acceso Barberos
-          </CardTitle>
-          <p className="text-muted-foreground">Mad Men Barbería</p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <Label htmlFor="username">Usuario</Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Ej: luis.bracho"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <Button 
-              type="submit" 
-              className="w-full bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90"
-            >
-              Iniciar Sesión
-            </Button>
-          </form>
-          <div className="mt-4 text-xs text-center text-muted-foreground">
-            <p>Usuarios de ejemplo:</p>
-            <p>luis.bracho / madmen2024</p>
-            <p>isaac.hernandez / madmen2024</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  if (!isBarber()) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso Denegado</h2>
+          <p className="text-gray-600">No tienes permisos de barbero para acceder a esta sección.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return null; // User is authenticated and authorized
 };
 
 export default BarberLogin;

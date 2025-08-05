@@ -3,9 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import { useWhatsAppConfig } from '@/hooks/useWhatsAppConfig';
 import WhatsAppStats from '@/components/whatsapp/WhatsAppStats';
-import WhatsAppConfigForm from '@/components/whatsapp/WhatsAppConfigForm';
 import WhatsAppConversationFlow from '@/components/whatsapp/WhatsAppConversationFlow';
 import WhatsAppSetupInstructions from '@/components/whatsapp/WhatsAppSetupInstructions';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const WhatsAppIntegration = () => {
   const {
@@ -44,16 +44,14 @@ const WhatsAppIntegration = () => {
       {/* Stats Cards */}
       <WhatsAppStats stats={stats} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Configuration */}
-        <WhatsAppConfigForm
-          config={config}
-          setConfig={setConfig}
-          onSaveConfig={handleSaveConfig}
-          onCopyWebhookUrl={copyWebhookUrl}
-          onTestConnection={testConnection}
-        />
+      <Alert>
+        <AlertDescription>
+          🔒 <strong>Configuración segura implementada:</strong> Las credenciales de WhatsApp ahora se manejan de forma segura en el backend. 
+          Configure las siguientes variables en Supabase Secrets: WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOKEN.
+        </AlertDescription>
+      </Alert>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Conversation Flow */}
         <WhatsAppConversationFlow />
       </div>
