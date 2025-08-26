@@ -24,9 +24,10 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
 
   // Reset scroll position when route changes on mobile
   useEffect(() => {
-    window.scrollTo(0, 0);
-    // Also ensure body overflow is reset
-    document.body.style.overflow = 'auto';
+    // Use setTimeout to avoid conflicts with iOS navigation
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
   }, [location.pathname]);
 
   const scrollToSection = (sectionId: string) => {
