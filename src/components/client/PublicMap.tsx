@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,9 @@ L.Icon.Default.mergeOptions({
 const PublicMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
+  const [isMapVisible, setIsMapVisible] = useState(false);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Ubicaciones de Mad Men Barbería (solo lectura para usuarios)
   const locations = [
@@ -39,14 +42,31 @@ const PublicMap = () => {
   ];
 
   const initializeMap = () => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !isMapVisible) return;
 
-    // Crear el mapa con OpenStreetMap
-    map.current = L.map(mapContainer.current).setView([40.4337, -3.6923], 13);
+    // Detectar si es dispositivo móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Crear el mapa con configuración optimizada para móviles
+    map.current = L.map(mapContainer.current, {
+      zoomControl: !isMobile, // Deshabilitar controles de zoom en móvil
+      attributionControl: false, // Deshabilitar atribución para ahorrar espacio
+      dragging: !isMobile, // Deshabilitar arrastre en móvil para evitar conflictos
+      touchZoom: false, // Deshabilitar zoom táctil
+      scrollWheelZoom: false, // Deshabilitar zoom con scroll
+      doubleClickZoom: false, // Deshabilitar zoom con doble click
+      boxZoom: false, // Deshabilitar zoom con caja
+      keyboard: false // Deshabilitar controles de teclado
+    }).setView([40.4337, -3.6923], isMobile ? 12 : 13);
 
-    // Agregar capa de OpenStreetMap (gratuita)
+    // Agregar capa de OpenStreetMap con configuración optimizada
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: isMobile ? 15 : 18, // Limitar zoom máximo en móviles
+      tileSize: isMobile ? 512 : 256, // Usar tiles más grandes en móvil
+      zoomOffset: isMobile ? -1 : 0,
+      updateWhenIdle: true, // Solo actualizar cuando el mapa esté idle
+      keepBuffer: isMobile ? 1 : 2 // Reducir buffer en móviles
     }).addTo(map.current);
 
     // Crear icono personalizado para las barberías
@@ -91,11 +111,51 @@ const PublicMap = () => {
 
       marker.bindPopup(popupContent);
     });
+    
+    setIsMapLoaded(true);
   };
 
+  // Configurar Intersection Observer para lazy loading
   useEffect(() => {
-    initializeMap();
+    if (!mapContainer.current) return;
 
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isMapVisible) {
+            setIsMapVisible(true);
+          }
+        });
+      },
+      {
+        rootMargin: '100px', // Cargar cuando esté 100px antes de ser visible
+        threshold: 0.1
+      }
+    );
+
+    observerRef.current.observe(mapContainer.current);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [isMapVisible]);
+
+  // Inicializar mapa cuando sea visible
+  useEffect(() => {
+    if (isMapVisible && !map.current) {
+      // Agregar un pequeño delay para mejorar rendimiento
+      const timer = setTimeout(() => {
+        initializeMap();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMapVisible]);
+
+  // Cleanup
+  useEffect(() => {
     return () => {
       if (map.current) {
         map.current.remove();
@@ -115,8 +175,26 @@ const PublicMap = () => {
         <div className="mb-8">
           <div 
             ref={mapContainer} 
-            className="w-full h-96 rounded-lg shadow-lg border border-border"
-          />
+            className="w-full h-96 rounded-lg shadow-lg border border-border relative"
+          >
+            {!isMapLoaded && isMapVisible && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/50 rounded-lg">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Cargando mapa...</p>
+                </div>
+              </div>
+            )}
+            {!isMapVisible && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/30 rounded-lg">
+                <div className="text-center">
+                  <MapPin className="w-12 h-12 text-primary mx-auto mb-2" />
+                  <p className="text-lg font-semibold text-primary">Mapa Interactivo</p>
+                  <p className="text-sm text-muted-foreground">Se cargará automáticamente</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
