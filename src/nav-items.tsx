@@ -77,8 +77,6 @@ const navItems: NavItem[] = [
     to: "/admin",
     icon: UserCheck,
     page: <AdminPortal />,
-    requiresAuth: true,
-    requiredRole: 'admin',
   },
   {
     title: "Barbero",
