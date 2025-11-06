@@ -1,43 +1,67 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Scissors, Gift, CheckCircle, MapPin, User, Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface BonusPackage {
+  id: string;
+  name: string;
+  description: string | null;
+  services_included: number;
+  price: number;
+  active: boolean;
+}
 
 const BonusSection = () => {
-  const bonuses = [
-    {
-      name: "Bono Corte de Pelo",
-      services: 4,
-      price: 60,
-      regularPrice: 76,
-      savings: 16,
-      description: "4 cortes por 60 €"
-    },
-    {
-      name: "Bono Corte + Barba",
-      services: 4,
-      price: 100,
-      regularPrice: 128,
-      savings: 28,
-      description: "4 servicios por 100 €"
-    },
-    {
-      name: "Bono Arreglo de Barba",
-      services: 4,
-      price: 48,
-      regularPrice: 64,
-      savings: 16,
-      description: "4 arreglos por 48 €"
-    },
-    {
-      name: "Bono Rapado + Barba",
-      services: 4,
-      price: 80,
-      regularPrice: 108,
-      savings: 28,
-      description: "4 servicios por 80 €"
+  const [bonuses, setBonuses] = useState<BonusPackage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadBonuses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('bonus_packages')
+          .select('*')
+          .eq('active', true)
+          .order('services_included', { ascending: false })
+          .order('price', { ascending: false });
+
+        if (error) throw error;
+        setBonuses(data || []);
+      } catch (error) {
+        console.error('Error loading bonuses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBonuses();
+  }, []);
+
+  const calculateRegularPrice = (packageName: string, servicesIncluded: number): number => {
+    const servicesPrices: Record<string, number> = {
+      'corte': 20.99,
+      'corte+barba': 35.50,
+      'barba': 17,
+      'rapado+barba': 28.50
+    };
+
+    const lowerName = packageName.toLowerCase();
+    
+    if (lowerName.includes('corte+barba') || lowerName.includes('corte + barba')) {
+      return servicesPrices['corte+barba'] * servicesIncluded;
+    } else if (lowerName.includes('rapado+barba') || lowerName.includes('rapado + barba')) {
+      return servicesPrices['rapado+barba'] * servicesIncluded;
+    } else if (lowerName.includes('barba')) {
+      return servicesPrices['barba'] * servicesIncluded;
+    } else if (lowerName.includes('corte')) {
+      return servicesPrices['corte'] * servicesIncluded;
     }
-  ];
+    
+    return 0;
+  };
 
   const benefits = [
     {
@@ -82,35 +106,50 @@ const BonusSection = () => {
 
         {/* Bonuses Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {bonuses.map((bonus, index) => (
-            <Card key={index} className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-              <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Scissors className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-lg font-bold">{bonus.name}</CardTitle>
-                <CardDescription className="text-sm">{bonus.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="mb-4">
-                  <div className="text-3xl font-bold text-primary mb-1">
-                    {bonus.price}€
+          {loading ? (
+            <div className="col-span-full text-center text-muted-foreground">
+              Cargando bonos...
+            </div>
+          ) : bonuses.length === 0 ? (
+            <div className="col-span-full text-center text-muted-foreground">
+              No hay bonos disponibles
+            </div>
+          ) : (
+            bonuses.map((bonus) => {
+              const regularPrice = calculateRegularPrice(bonus.name, bonus.services_included);
+              const savings = regularPrice - bonus.price;
+              
+              return (
+                <Card key={bonus.id} className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+                  <CardHeader className="text-center pb-4">
+                    <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                      <Scissors className="h-8 w-8 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg font-bold">{bonus.name}</CardTitle>
+                    <CardDescription className="text-sm">{bonus.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <div className="mb-4">
+                      <div className="text-3xl font-bold text-primary mb-1">
+                        {bonus.price}€
+                      </div>
+                      <div className="text-sm text-muted-foreground line-through">
+                        Precio regular: {regularPrice.toFixed(2)}€
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="mb-4">
+                      Ahorro: {savings.toFixed(2)}€
+                    </Badge>
+                  </CardContent>
+                  <div className="absolute top-4 right-4">
+                    <Badge variant="outline" className="bg-primary/10">
+                      {bonus.services_included} servicios
+                    </Badge>
                   </div>
-                  <div className="text-sm text-muted-foreground line-through">
-                    Precio regular: {bonus.regularPrice}€
-                  </div>
-                </div>
-                <Badge variant="secondary" className="mb-4">
-                  Ahorro: {bonus.savings}€
-                </Badge>
-              </CardContent>
-              <div className="absolute top-4 right-4">
-                <Badge variant="outline" className="bg-primary/10">
-                  {bonus.services} servicios
-                </Badge>
-              </div>
-            </Card>
-          ))}
+                </Card>
+              );
+            })
+          )}
         </div>
 
         {/* How it works */}
