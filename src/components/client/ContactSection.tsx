@@ -51,12 +51,12 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
                 <div className="space-y-3 ml-4">
                   <div className="flex items-center">
                     <MapPin className="w-5 h-5 mr-3 gold-accent" />
-                    <p className="opacity-90">Calle Alcalde Sainz de Baranda, Barrio Retiro, Madrid</p>
+                    <p className="opacity-90">Calle Alcalde Sainz de Baranda 53, 28009 Madrid</p>
                   </div>
                   <div className="flex items-center">
                     <Phone className="w-5 h-5 mr-3 gold-accent" />
-                    <a href="tel:+34910000000" className="opacity-90 hover:text-accent transition-colors">
-                      +34 910 000 000
+                    <a href="tel:+34912231715" className="opacity-90 hover:text-accent transition-colors">
+                      +34 912 231 715
                     </a>
                   </div>
                 </div>
