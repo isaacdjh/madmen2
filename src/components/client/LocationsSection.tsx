@@ -25,8 +25,8 @@ const LocationsSection = () => {
     },
     {
       name: 'Mad Men Retiro',
-      address: 'Calle Alcalde Sainz de Baranda, Barrio Retiro, Madrid',
-      phone: '+34 910 000 000',
+      address: 'Calle Alcalde Sainz de Baranda 53, 28009 Madrid',
+      phone: '+34 912 231 715',
       hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
       barbers: ['Jorge', 'Rudy'],
       image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
