@@ -44,7 +44,7 @@ const PublicMap = () => {
       name: 'Mad Men Barbería - Retiro',
       address: 'Calle Alcalde Sainz de Baranda 53, 28009 Madrid',
       phone: '+34 912 231 715',
-      coordinates: [40.4217, -3.6684] as [number, number],
+      coordinates: [40.4172, -3.6694] as [number, number],
       hours: 'L-V: 11:00-21:00 | S: 10:00-21:00 | D: 10:00-17:00',
       description: 'Nuestra nueva ubicación en el barrio Retiro'
     }
