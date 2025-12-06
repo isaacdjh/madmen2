@@ -11,7 +11,8 @@ const LocationsSection = () => {
       phone: '+34 916 832 731',
       hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
       barbers: ['Luis Bracho', 'Jesús Hernández', 'Luis Alfredo', 'Dionys Bracho'],
-      image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      bookingUrl: null
     },
     {
       name: 'Mad Men Salamanca',
@@ -19,7 +20,17 @@ const LocationsSection = () => {
       phone: '+34 910 597 766',
       hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
       barbers: ['Isaac Hernández', 'Carlos López', 'Luis Urbiñez', 'Randy Valdespino'],
-      image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      bookingUrl: null
+    },
+    {
+      name: 'Mad Men Retiro',
+      address: 'Calle Alcalde Sainz de Baranda, Barrio Retiro, Madrid',
+      phone: '+34 910 000 000',
+      hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
+      barbers: ['Jorge', 'Rudy'],
+      image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/160842'
     }
   ];
 
@@ -29,12 +40,12 @@ const LocationsSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold text-primary mb-6">Nuestras Ubicaciones</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Dos ubicaciones estratégicas en Madrid con los mejores barberos profesionales. 
-            Cada centro cuenta con 4 barberos expertos y el mismo nivel de excelencia.
+            Tres ubicaciones estratégicas en Madrid con los mejores barberos profesionales. 
+            Cada centro cuenta con barberos expertos y el mismo nivel de excelencia.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {locations.map((location, index) => (
             <Card key={index} className="location-card overflow-hidden">
               <div className="relative h-48 overflow-hidden">
@@ -99,6 +110,19 @@ const LocationsSection = () => {
                     ))}
                   </div>
                 </div>
+                
+                {location.bookingUrl && (
+                  <div className="border-t border-border pt-4 mt-4">
+                    <a 
+                      href={location.bookingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                    >
+                      Reservar en Retiro
+                    </a>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -144,7 +168,7 @@ const LocationsSection = () => {
             
             <div className="mt-6 pt-6 border-t border-border">
               <p className="text-sm text-muted-foreground">
-                Dos ubicaciones, un mismo nivel de excelencia. Más de 20 años perfeccionando el arte de la barbería tradicional.
+                Tres ubicaciones, un mismo nivel de excelencia. Más de 20 años perfeccionando el arte de la barbería tradicional.
               </p>
             </div>
           </div>

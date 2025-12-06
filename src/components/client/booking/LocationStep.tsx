@@ -20,15 +20,23 @@ const LocationStep = ({
       id: 'cristobal-bordiu',
       name: 'Mad Men Cristóbal Bordiú',
       address: 'Cristóbal Bordiú, 29, Madrid',
-      phone: '+34 910 XXX XXX',
-      hours: 'Lun-Sáb: 9:00-21:00'
+      phone: '+34 916 832 731',
+      hours: 'Lun-Sáb: 10:00-21:00'
     },
     {
       id: 'general-pardinas',
       name: 'Mad Men General Pardiñas',
       address: 'General Pardiñas, 101, Madrid',
-      phone: '+34 910 XXX XXX',
-      hours: 'Lun-Sáb: 9:00-21:00'
+      phone: '+34 910 597 766',
+      hours: 'Lun-Sáb: 10:00-21:00'
+    },
+    {
+      id: 'retiro',
+      name: 'Mad Men Retiro',
+      address: 'Calle Alcalde Sainz de Baranda, Madrid',
+      phone: '+34 910 000 000',
+      hours: 'Lun-Sáb: 10:00-21:00',
+      bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/160842'
     }
   ];
 
