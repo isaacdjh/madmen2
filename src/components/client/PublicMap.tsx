@@ -28,7 +28,7 @@ const PublicMap = () => {
       phone: '+34 916832731',
       coordinates: [40.4433397, -3.6992976] as [number, number],
       hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
-      description: 'Nuestra ubicación principal en el barrio Chamberí'
+      description: 'Nuestra primera ubicación en el barrio Chamberí'
     },
     {
       id: 2,
