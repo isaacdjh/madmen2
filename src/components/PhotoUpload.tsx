@@ -27,6 +27,12 @@ const PhotoUpload = ({ currentPhotoUrl, onPhotoUpdate, barberName }: PhotoUpload
       }
 
       const file = event.target.files[0];
+      const inputFileName = file.name.toLowerCase();
+      
+      // Reject HEIC files - not supported by browsers
+      if (inputFileName.endsWith('.heic') || inputFileName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
+        throw new Error('Los archivos HEIC no son compatibles con navegadores. Por favor, convierte la imagen a JPG o PNG antes de subirla.');
+      }
       
       // Validate file type
       if (!file.type.startsWith('image/')) {
@@ -50,8 +56,8 @@ const PhotoUpload = ({ currentPhotoUrl, onPhotoUpdate, barberName }: PhotoUpload
         .replace(/[úùüû]/g, 'u')
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-');
-      const fileName = `${cleanName}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const storageFileName = `${cleanName}-${Date.now()}.${fileExt}`;
+      const filePath = `${storageFileName}`;
 
       // Delete previous photo if exists
       if (currentPhotoUrl) {
