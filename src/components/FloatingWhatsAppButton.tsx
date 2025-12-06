@@ -1,22 +1,30 @@
-import { MessageCircle } from 'lucide-react';
-
 const FloatingWhatsAppButton = () => {
-  const phoneNumber = '34623158565';
-  const message = '¡Hola! Me gustaría reservar una cita en Mad Men Barbería.';
-  
-  const handleClick = () => {
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-  };
-
   return (
-    <button
-      onClick={handleClick}
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-pulse hover:animate-none cursor-pointer"
+    <a
+      href="https://wa.me/34623158565"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        background: '#25d366',
+        color: 'white',
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '28px',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+        zIndex: 9999,
+        textDecoration: 'none',
+      }}
       aria-label="Contactar por WhatsApp"
     >
-      <MessageCircle className="w-7 h-7 fill-current" />
-    </button>
+      💬
+    </a>
   );
 };
 
