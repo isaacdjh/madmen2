@@ -33,9 +33,9 @@ const LocationStep = ({
     {
       id: 'retiro',
       name: 'Mad Men Retiro',
-      address: 'Calle Alcalde Sainz de Baranda, Madrid',
-      phone: '+34 910 000 000',
-      hours: 'Lun-Sáb: 10:00-21:00',
+      address: 'Calle Alcalde Sainz de Baranda 53, 28009 Madrid',
+      phone: '+34 912 231 715',
+      hours: 'Lun-Vie: 11:00-21:00 | Sáb: 10:00-21:00 | Dom: 10:00-17:00',
       bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/160842'
     }
   ];
