@@ -45,6 +45,22 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
                   </div>
                 </div>
               </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-4 gold-accent">Mad Men Retiro</h3>
+                <div className="space-y-3 ml-4">
+                  <div className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-3 gold-accent" />
+                    <p className="opacity-90">Calle Alcalde Sainz de Baranda, Barrio Retiro, Madrid</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="w-5 h-5 mr-3 gold-accent" />
+                    <a href="tel:+34910000000" className="opacity-90 hover:text-accent transition-colors">
+                      +34 910 000 000
+                    </a>
+                  </div>
+                </div>
+              </div>
               
               <div className="flex items-center">
                 <Mail className="w-6 h-6 mr-4 gold-accent" />
@@ -105,6 +121,14 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
               >
                 <Calendar className="w-5 h-5 mr-2" />
                 Reservar Salamanca
+              </Button>
+              <Button 
+                size="lg" 
+                className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
+                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Reservar Retiro
               </Button>
             </div>
           </div>

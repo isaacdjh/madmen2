@@ -103,6 +103,14 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
               <Calendar className="w-4 h-4 mr-1" />
               Salamanca
             </Button>
+            <Button 
+              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}
+              size="sm"
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
+            >
+              <Calendar className="w-4 h-4 mr-1" />
+              Retiro
+            </Button>
             
             {/* Menu Drawer Trigger */}
             <Drawer>
