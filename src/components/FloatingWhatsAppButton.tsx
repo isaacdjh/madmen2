@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react';
 const FloatingWhatsAppButton = () => {
   const phoneNumber = '34623158565';
   const message = '¡Hola! Me gustaría reservar una cita en Mad Men Barbería.';
-  const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
     <a
