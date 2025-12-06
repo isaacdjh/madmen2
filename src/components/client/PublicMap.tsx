@@ -38,6 +38,15 @@ const PublicMap = () => {
       coordinates: [40.4368176, -3.6777538] as [number, number],
       hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
       description: 'Nuestra segunda ubicación en el exclusivo barrio de Salamanca'
+    },
+    {
+      id: 3,
+      name: 'Mad Men Barbería - Retiro',
+      address: 'Calle Alcalde Sainz de Baranda, Retiro, 28009 Madrid',
+      phone: '+34 910000000',
+      coordinates: [40.4215, -3.6690] as [number, number],
+      hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
+      description: 'Nuestra nueva ubicación en el barrio Retiro'
     }
   ];
 
@@ -197,7 +206,7 @@ const PublicMap = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {locations.map((location) => (
             <Card key={location.id}>
               <CardContent className="p-6">
