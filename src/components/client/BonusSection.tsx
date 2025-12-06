@@ -43,9 +43,9 @@ const BonusSection = () => {
   const calculateRegularPrice = (packageName: string, servicesIncluded: number): number => {
     const servicesPrices: Record<string, number> = {
       'corte': 20.99,
-      'corte+barba': 35.50,
+      'corte+barba': 35.99,
       'barba': 17,
-      'rapado+barba': 28.50
+      'rapado+barba': 30.99
     };
 
     const lowerName = packageName.toLowerCase();
