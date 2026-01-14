@@ -1,180 +1,102 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Upload, Trash2 } from 'lucide-react';
+import { Camera, Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface PhotoUploadProps {
-  currentPhotoUrl?: string;
+  currentPhotoUrl: string | null;
   onPhotoUpdate: (photoUrl: string | null) => void;
-  barberName: string;
+  barberName?: string;
 }
 
 const PhotoUpload = ({ currentPhotoUrl, onPhotoUpdate, barberName }: PhotoUploadProps) => {
-  const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl || null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const uploadPhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor selecciona una imagen válida');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('La imagen debe ser menor a 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+
     try {
-      setUploading(true);
-      
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('Debes seleccionar una imagen para subir');
-      }
-
-      const file = event.target.files[0];
-      const inputFileName = file.name.toLowerCase();
-      
-      // Reject HEIC files - not supported by browsers
-      if (inputFileName.endsWith('.heic') || inputFileName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
-        throw new Error('Los archivos HEIC no son compatibles con navegadores. Por favor, convierte la imagen a JPG o PNG antes de subirla.');
-      }
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Solo se permiten archivos de imagen');
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('La imagen no puede ser mayor a 5MB');
-      }
-
       const fileExt = file.name.split('.').pop();
-      // Clean the barber name to remove special characters and normalize for storage
-      const cleanName = barberName
-        .toLowerCase()
-        .replace(/[ñ]/g, 'n')
-        .replace(/[áàäâã]/g, 'a')
-        .replace(/[éèëê]/g, 'e')
-        .replace(/[íìïî]/g, 'i')
-        .replace(/[óòöôõ]/g, 'o')
-        .replace(/[úùüû]/g, 'u')
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-');
-      const storageFileName = `${cleanName}-${Date.now()}.${fileExt}`;
-      const filePath = `${storageFileName}`;
-
-      // Delete previous photo if exists
-      if (currentPhotoUrl) {
-        const oldFileName = currentPhotoUrl.split('/').pop();
-        if (oldFileName) {
-          await supabase.storage.from('barber-photos').remove([oldFileName]);
-        }
-      }
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `barbers/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('barber-photos')
         .upload(filePath, file);
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage.from('barber-photos').getPublicUrl(filePath);
-      
-      setPreviewUrl(data.publicUrl);
-      onPhotoUpdate(data.publicUrl);
-      toast.success('Foto subida correctamente');
+      const { data: { publicUrl } } = supabase.storage
+        .from('barber-photos')
+        .getPublicUrl(filePath);
 
+      onPhotoUpdate(publicUrl);
+      toast.success('Foto actualizada correctamente');
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast.error(error instanceof Error ? error.message : 'Error al subir la foto');
+      toast.error('Error al subir la foto');
     } finally {
-      setUploading(false);
+      setIsUploading(false);
     }
   };
 
-  const removePhoto = async () => {
-    try {
-      if (currentPhotoUrl) {
-        const fileName = currentPhotoUrl.split('/').pop();
-        if (fileName) {
-          const { error } = await supabase.storage
-            .from('barber-photos')
-            .remove([fileName]);
-          
-          if (error) throw error;
-        }
-      }
-      
-      setPreviewUrl(null);
-      onPhotoUpdate(null);
-      toast.success('Foto eliminada correctamente');
-    } catch (error) {
-      console.error('Error removing photo:', error);
-      toast.error('Error al eliminar la foto');
-    }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const handleRemovePhoto = () => {
+    onPhotoUpdate(null);
+    toast.success('Foto eliminada');
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-4">
-        <Avatar className="w-20 h-20">
-          <AvatarImage src={previewUrl || undefined} alt={barberName} />
-          <AvatarFallback className="bg-barbershop-gold text-barbershop-dark font-bold text-lg">
-            {getInitials(barberName)}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="space-y-2">
-          <Label htmlFor="photo-upload" className="text-sm font-medium">
-            Foto del Barbero
-          </Label>
-          <div className="flex space-x-2">
-            <Label htmlFor="photo-upload" className="cursor-pointer">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={uploading}
-                className="relative"
-                asChild
-              >
-                <span>
-                  <Upload className="w-4 h-4 mr-2" />
-                  {uploading ? 'Subiendo...' : 'Subir Foto'}
-                </span>
-              </Button>
-            </Label>
-            <Input
-              id="photo-upload"
-              type="file"
-              accept="image/*"
-              onChange={uploadPhoto}
-              disabled={uploading}
-              className="hidden"
-            />
-            
-            {previewUrl && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={removePhoto}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Eliminar
-              </Button>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Formatos: JPG, PNG. Máximo 5MB.
-          </p>
-        </div>
+    <div className="flex flex-col items-center gap-4">
+      <Avatar className="w-24 h-24">
+        <AvatarImage src={currentPhotoUrl || undefined} alt="Foto del barbero" />
+        <AvatarFallback>
+          <Camera className="w-8 h-8 text-gray-400" />
+        </AvatarFallback>
+      </Avatar>
+
+      <div className="flex gap-2">
+        <Label htmlFor="photo-upload" className="cursor-pointer">
+          <Button variant="outline" size="sm" disabled={isUploading} asChild>
+            <span>
+              <Upload className="w-4 h-4 mr-2" />
+              {isUploading ? 'Subiendo...' : 'Subir foto'}
+            </span>
+          </Button>
+          <Input
+            id="photo-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={isUploading}
+          />
+        </Label>
+
+        {currentPhotoUrl && (
+          <Button variant="outline" size="sm" onClick={handleRemovePhoto}>
+            <X className="w-4 h-4 mr-2" />
+            Eliminar
+          </Button>
+        )}
       </div>
     </div>
   );

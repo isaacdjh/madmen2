@@ -2,11 +2,6 @@
 import { useState } from 'react';
 import ClientBookingForm from './ClientBookingForm';
 import ClientHeroSection from './client/ClientHeroSection';
-import LocationsSection from './client/LocationsSection';
-import ServicesSection from './client/ServicesSection';
-import BonusSection from './client/BonusSection';
-import BarbersSection from './client/BarbersSection';
-import ProductsSection from './client/ProductsSection';
 import TestimonialsSection from './client/TestimonialsSection';
 import OffersSection from './client/OffersSection';
 import ContactSection from './client/ContactSection';
