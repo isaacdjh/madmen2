@@ -15,7 +15,10 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
             <h2 className="text-4xl font-bold mb-8">Contáctanos</h2>
             <div className="space-y-6">
               <div>
-                <h3 className="text-xl font-semibold mb-4 gold-accent">Mad Men Río Rosa</h3>
+                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
+                  <img src="/images/barber-pole.gif" alt="Barber pole" className="w-6 h-6" />
+                  Mad Men Río Rosa
+                </h3>
                 <div className="space-y-3 ml-4">
                   <div className="flex items-center">
                     <MapPin className="w-5 h-5 mr-3 gold-accent" />
@@ -31,7 +34,10 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-4 gold-accent">Mad Men Salamanca</h3>
+                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
+                  <img src="/images/barber-pole.gif" alt="Barber pole" className="w-6 h-6" />
+                  Mad Men Salamanca
+                </h3>
                 <div className="space-y-3 ml-4">
                   <div className="flex items-center">
                     <MapPin className="w-5 h-5 mr-3 gold-accent" />
@@ -47,7 +53,10 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-4 gold-accent">Mad Men Retiro</h3>
+                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
+                  <img src="/images/barber-pole.gif" alt="Barber pole" className="w-6 h-6" />
+                  Mad Men Retiro
+                </h3>
                 <div className="space-y-3 ml-4">
                   <div className="flex items-center">
                     <MapPin className="w-5 h-5 mr-3 gold-accent" />
