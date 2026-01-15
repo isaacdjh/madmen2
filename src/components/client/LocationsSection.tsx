@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Phone, Clock, Instagram, Users, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import locationRioRosa from '@/assets/location-rio-rosa.webp';
-import locationSalamanca from '@/assets/location-salamanca.webp';
+import locationSalamanca from '@/assets/location-salamanca.png';
 import locationRetiro from '@/assets/location-retiro.png';
 
 const LocationsSection = () => {
