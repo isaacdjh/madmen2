@@ -15,7 +15,7 @@ const LocationsSection = () => {
       hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
       barbers: ['Luis Bracho', 'Jesús Hernández', 'Luis Alfredo', 'Dionys Bracho'],
       image: locationRioRosa,
-      bookingUrl: null
+      bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/101632'
     },
     {
       name: 'Mad Men Salamanca',
@@ -24,7 +24,7 @@ const LocationsSection = () => {
       hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
       barbers: ['Isaac Hernández', 'Carlos López', 'Luis Urbiñez', 'Randy Valdespino'],
       image: locationSalamanca,
-      bookingUrl: null
+      bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/108540'
     },
     {
       name: 'Mad Men Retiro',
@@ -122,7 +122,7 @@ const LocationsSection = () => {
                       rel="noopener noreferrer"
                       className="w-full inline-flex items-center justify-center bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium"
                     >
-                      Reservar en Retiro
+                      Reservar en {location.name.replace('Mad Men ', '')}
                     </a>
                   </div>
                 )}
