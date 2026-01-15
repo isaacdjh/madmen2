@@ -177,11 +177,11 @@ const PublicMap = () => {
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">Nuestras Ubicaciones</h2>
-          <p className="text-xl text-muted-foreground">Encuentra la barbería Mad Men más cercana a ti</p>
+          <h2 className="text-4xl font-bold text-primary mb-4">Encuéntranos</h2>
+          <p className="text-xl text-muted-foreground">Haz clic en los marcadores para ver la información de cada ubicación</p>
         </div>
         
-        <div className="mb-8">
+        <div>
           <div 
             ref={mapContainer} 
             className="w-full h-96 rounded-lg shadow-lg border border-border relative"
@@ -204,31 +204,6 @@ const PublicMap = () => {
               </div>
             )}
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {locations.map((location) => (
-            <Card key={location.id}>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-primary mb-4">{location.name}</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                    <span className="text-sm">{location.address}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-primary" />
-                    <span className="text-sm">{location.phone}</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-primary mt-0.5" />
-                    <span className="text-sm">{location.hours}</span>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground mt-4">{location.description}</p>
-              </CardContent>
-            </Card>
-          ))}
         </div>
       </div>
     </section>
