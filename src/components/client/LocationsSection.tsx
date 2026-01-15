@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Phone, Clock, Instagram, Users, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import locationRioRosa from '@/assets/location-rio-rosa.webp';
+import locationSalamanca from '@/assets/location-salamanca.webp';
 
 const LocationsSection = () => {
   const locations = [
@@ -21,7 +22,7 @@ const LocationsSection = () => {
       phone: '+34 910 597 766',
       hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
       barbers: ['Isaac Hernández', 'Carlos López', 'Luis Urbiñez', 'Randy Valdespino'],
-      image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      image: locationSalamanca,
       bookingUrl: null
     },
     {
