@@ -16,7 +16,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
-                  <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="w-8 h-8" />
+                  <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="h-8 w-auto object-contain" />
                   Mad Men Río Rosa
                 </h3>
                 <div className="space-y-3 ml-4">
@@ -35,7 +35,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
 
               <div>
                 <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
-                  <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="w-8 h-8" />
+                  <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="h-8 w-auto object-contain" />
                   Mad Men Salamanca
                 </h3>
                 <div className="space-y-3 ml-4">
@@ -54,7 +54,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
 
               <div>
                 <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
-                  <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="w-8 h-8" />
+                  <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="h-8 w-auto object-contain" />
                   Mad Men Retiro
                 </h3>
                 <div className="space-y-3 ml-4">
