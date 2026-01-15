@@ -4,6 +4,7 @@ import { MapPin, Phone, Clock, Instagram, Users, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import locationRioRosa from '@/assets/location-rio-rosa.webp';
 import locationSalamanca from '@/assets/location-salamanca.webp';
+import locationRetiro from '@/assets/location-retiro.png';
 
 const LocationsSection = () => {
   const locations = [
@@ -31,7 +32,7 @@ const LocationsSection = () => {
       phone: '+34 912 231 715',
       hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
       barbers: ['Jorge', 'Rudy'],
-      image: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      image: locationRetiro,
       bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/160842'
     }
   ];
