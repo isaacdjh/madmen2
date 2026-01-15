@@ -45,10 +45,10 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
   return (
     <nav className="fixed top-0 w-full bg-barbershop-dark/95 backdrop-blur-sm z-50 border-b border-barbershop-gold/20">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="w-16 h-16 flex items-center justify-center hover:opacity-80 transition-opacity">
+            <Link to="/" className="w-24 h-20 flex items-center justify-center hover:opacity-80 transition-opacity">
               <img 
                 src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
                 alt="Mad Men Logo" 
