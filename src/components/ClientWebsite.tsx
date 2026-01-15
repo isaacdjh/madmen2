@@ -9,6 +9,7 @@ const TestimonialsSection = lazy(() => import('./client/TestimonialsSection'));
 const OffersSection = lazy(() => import('./client/OffersSection'));
 const ContactSection = lazy(() => import('./client/ContactSection'));
 const PublicMap = lazy(() => import('./client/PublicMap'));
+const LocationsSection = lazy(() => import('./client/LocationsSection'));
 
 // Skeleton loader para secciones
 const SectionSkeleton = () => (
@@ -46,6 +47,10 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
       
       <Suspense fallback={<SectionSkeleton />}>
         <OffersSection onViewBonuses={() => window.open('/bonos', '_blank')} />
+      </Suspense>
+      
+      <Suspense fallback={<SectionSkeleton />}>
+        <LocationsSection />
       </Suspense>
       
       <Suspense fallback={<SectionSkeleton />}>
