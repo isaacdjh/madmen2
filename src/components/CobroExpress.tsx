@@ -67,21 +67,19 @@ const CobroExpress = ({ isOpen, onClose }: CobroExpressProps) => {
 
   // Barberos por ubicación
   const barbersByLocation = {
-    'cristobal-bordiu': [
-      { id: 'luis-bracho', name: 'Luis Bracho' },
-      { id: 'jesus-hernandez', name: 'Jesús Hernández' },
-      { id: 'luis-alfredo', name: 'Luis Alfredo' },
-      { id: 'dionys-bracho', name: 'Dionys Bracho' }
-    ],
     'general-pardinas': [
       { id: 'isaac-hernandez', name: 'Isaac Hernández' },
       { id: 'carlos-lopez', name: 'Carlos López' },
       { id: 'luis-urbinez', name: 'Luis Urbiñez' },
       { id: 'randy-valdespino', name: 'Randy Valdespino' }
+    ],
+    'retiro': [
+      { id: 'jorge', name: 'Jorge' },
+      { id: 'rudy', name: 'Rudy' }
     ]
   };
 
-  const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
+  const [selectedLocation, setSelectedLocation] = useState('general-pardinas');
   const [selectedBarber, setSelectedBarber] = useState('');
 
   useEffect(() => {

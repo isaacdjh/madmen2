@@ -2,21 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Phone, Clock, Instagram, Users, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import locationRioRosa from '@/assets/location-rio-rosa.webp';
 import locationSalamanca from '@/assets/location-salamanca.png';
 import locationRetiro from '@/assets/location-retiro.png';
 
 const LocationsSection = () => {
   const locations = [
-    {
-      name: 'Mad Men Río Rosa',
-      address: 'Cristóbal Bordiú 29, Barrio Río Rosa, Madrid',
-      phone: '+34 916 832 731',
-      hours: 'Lun-Vie: 11:00 - 21:00\nSáb: 10:00 - 21:00\nDom: 10:00 - 17:00',
-      barbers: ['Luis Bracho', 'Jesús Hernández', 'Luis Alfredo', 'Dionys Bracho'],
-      image: locationRioRosa,
-      bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/101632'
-    },
     {
       name: 'Mad Men Salamanca',
       address: 'General Pardiñas 101, Barrio Salamanca, Madrid',
@@ -43,12 +33,12 @@ const LocationsSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold text-primary mb-6">Nuestras Ubicaciones</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Tres ubicaciones estratégicas en Madrid con los mejores barberos profesionales. 
+            Dos ubicaciones estratégicas en Madrid con los mejores barberos profesionales. 
             Cada centro cuenta con barberos expertos y el mismo nivel de excelencia.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
           {locations.map((location, index) => (
             <Card key={index} className="location-card overflow-hidden">
               <div className="relative h-48 overflow-hidden">
@@ -171,7 +161,7 @@ const LocationsSection = () => {
             
             <div className="mt-6 pt-6 border-t border-border">
               <p className="text-sm text-muted-foreground">
-                Tres ubicaciones, un mismo nivel de excelencia. Más de 20 años perfeccionando el arte de la barbería tradicional.
+                Dos ubicaciones, un mismo nivel de excelencia. Más de 20 años perfeccionando el arte de la barbería tradicional.
               </p>
             </div>
           </div>

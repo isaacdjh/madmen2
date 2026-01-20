@@ -45,14 +45,6 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
           {/* Botones móviles para reservas - solo visible en móviles */}
           <div className="md:hidden flex flex-wrap gap-2 justify-center mb-8">
             <Button 
-              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
-              size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-3 py-2"
-            >
-              <Calendar className="w-4 h-4 mr-1" />
-              Río Rosa
-            </Button>
-            <Button 
               onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
               size="sm"
               className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-3 py-2"
@@ -80,8 +72,8 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
             
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
               <MapPin className="w-8 h-8 text-barbershop-gold mx-auto mb-3" />
-              <h3 className="text-lg font-semibold mb-2">Tres Ubicaciones</h3>
-              <p className="text-sm text-white/80">Río Rosa, Salamanca y Retiro</p>
+              <h3 className="text-lg font-semibold mb-2">Dos Ubicaciones</h3>
+              <p className="text-sm text-white/80">Salamanca y Retiro</p>
             </div>
             
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
@@ -94,15 +86,6 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
           {/* Call to Action */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-              <Button 
-                size="lg" 
-                className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-6 py-4 text-base"
-                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
-              >
-                <Calendar className="w-5 h-5 mr-2" />
-                Reservar Río Rosa
-              </Button>
-              
               <Button 
                 size="lg" 
                 className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-6 py-4 text-base"

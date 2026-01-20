@@ -60,8 +60,8 @@ const AdminPanel = ({ onLogout }: AdminPanelProps = {}) => {
 
   // Centros con nombres actualizados
   const locations = [
-    { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
-    { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
+    { id: 'general-pardinas', name: 'Mad Men General Pardiñas' },
+    { id: 'retiro', name: 'Mad Men Retiro' }
   ];
 
   const services = [
@@ -74,17 +74,15 @@ const AdminPanel = ({ onLogout }: AdminPanelProps = {}) => {
 
   // Barberos actualizados con los nombres reales de cada centro
   const barbersByLocation = {
-    'cristobal-bordiu': [
-      { id: 'luis-bracho', name: 'Luis Bracho' },
-      { id: 'jesus-hernandez', name: 'Jesús Hernández' },
-      { id: 'luis-alfredo', name: 'Luis Alfredo' },
-      { id: 'dionys-bracho', name: 'Dionys Bracho' }
-    ],
     'general-pardinas': [
       { id: 'isaac-hernandez', name: 'Isaac Hernández' },
       { id: 'carlos-lopez', name: 'Carlos López' },
       { id: 'luis-urbinez', name: 'Luis Urbiñez' },
       { id: 'randy-valdespino', name: 'Randy Valdespino' }
+    ],
+    'retiro': [
+      { id: 'jorge', name: 'Jorge' },
+      { id: 'rudy', name: 'Rudy' }
     ]
   };
 

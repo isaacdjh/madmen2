@@ -23,24 +23,15 @@ const PublicMap = () => {
   const locations = [
     {
       id: 1,
-      name: 'Mad Men Barbería - Cristóbal Bordiú 29',
-      address: 'C. de Cristóbal Bordiú, 29, Chamberí, 28003 Madrid',
-      phone: '+34 916832731',
-      coordinates: [40.4433397, -3.6992976] as [number, number],
-      hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
-      description: 'Nuestra primera ubicación en el barrio Chamberí'
-    },
-    {
-      id: 2,
       name: 'Mad Men Barbería - General Pardiñas 101',
       address: 'Calle del Gral. Pardiñas, 101, Salamanca, 28006 Madrid',
       phone: '+34 910597766',
       coordinates: [40.4368176, -3.6777538] as [number, number],
       hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
-      description: 'Nuestra segunda ubicación en el exclusivo barrio de Salamanca'
+      description: 'Nuestra ubicación en el exclusivo barrio de Salamanca'
     },
     {
-      id: 3,
+      id: 2,
       name: 'Mad Men Barbería - Retiro',
       address: 'Calle Alcalde Sainz de Baranda 53, 28009 Madrid',
       phone: '+34 912 231 715',

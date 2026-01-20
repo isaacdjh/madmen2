@@ -17,13 +17,6 @@ const LocationStep = ({
 }: LocationStepProps) => {
   const locationDetails = [
     {
-      id: 'cristobal-bordiu',
-      name: 'Mad Men Cristóbal Bordiú',
-      address: 'Cristóbal Bordiú, 29, Madrid',
-      phone: '+34 916 832 731',
-      hours: 'Lun-Sáb: 10:00-21:00'
-    },
-    {
       id: 'general-pardinas',
       name: 'Mad Men General Pardiñas',
       address: 'General Pardiñas, 101, Madrid',
