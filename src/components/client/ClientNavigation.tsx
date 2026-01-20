@@ -88,14 +88,6 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
           {/* Desktop Booking Buttons */}
           <div className="hidden md:flex items-center space-x-2">
             <Button 
-              onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/101632', '_blank')}
-              size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
-            >
-              <Calendar className="w-4 h-4 mr-1" />
-              Río Rosa
-            </Button>
-            <Button 
               onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
               size="sm"
               className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
