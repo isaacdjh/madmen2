@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Phone, Clock, Instagram, Users, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import locationSalamanca from '@/assets/location-salamanca.png';
+import locationSalamanca from '@/assets/location-salamanca-new.jpg';
 import locationRetiro from '@/assets/location-retiro.png';
 
 const LocationsSection = () => {
