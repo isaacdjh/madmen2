@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Phone, Clock, Instagram, Users, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import locationSalamanca from '@/assets/location-salamanca-new.jpg';
-import locationRetiro from '@/assets/location-retiro.png';
+import locationRetiro from '@/assets/location-retiro-new.png';
 
 const LocationsSection = () => {
   const locations = [
@@ -41,11 +41,11 @@ const LocationsSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
           {locations.map((location, index) => (
             <Card key={index} className="location-card overflow-hidden">
-              <div className="relative h-48 overflow-hidden">
+              <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                 <img 
                   src={location.image} 
                   alt={location.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-barbershop-dark"
                 />
                 <div className="absolute top-4 left-4 bg-barbershop-dark/90 backdrop-blur-sm rounded-lg p-2">
                     <img 
