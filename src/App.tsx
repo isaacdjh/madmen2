@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthGuard } from "@/components/AuthGuard";
 import { navItems } from "./nav-items";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import FloatingWhatsAppButton from "@/components/FloatingWhatsAppButton";
+import FloatingCallButton from "@/components/FloatingCallButton";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +36,7 @@ const App = () => (
             />
           ))}
         </Routes>
-        <FloatingWhatsAppButton />
+        <FloatingCallButton />
         </BrowserRouter>
       </TooltipProvider>
       </ThemeProvider>
