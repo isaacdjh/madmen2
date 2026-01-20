@@ -69,37 +69,38 @@ const PublicMap = () => {
     }).setView([40.4337, -3.6923], isMobile ? 12 : 13);
 
     // Agregar capa de OpenStreetMap con configuración optimizada
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: isMobile ? 15 : 18, // Limitar zoom máximo en móviles
-      tileSize: isMobile ? 512 : 256, // Usar tiles más grandes en móvil
+      maxZoom: isMobile ? 15 : 18,
+      tileSize: isMobile ? 512 : 256,
       zoomOffset: isMobile ? -1 : 0,
-      updateWhenIdle: true, // Solo actualizar cuando el mapa esté idle
-      keepBuffer: isMobile ? 1 : 2 // Reducir buffer en móviles
+      updateWhenIdle: true,
+      keepBuffer: isMobile ? 1 : 2,
+      className: 'map-tiles-green' // Clase para aplicar filtro verde
     }).addTo(map.current);
 
-    // Crear icono personalizado para las barberías
+    // Crear icono personalizado para las barberías - Amarillo con tijeras
     const customIcon = L.divIcon({
       html: `
         <div style="
-          width: 40px;
-          height: 40px;
-          background: #dc2626;
+          width: 44px;
+          height: 44px;
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
           border-radius: 50%;
-          border: 3px solid white;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+          border: 3px solid #fef3c7;
+          box-shadow: 0 4px 15px rgba(251, 191, 36, 0.5), 0 2px 8px rgba(0,0,0,0.2);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 16px;
+          font-size: 20px;
         ">
           ✂️
         </div>
       `,
       className: 'custom-marker',
-      iconSize: [40, 40],
-      iconAnchor: [20, 20],
-      popupAnchor: [0, -20]
+      iconSize: [44, 44],
+      iconAnchor: [22, 22],
+      popupAnchor: [0, -22]
     });
 
     // Agregar marcadores para cada ubicación
@@ -107,14 +108,14 @@ const PublicMap = () => {
       const marker = L.marker(location.coordinates, { icon: customIcon })
         .addTo(map.current!);
 
-      // Crear popup con información
+      // Crear popup con información - con colores verdes
       const popupContent = `
-        <div style="padding: 10px; min-width: 200px;">
-          <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #dc2626;">${location.name}</h3>
-          <p style="margin: 4px 0; font-size: 14px;"><strong>📍</strong> ${location.address}</p>
-          <p style="margin: 4px 0; font-size: 14px;"><strong>📞</strong> ${location.phone}</p>
-          <p style="margin: 4px 0; font-size: 14px;"><strong>🕒</strong> ${location.hours}</p>
-          <p style="margin: 8px 0 4px 0; font-size: 13px; color: #666;">${location.description}</p>
+        <div style="padding: 12px; min-width: 220px;">
+          <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #16a34a; font-size: 15px;">${location.name}</h3>
+          <p style="margin: 6px 0; font-size: 14px; color: #374151;"><strong>📍</strong> ${location.address}</p>
+          <p style="margin: 6px 0; font-size: 14px; color: #374151;"><strong>📞</strong> <a href="tel:${location.phone}" style="color: #16a34a; text-decoration: none;">${location.phone}</a></p>
+          <p style="margin: 6px 0; font-size: 14px; color: #374151;"><strong>🕒</strong> ${location.hours}</p>
+          <p style="margin: 10px 0 4px 0; font-size: 13px; color: #6b7280; font-style: italic;">${location.description}</p>
         </div>
       `;
 
@@ -182,12 +183,28 @@ const PublicMap = () => {
         </div>
         
         <div>
+          <style>{`
+            .map-tiles-green {
+              filter: hue-rotate(85deg) saturate(1.2) brightness(0.95);
+            }
+            .leaflet-popup-content-wrapper {
+              border-radius: 12px;
+              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            }
+            .leaflet-popup-content h3 {
+              color: #16a34a !important;
+            }
+            .custom-marker {
+              background: transparent !important;
+              border: none !important;
+            }
+          `}</style>
           <div 
             ref={mapContainer} 
-            className="w-full h-96 rounded-lg shadow-lg border border-border relative"
+            className="w-full h-96 rounded-lg shadow-lg border border-primary/30 relative overflow-hidden"
           >
             {!isMapLoaded && isMapVisible && (
-              <div className="absolute inset-0 flex items-center justify-center bg-muted/50 rounded-lg">
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/50 rounded-lg z-10">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
                   <p className="text-sm text-muted-foreground">Cargando mapa...</p>
