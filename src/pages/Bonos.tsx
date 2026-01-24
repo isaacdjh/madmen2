@@ -111,7 +111,6 @@ const Bonos = () => {
   const benefits = [
     'Sin fecha de caducidad',
     'Válido en cualquier sede',
-    'Transferible a familiares',
     'Ahorro garantizado',
   ];
 
