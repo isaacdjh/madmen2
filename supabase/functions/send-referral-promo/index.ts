@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     <div class="footer">
       <p><strong>Mad Men Barbería Madrid</strong></p>
-      <p>C/ Cristóbal Bordiú, 55 (Salamanca) | C/ General Pardiñas, 56 (Retiro)</p>
+      <p>Válido en: C/ General Pardiñas, 101 | C/ Alcalde Sainz de Baranda, 53</p>
       <p style="color: #4a7c23;">@madmenmadrid</p>
       <p style="margin-top: 15px; font-size: 11px; color: #666;">
         Si no deseas recibir más emails promocionales, responde a este correo con "BAJA"

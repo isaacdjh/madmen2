@@ -88,18 +88,10 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Importante:</strong> Al reservar, escribe en el campo de notas: <strong>"Vengo de parte de ${referrerName}"</strong></p>
       </div>
 
-      <div class="locations">
-        <div class="location">
-          <h4>Mad Men Salamanca</h4>
-          <p>C/ Cristóbal Bordiú, 55</p>
-          <p>Tel: 640 058 000</p>
-        </div>
-        <div class="location">
-          <h4>Mad Men Retiro</h4>
-          <p>C/ General Pardiñas, 56</p>
-          <p>Tel: 623 158 565</p>
-        </div>
-      </div>
+      <p style="color: #888; font-size: 13px; text-align: center; margin-top: 20px;">
+        Válido únicamente en nuestras ubicaciones:<br/>
+        <strong>C/ General Pardiñas, 101</strong> y <strong>C/ Alcalde Sainz de Baranda, 53</strong>
+      </p>
     </div>
 
     <div class="footer">
