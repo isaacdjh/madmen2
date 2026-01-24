@@ -1,340 +1,213 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Clock, User } from 'lucide-react';
-import { format, getDay, isToday, isBefore, addDays } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
+import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useAvailabilityCalendar } from '@/hooks/useAvailabilityCalendar';
-import DateNavigator from './calendar/DateNavigator';
-import TimeSlotGrid from './calendar/TimeSlotGrid';
-import BarberSelector from './calendar/BarberSelector';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AvailabilityCalendarProps {
-  onSlotSelect?: (barber: string, date: string, time: string, location: string) => void;
+  onSlotSelect: (barber: string, date: string, time: string, location: string) => void;
   preferredBarber?: string;
 }
 
-interface TimeSlotInfo {
+interface TimeSlot {
   time: string;
-  availableBarbers: string[];
-  totalBarbers: number;
+  barber: string;
+  barberName: string;
+  location: string;
+  available: boolean;
 }
 
 const AvailabilityCalendar = ({ onSlotSelect, preferredBarber }: AvailabilityCalendarProps) => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedLocation, setSelectedLocation] = useState('cristobal-bordiu');
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [barbers, setBarbers] = useState<any[]>([]);
 
-  const { appointments, blockedSlots, isLoading, barbers } = useAvailabilityCalendar(selectedLocation);
+  // Generate next 14 days
+  const dates = Array.from({ length: 14 }, (_, i) => addDays(startOfDay(new Date()), i));
 
-  // Efecto para avanzar automáticamente al siguiente día si no hay horarios disponibles
   useEffect(() => {
-    if (!isLoading && barbers.length > 0) {
-      const timeSlots = getTimeSlotsWithAvailability();
-      if (timeSlots.length === 0) {
-        // Si no hay horarios disponibles, avanzar al siguiente día (máximo 7 días)
-        let nextDate = addDays(selectedDate, 1);
-        let attempts = 0;
-        while (attempts < 7) {
-          setSelectedDate(nextDate);
-          attempts++;
-          nextDate = addDays(nextDate, 1);
-          break; // Salir del bucle para que el useEffect se ejecute nuevamente
-        }
-      }
+    loadBarbers();
+  }, []);
+
+  useEffect(() => {
+    if (barbers.length > 0) {
+      loadSlots();
     }
-  }, [selectedDate, isLoading, barbers.length, selectedLocation]);
+  }, [selectedDate, barbers, preferredBarber]);
 
-  const locations = [
-    { id: 'cristobal-bordiu', name: 'Mad Men Cristóbal Bordiú' },
-    { id: 'general-pardinas', name: 'Mad Men General Pardiñas' }
-  ];
-
-  const getBarberWorkHours = (barberId: string, date: Date) => {
-    const barber = barbers.find(b => b.id === barberId);
-    
-    if (!barber || barber.status !== 'active') return null;
-
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayName = dayNames[getDay(date)];
-    const daySchedule = barber.schedules.find(s => s.day_of_week === dayName);
-
-    return daySchedule?.is_working ? daySchedule : null;
-  };
-
-  const generateTimeSlotsForBarber = (barberId: string, date: Date) => {
-    const workHours = getBarberWorkHours(barberId, date);
-    if (!workHours || !workHours.start_time || !workHours.end_time) return [];
-
-    const slots = [];
-    const [startHour, startMinute] = workHours.start_time.split(':').map(Number);
-    const [endHour, endMinute] = workHours.end_time.split(':').map(Number);
-    
-    let breakStartHour = 0, breakStartMinute = 0, breakEndHour = 0, breakEndMinute = 0;
-    if (workHours.break_start && workHours.break_end) {
-      [breakStartHour, breakStartMinute] = workHours.break_start.split(':').map(Number);
-      [breakEndHour, breakEndMinute] = workHours.break_end.split(':').map(Number);
-    }
-
-    for (let hour = startHour; hour < endHour || (hour === endHour && startMinute < endMinute); hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        if (hour === endHour && minute >= endMinute) break;
-        
-        if (workHours.break_start && workHours.break_end) {
-          const currentTime = hour * 60 + minute;
-          const breakStart = breakStartHour * 60 + breakStartMinute;
-          const breakEnd = breakEndHour * 60 + breakEndMinute;
-          
-          if (currentTime >= breakStart && currentTime < breakEnd) continue;
-        }
-
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        slots.push(timeString);
-      }
-    }
-
-    return slots;
-  };
-
-  const isTimeSlotInPast = (timeSlot: string, date: Date) => {
-    if (!isToday(date)) return false;
-    
-    const now = new Date();
-    const [hours, minutes] = timeSlot.split(':').map(Number);
-    const slotTime = new Date();
-    slotTime.setHours(hours, minutes, 0, 0);
-    
-    const slotTimeWithMargin = new Date(slotTime);
-    slotTimeWithMargin.setMinutes(slotTimeWithMargin.getMinutes() + 30);
-    
-    return isBefore(slotTimeWithMargin, now);
-  };
-
-  const getAllTimeSlots = () => {
-    const allSlots = new Set<string>();
-    
-    if (preferredBarber) {
-      const slots = generateTimeSlotsForBarber(preferredBarber, selectedDate);
-      slots.forEach(slot => {
-        if (!isTimeSlotInPast(slot, selectedDate)) {
-          allSlots.add(slot);
-        }
-      });
-    } else {
-      barbers.forEach(barber => {
-        const slots = generateTimeSlotsForBarber(barber.id, selectedDate);
-        slots.forEach(slot => {
-          if (!isTimeSlotInPast(slot, selectedDate)) {
-            allSlots.add(slot);
-          }
-        });
-      });
-    }
-
-    return Array.from(allSlots).sort();
-  };
-
-  const getTimeSlotsWithAvailability = (): TimeSlotInfo[] => {
-    const timeSlots = getAllTimeSlots();
-    
-    return timeSlots.map(time => {
-      let availableBarbers;
+  const loadBarbers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('barbers')
+        .select('*')
+        .eq('status', 'active');
       
-      if (preferredBarber) {
-        availableBarbers = isSlotAvailable(preferredBarber, time) ? [preferredBarber] : [];
-      } else {
-        availableBarbers = barbers.filter(barber => 
-          isSlotAvailable(barber.id, time)
-        ).map(barber => barber.id);
-      }
-      
-      return {
-        time,
-        availableBarbers,
-        totalBarbers: preferredBarber ? 1 : barbers.length
-      };
-    });
-  };
-
-  const isSlotAvailable = (barber: string, time: string) => {
-    if (isTimeSlotInPast(time, selectedDate)) {
-      return false;
-    }
-
-    if (!generateTimeSlotsForBarber(barber, selectedDate).includes(time)) {
-      return false;
-    }
-
-    const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    
-    const existingAppointment = appointments.find(apt => {
-      const aptTime = apt.appointment_time.includes(':') 
-        ? apt.appointment_time.substring(0, 5) 
-        : apt.appointment_time;
-      
-      return apt.appointment_date === dateStr &&
-             aptTime === time &&
-             apt.barber === barber &&
-             apt.location === selectedLocation &&
-             (apt.status === 'confirmada' || apt.status === 'completada');
-    });
-
-    const isBlocked = blockedSlots.some(slot =>
-      slot.barber_id === barber &&
-      slot.blocked_date === dateStr &&
-      slot.blocked_time === time
-    );
-
-    return !existingAppointment && !isBlocked;
-  };
-
-  const handleTimeSlotClick = (timeSlot: string) => {
-    if (preferredBarber) {
-      if (isSlotAvailable(preferredBarber, timeSlot) && onSlotSelect) {
-        const dateStr = format(selectedDate, 'yyyy-MM-dd');
-        onSlotSelect(preferredBarber, dateStr, timeSlot, selectedLocation);
-      }
-    } else {
-      // Si no hay barbero preferido, buscar el primer barbero disponible para esa hora
-      const availableBarber = barbers.find(barber => isSlotAvailable(barber.id, timeSlot));
-      if (availableBarber && onSlotSelect) {
-        const dateStr = format(selectedDate, 'yyyy-MM-dd');
-        onSlotSelect(availableBarber.id, dateStr, timeSlot, selectedLocation);
-      }
+      if (error) throw error;
+      setBarbers(data || []);
+    } catch (error) {
+      console.error('Error loading barbers:', error);
     }
   };
 
-  const handleBarberSelection = (barberId: string, time: string) => {
-    if (isSlotAvailable(barberId, time) && onSlotSelect) {
+  const loadSlots = async () => {
+    setLoading(true);
+    try {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      onSlotSelect(barberId, dateStr, time, selectedLocation);
+      const dayOfWeek = format(selectedDate, 'EEEE', { locale: es }).toLowerCase();
+
+      // Get schedules for the day
+      const { data: schedules, error: schedError } = await supabase
+        .from('barber_schedules')
+        .select('*')
+        .eq('day_of_week', dayOfWeek)
+        .eq('is_working', true);
+
+      if (schedError) throw schedError;
+
+      // Get existing appointments
+      const { data: appointments, error: apptError } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('appointment_date', dateStr)
+        .neq('status', 'cancelled');
+
+      if (apptError) throw apptError;
+
+      // Get blocked slots
+      const { data: blockedSlots, error: blockError } = await supabase
+        .from('blocked_slots')
+        .select('*')
+        .eq('blocked_date', dateStr);
+
+      if (blockError) throw blockError;
+
+      // Generate available slots
+      const availableSlots: TimeSlot[] = [];
+      const filteredBarbers = preferredBarber 
+        ? barbers.filter(b => b.id === preferredBarber)
+        : barbers;
+
+      for (const barber of filteredBarbers) {
+        const schedule = schedules?.find(s => s.barber_id === barber.id);
+        if (!schedule || !schedule.start_time || !schedule.end_time) continue;
+
+        const startHour = parseInt(schedule.start_time.split(':')[0]);
+        const endHour = parseInt(schedule.end_time.split(':')[0]);
+
+        for (let hour = startHour; hour < endHour; hour++) {
+          for (const minutes of ['00', '30']) {
+            const time = `${hour.toString().padStart(2, '0')}:${minutes}`;
+            
+            // Check if slot is booked
+            const isBooked = appointments?.some(
+              a => a.barber === barber.name && a.appointment_time === time
+            );
+
+            // Check if slot is blocked
+            const isBlocked = blockedSlots?.some(
+              b => b.barber_id === barber.id && b.blocked_time === time
+            );
+
+            // Check if slot is in break time
+            const isBreak = schedule.break_start && schedule.break_end &&
+              time >= schedule.break_start && time < schedule.break_end;
+
+            // Check if slot is in the past
+            const now = new Date();
+            const slotDateTime = new Date(selectedDate);
+            slotDateTime.setHours(hour, parseInt(minutes));
+            const isPast = slotDateTime < now;
+
+            if (!isBooked && !isBlocked && !isBreak && !isPast) {
+              availableSlots.push({
+                time,
+                barber: barber.id,
+                barberName: barber.name,
+                location: barber.location || 'general-pardinas',
+                available: true
+              });
+            }
+          }
+        }
+      }
+
+      // Sort by time
+      availableSlots.sort((a, b) => a.time.localeCompare(b.time));
+      setSlots(availableSlots);
+    } catch (error) {
+      console.error('Error loading slots:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        <p className="mt-2 text-muted-foreground">Cargando disponibilidad...</p>
-      </div>
-    );
-  }
-
-  const timeSlots = getTimeSlotsWithAvailability();
-
-  if (barbers.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-muted-foreground mb-2">No hay barberos disponibles</h3>
-        <p className="text-muted-foreground">No hay barberos activos en la sede seleccionada</p>
-      </div>
-    );
-  }
-
-  if (preferredBarber && timeSlots.length === 0) {
-    return (
-      <div className="space-y-6">
-        <DateNavigator
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          selectedLocation={selectedLocation}
-          setSelectedLocation={setSelectedLocation}
-          locations={locations}
-        />
-
-        <Card>
-          <CardContent className="p-8 text-center">
-            <User className="w-16 h-16 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              {barbers.find(b => b.id === preferredBarber)?.name} no tiene horarios disponibles
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Tu barbero preferido no tiene horarios disponibles para {format(selectedDate, 'dd \'de\' MMMM', { locale: es })}. 
-              Prueba con otro día.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (timeSlots.length === 0 && isToday(selectedDate)) {
-    return (
-      <div className="space-y-6">
-        <DateNavigator
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          selectedLocation={selectedLocation}
-          setSelectedLocation={setSelectedLocation}
-          locations={locations}
-        />
-
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Clock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-muted-foreground mb-2">
-              No hay horarios disponibles para hoy
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Los horarios de hoy ya han pasado o están ocupados. Por favor selecciona otro día.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleSlotClick = (slot: TimeSlot) => {
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    onSlotSelect(slot.barberName, dateStr, slot.time, slot.location);
+  };
 
   return (
     <div className="space-y-6">
-      <DateNavigator
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-        selectedLocation={selectedLocation}
-        setSelectedLocation={setSelectedLocation}
-        locations={locations}
-      />
-
-      {isToday(selectedDate) && (
-        <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-            <Clock className="w-5 h-5" />
-            <span className="font-medium text-sm">
-              Solo se muestran horarios disponibles con al menos 30 minutos de anticipación
+      {/* Date selector */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        {dates.map((date) => (
+          <Button
+            key={date.toISOString()}
+            variant={isSameDay(date, selectedDate) ? "default" : "outline"}
+            className="flex-shrink-0 flex flex-col items-center min-w-[70px] h-auto py-2"
+            onClick={() => setSelectedDate(date)}
+          >
+            <span className="text-xs opacity-70">
+              {format(date, 'EEE', { locale: es })}
             </span>
-          </div>
-        </div>
-      )}
-
-      {preferredBarber && (
-        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-foreground">
-            <User className="w-5 h-5 text-primary" />
-            <span className="font-medium">
-              Mostrando horarios disponibles para: <strong>{barbers.find(b => b.id === preferredBarber)?.name}</strong>
+            <span className="text-lg font-bold">
+              {format(date, 'd')}
             </span>
-          </div>
-        </div>
-      )}
+            <span className="text-xs opacity-70">
+              {format(date, 'MMM', { locale: es })}
+            </span>
+          </Button>
+        ))}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg text-card-foreground">
-            <Calendar className="w-5 h-5 text-primary" />
-            {preferredBarber ? 
-              `Horarios de ${barbers.find(b => b.id === preferredBarber)?.name}` :
-              `Selecciona una Hora - ${locations.find(l => l.id === selectedLocation)?.name}`
-            }
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6">
-          <TimeSlotGrid
-            timeSlots={timeSlots}
-            selectedTimeSlot={selectedTimeSlot}
-            preferredBarber={preferredBarber}
-            onTimeSlotClick={handleTimeSlotClick}
-          />
-        </CardContent>
-      </Card>
+      {/* Time slots */}
+      <div className="min-h-[200px]">
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
+        ) : slots.length === 0 ? (
+          <Card className="p-8 text-center">
+            <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">
+              No hay horarios disponibles para esta fecha.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Prueba con otro día.
+            </p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {slots.map((slot, index) => (
+              <Button
+                key={`${slot.time}-${slot.barber}-${index}`}
+                variant="outline"
+                className="flex flex-col items-center h-auto py-3 hover:bg-primary hover:text-primary-foreground transition-colors"
+                onClick={() => handleSlotClick(slot)}
+              >
+                <span className="text-lg font-semibold">{slot.time}</span>
+                <span className="text-xs opacity-70 flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  {slot.barberName}
+                </span>
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
