@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import ClientNavigation from '@/components/client/ClientNavigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Scissors, Clock, Euro } from 'lucide-react';
+import { ArrowLeft, Scissors, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -10,31 +10,48 @@ const Servicios = () => {
     {
       category: 'Cortes de Cabello',
       items: [
-        { name: 'Corte Clásico', price: 18, duration: 30, description: 'Corte tradicional con tijera y máquina' },
-        { name: 'Corte Degradado', price: 20, duration: 35, description: 'Fade con degradado profesional' },
-        { name: 'Corte Premium', price: 25, duration: 45, description: 'Incluye lavado, corte y styling' },
+        { name: 'Corte de pelo', price: '20,99', duration: '30min', description: 'Corte profesional con tijera y máquina' },
+        { name: 'Corte de niño hasta 12 años', price: '14,99', duration: '30min', description: 'Corte especial para los más pequeños' },
+        { name: 'Corte de jubilado', price: '14,99', duration: '30min', description: 'Tarifa especial para jubilados' },
+        { name: 'Rapado', price: '17,99', duration: '30min', description: 'Rapado completo con máquina' },
       ]
     },
     {
       category: 'Barba',
       items: [
-        { name: 'Arreglo de Barba', price: 12, duration: 20, description: 'Perfilado y recorte de barba' },
-        { name: 'Afeitado Clásico', price: 18, duration: 30, description: 'Afeitado con navaja y toalla caliente' },
-        { name: 'Tratamiento Barba', price: 22, duration: 35, description: 'Hidratación y cuidado completo' },
+        { name: 'Arreglo de barba', price: '17,99', duration: '30min', description: 'Perfilado y recorte profesional' },
+        { name: 'Tinte para barba', price: '25,00', duration: '30min', description: 'Coloración profesional de barba' },
       ]
     },
     {
       category: 'Combos',
       items: [
-        { name: 'Corte + Barba', price: 28, duration: 50, description: 'Nuestro servicio más popular' },
-        { name: 'Experiencia Mad Men', price: 45, duration: 75, description: 'Corte premium + afeitado clásico + tratamiento' },
+        { name: 'Corte de pelo y arreglo de barba', price: '35,99', duration: '1h', description: 'Nuestro servicio más popular' },
+        { name: 'Rapado y arreglo de barba', price: '30,99', duration: '1h', description: 'Rapado completo con arreglo de barba' },
       ]
     },
     {
-      category: 'Tratamientos',
+      category: 'Tratamientos Faciales',
       items: [
-        { name: 'Black Mask', price: 10, duration: 15, description: 'Limpieza profunda de poros' },
-        { name: 'Keratina Capilar', price: 35, duration: 45, description: 'Tratamiento de hidratación intensiva' },
+        { name: 'Mascarilla facial', price: '14,00', duration: '30min', description: 'Limpieza y cuidado facial' },
+        { name: 'Mascarilla facial VIP', price: '20,99', duration: '30min', description: 'Tratamiento facial premium' },
+        { name: 'Mascarilla hidratante', price: '8,00', duration: '15min', description: 'Hidratación intensiva' },
+      ]
+    },
+    {
+      category: 'Coloración',
+      items: [
+        { name: 'Tinte de pelo', price: '35,00', duration: '1h', description: 'Coloración profesional de cabello' },
+        { name: 'Tinte color fantasía', price: '90,00', duration: '4h', description: 'Colores especiales y creativos' },
+      ]
+    },
+    {
+      category: 'Servicios Adicionales',
+      items: [
+        { name: 'Cejas con cuchilla', price: '5,00', duration: '5min', description: 'Perfilado de cejas' },
+        { name: 'Depilación de nariz', price: '5,00', duration: '5min', description: 'Eliminación de vello nasal' },
+        { name: 'Depilación de oído', price: '5,00', duration: '5min', description: 'Eliminación de vello del oído' },
+        { name: 'Lavar y peinar', price: '11,00', duration: '15min', description: 'Lavado y peinado profesional' },
       ]
     }
   ];
@@ -87,11 +104,10 @@ const Servicios = () => {
                           <div className="flex items-center justify-between pt-2 border-t border-border">
                             <div className="flex items-center text-muted-foreground text-sm">
                               <Clock className="w-4 h-4 mr-1" />
-                              {service.duration} min
+                              {service.duration}
                             </div>
-                            <div className="flex items-center text-primary font-bold text-lg">
-                              <Euro className="w-4 h-4 mr-1" />
-                              {service.price}
+                            <div className="text-primary font-bold text-lg">
+                              {service.price} €
                             </div>
                           </div>
                         </CardContent>
