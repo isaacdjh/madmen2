@@ -1,4 +1,4 @@
-import { HomeIcon, Calendar, UserCheck, MapPin, Scissors, Users, Gift, BookOpen } from "lucide-react";
+import { HomeIcon, Calendar, UserCheck, MapPin, Scissors, Users, Gift, BookOpen, ShoppingBag } from "lucide-react";
 import Index from "./pages/Index";
 import AdminPortal from "./pages/AdminPortal";
 import Reservas from "./pages/Reservas";
@@ -7,6 +7,7 @@ import Servicios from "./pages/Servicios";
 import Equipo from "./pages/Equipo";
 import Bonos from "./pages/Bonos";
 import Blog from "./pages/Blog";
+import Productos from "./pages/Productos";
 import NotFound from "./pages/NotFound";
 
 export interface NavItem {
@@ -54,6 +55,12 @@ const navItems: NavItem[] = [
     to: "/blog",
     icon: BookOpen,
     page: <Blog />,
+  },
+  {
+    title: "Productos",
+    to: "/productos",
+    icon: ShoppingBag,
+    page: <Productos />,
   },
   {
     title: "Administrador",
