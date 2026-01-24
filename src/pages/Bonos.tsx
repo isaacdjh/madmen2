@@ -10,82 +10,101 @@ const Bonos = () => {
   const bonos4Servicios = [
     {
       title: 'Bono Corte de Pelo',
+      validFor: 'Corte de pelo',
       services: 4,
-      price: '68€',
-      originalPrice: '83,96€',
-      savings: '15,96€',
-      perService: '17€/corte',
-      popular: true,
+      price: '68,00',
+      originalPrice: '83,96',
+      savings: '15,96',
       icon: Scissors,
+      popular: true,
     },
     {
-      title: 'Bono Corte + Barba',
+      title: 'Bono Corte + Arreglo de Barba',
+      validFor: 'Corte de pelo y arreglo de barba',
       services: 4,
-      price: '116€',
-      originalPrice: '143,96€',
-      savings: '27,96€',
-      perService: '29€/servicio',
-      popular: false,
+      price: '116,00',
+      originalPrice: '143,96',
+      savings: '27,96',
       icon: Star,
+      popular: false,
     },
     {
       title: 'Bono Arreglo de Barba',
+      validFor: 'Arreglo de barba',
       services: 4,
-      price: '55€',
-      originalPrice: '71,96€',
-      savings: '16,96€',
-      perService: '13,75€/arreglo',
-      popular: false,
+      price: '55,00',
+      originalPrice: '71,96',
+      savings: '16,96',
       icon: Scissors,
+      popular: false,
     },
     {
-      title: 'Bono Rapado + Barba',
+      title: 'Bono Rapado + Arreglo de Barba',
+      validFor: 'Rapado y arreglo de barba',
       services: 4,
-      price: '92€',
-      originalPrice: '123,96€',
-      savings: '31,96€',
-      perService: '23€/servicio',
-      popular: false,
+      price: '92,00',
+      originalPrice: '123,96',
+      savings: '31,96',
       icon: Gift,
+      popular: false,
+    },
+    {
+      title: 'Bono Rapado',
+      validFor: 'Rapado',
+      services: 4,
+      price: '55,00',
+      originalPrice: '71,96',
+      savings: '16,96',
+      icon: Scissors,
+      popular: false,
     },
   ];
 
   const bonos3Servicios = [
     {
       title: 'Bono Corte de Pelo',
+      validFor: 'Corte de pelo',
       services: 3,
-      price: '54€',
-      originalPrice: '62,97€',
-      savings: '8,97€',
-      perService: '18€/corte',
+      price: '54,00',
+      originalPrice: '62,97',
+      savings: '8,97',
       icon: Scissors,
     },
     {
-      title: 'Bono Corte + Barba',
+      title: 'Bono Corte + Arreglo de Barba',
+      validFor: 'Corte de pelo y arreglo de barba',
       services: 3,
-      price: '91€',
-      originalPrice: '107,97€',
-      savings: '16,97€',
-      perService: '30,33€/servicio',
+      price: '90,00',
+      originalPrice: '107,97',
+      savings: '17,97',
       icon: Star,
     },
     {
       title: 'Bono Arreglo de Barba',
+      validFor: 'Arreglo de barba',
       services: 3,
-      price: '44€',
-      originalPrice: '53,97€',
-      savings: '9,97€',
-      perService: '14,67€/arreglo',
+      price: '44,00',
+      originalPrice: '53,97',
+      savings: '9,97',
       icon: Scissors,
     },
     {
-      title: 'Bono Rapado + Barba',
+      title: 'Bono Rapado + Arreglo de Barba',
+      validFor: 'Rapado y arreglo de barba',
       services: 3,
-      price: '73€',
-      originalPrice: '92,97€',
-      savings: '19,97€',
-      perService: '24,33€/servicio',
+      price: '73,00',
+      originalPrice: '92,97',
+      savings: '19,97',
       icon: Gift,
+    },
+    {
+      title: 'Bono Rapado',
+      validFor: 'Rapado',
+      services: 3,
+      price: '44,00',
+      originalPrice: '53,97',
+      savings: '9,97',
+      icon: Scissors,
     },
   ];
 
@@ -156,16 +175,17 @@ const Bonos = () => {
                         </div>
                         <CardTitle className="text-lg">{bono.title}</CardTitle>
                         <p className="text-sm text-muted-foreground">{bono.services} servicios</p>
+                        <p className="text-xs text-muted-foreground">Válido para: {bono.validFor}</p>
                       </CardHeader>
                       <CardContent className="text-center space-y-3">
                         <div>
-                          <span className="text-3xl font-bold text-primary">{bono.price}</span>
-                          <p className="text-sm text-muted-foreground line-through">{bono.originalPrice}</p>
+                          <span className="text-3xl font-bold text-primary">{bono.price} €</span>
+                          <p className="text-sm text-muted-foreground line-through">{bono.originalPrice} €</p>
                         </div>
                         <div className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
-                          Ahorras {bono.savings}
+                          Ahorras {bono.savings} €
                         </div>
-                        <p className="text-xs text-muted-foreground">{bono.perService}</p>
+                        <p className="text-xs text-muted-foreground">Caducidad: Nunca</p>
                       </CardContent>
                     </Card>
                   );
@@ -191,16 +211,17 @@ const Bonos = () => {
                         </div>
                         <CardTitle className="text-lg">{bono.title}</CardTitle>
                         <p className="text-sm text-muted-foreground">{bono.services} servicios</p>
+                        <p className="text-xs text-muted-foreground">Válido para: {bono.validFor}</p>
                       </CardHeader>
                       <CardContent className="text-center space-y-3">
                         <div>
-                          <span className="text-3xl font-bold text-primary">{bono.price}</span>
-                          <p className="text-sm text-muted-foreground line-through">{bono.originalPrice}</p>
+                          <span className="text-3xl font-bold text-primary">{bono.price} €</span>
+                          <p className="text-sm text-muted-foreground line-through">{bono.originalPrice} €</p>
                         </div>
                         <div className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
-                          Ahorras {bono.savings}
+                          Ahorras {bono.savings} €
                         </div>
-                        <p className="text-xs text-muted-foreground">{bono.perService}</p>
+                        <p className="text-xs text-muted-foreground">Caducidad: Nunca</p>
                       </CardContent>
                     </Card>
                   );
