@@ -1,4 +1,4 @@
-import { HomeIcon, CalendarIcon, Users, MapIcon, MessageCircle, Package, Gift, UserCheck, DollarSign, Upload, BarChart3, Scissors } from "lucide-react";
+import { HomeIcon, CalendarIcon, Users, MapIcon, MessageCircle, Package, Gift, UserCheck, DollarSign, Upload, BarChart3, Scissors, Calendar } from "lucide-react";
 import Index from "./pages/Index";
 import Servicios from "./pages/Servicios";
 import Equipo from "./pages/Equipo";
@@ -13,6 +13,7 @@ import AdminPortal from "./pages/AdminPortal";
 import BarberPortal from "./pages/BarberPortal";
 import ImportClients from "./pages/ImportClients";
 import Auth from "./pages/Auth";
+import Reservas from "./pages/Reservas";
 
 export interface NavItem {
   title: string;
@@ -103,6 +104,12 @@ const navItems: NavItem[] = [
     title: "Cancelar Cita",
     to: "/cancel-appointment/:id",
     page: <CancelAppointment />,
+  },
+  {
+    title: "Reservas",
+    to: "/reservas",
+    icon: Calendar,
+    page: <Reservas />,
   },
   {
     title: "Not Found",
