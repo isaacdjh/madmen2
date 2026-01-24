@@ -1,19 +1,8 @@
-import { HomeIcon, CalendarIcon, Users, MapIcon, MessageCircle, Package, Gift, UserCheck, DollarSign, Upload, BarChart3, Scissors, Calendar } from "lucide-react";
+import { HomeIcon, Calendar, UserCheck } from "lucide-react";
 import Index from "./pages/Index";
-import Servicios from "./pages/Servicios";
-import Equipo from "./pages/Equipo";
-import Ubicaciones from "./pages/Ubicaciones";
-import Contacto from "./pages/Contacto";
-import Productos from "./pages/Productos";
-import Bonos from "./pages/Bonos";
-import Blog from "./pages/Blog";
-import NotFound from "./pages/NotFound";
-import CancelAppointment from "./pages/CancelAppointment";
 import AdminPortal from "./pages/AdminPortal";
-import BarberPortal from "./pages/BarberPortal";
-import ImportClients from "./pages/ImportClients";
-import Auth from "./pages/Auth";
 import Reservas from "./pages/Reservas";
+import NotFound from "./pages/NotFound";
 
 export interface NavItem {
   title: string;
@@ -32,82 +21,14 @@ const navItems: NavItem[] = [
     page: <Index />,
   },
   {
-    title: "Servicios",
-    to: "/servicios",
-    icon: CalendarIcon,
-    page: <Servicios />,
-  },
-  {
-    title: "Equipo",
-    to: "/equipo",
-    icon: Users,
-    page: <Equipo />,
-  },
-  {
-    title: "Ubicaciones",
-    to: "/ubicaciones",
-    icon: MapIcon,
-    page: <Ubicaciones />,
-  },
-  {
-    title: "Contacto",
-    to: "/contacto",
-    icon: MessageCircle,
-    page: <Contacto />,
-  },
-  {
-    title: "Productos",
-    to: "/productos",
-    icon: Package,
-    page: <Productos />,
-  },
-  {
-    title: "Bonos",
-    to: "/bonos",
-    icon: Gift,
-    page: <Bonos />,
-  },
-  {
-    title: "Blog",
-    to: "/blog",
-    icon: BarChart3,
-    page: <Blog />,
-  },
-  {
     title: "Administrador",
     to: "/admin",
     icon: UserCheck,
     page: <AdminPortal />,
   },
   {
-    title: "Barbero",
-    to: "/barber",
-    icon: Scissors,
-    page: <BarberPortal />,
-    requiresAuth: true,
-    requiredRole: 'barber',
-  },
-  {
-    title: "Importar Clientes",
-    to: "/import-clients",
-    icon: Upload,
-    page: <ImportClients />,
-    requiresAuth: true,
-    requiredRole: 'admin',
-  },
-  {
-    title: "Autenticación",
-    to: "/auth",
-    page: <Auth />,
-  },
-  {
-    title: "Cancelar Cita",
-    to: "/cancel-appointment/:id",
-    page: <CancelAppointment />,
-  },
-  {
-    title: "Reservas",
-    to: "/reservas",
+    title: "Reserva",
+    to: "/reserva",
     icon: Calendar,
     page: <Reservas />,
   },
