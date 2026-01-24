@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, Menu, X, Mail, Briefcase, Phone } from 'lucide-react';
+import { Calendar, Menu, X, Mail, Briefcase, Phone, Gift } from 'lucide-react';
 import {
   Drawer,
   DrawerClose,
@@ -143,6 +143,15 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                       Blog & Tips
                     </Button>
                   </Link>
+                  <Link to="/amigos">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+                    >
+                      <Gift className="w-4 h-4 mr-2" />
+                      Invita a un Amigo
+                    </Button>
+                  </Link>
                   <Button 
                     onClick={sendCurriculum}
                     variant="outline" 
@@ -253,6 +262,17 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                           className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
                         >
                           Blog & Tips
+                        </Button>
+                      </Link>
+                    </DrawerClose>
+                    <DrawerClose asChild>
+                      <Link to="/amigos">
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
+                        >
+                          <Gift className="w-4 h-4 mr-2" />
+                          Invita a un Amigo
                         </Button>
                       </Link>
                     </DrawerClose>
