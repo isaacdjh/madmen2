@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const response = await resend.emails.send({
-      from: "Mad Men Barbería <noreply@madmenmadrid.com>",
+      from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
       to: [clientEmail],
       subject: "¿Quieres una cera STMNT gratis? Trae a un colega a Mad Men 💈",
       html: emailHtml,
