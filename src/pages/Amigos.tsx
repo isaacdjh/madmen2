@@ -12,8 +12,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Gift, Users, Send, Mail, FileSpreadsheet, Upload, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
+import { useAuth } from '@/hooks/useAuth';
 
 const Amigos = () => {
+  const { isAdmin } = useAuth();
   const [referrerName, setReferrerName] = useState('');
   const [referrerEmail, setReferrerEmail] = useState('');
   const [friendEmail, setFriendEmail] = useState('');
@@ -213,9 +215,9 @@ const Amigos = () => {
           </div>
 
           <Tabs defaultValue="invite" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className={`grid w-full ${isAdmin() ? 'grid-cols-2' : 'grid-cols-1'}`}>
               <TabsTrigger value="invite">Invitar a un Amigo</TabsTrigger>
-              <TabsTrigger value="campaign">Campaña Masiva</TabsTrigger>
+              {isAdmin() && <TabsTrigger value="campaign">Campaña Masiva</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="invite">
@@ -292,94 +294,96 @@ const Amigos = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="campaign">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Mail className="w-5 h-5" />
-                    Campaña de Email Masiva
-                  </CardTitle>
-                  <CardDescription>
-                    Sube un Excel con emails de clientes para enviar la promoción de referidos
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <Alert>
-                    <FileSpreadsheet className="w-4 h-4" />
-                    <AlertDescription>
-                      <strong>Formato del Excel:</strong>
-                      <ul className="mt-2 space-y-1 text-sm">
-                        <li>• Columna "Email" o "email" con los correos</li>
-                        <li>• Columna "Name" o "Nombre" (opcional) para personalizar</li>
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
+            {isAdmin() && (
+              <TabsContent value="campaign">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mail className="w-5 h-5" />
+                      Campaña de Email Masiva
+                    </CardTitle>
+                    <CardDescription>
+                      Sube un Excel con emails de clientes para enviar la promoción de referidos
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Alert>
+                      <FileSpreadsheet className="w-4 h-4" />
+                      <AlertDescription>
+                        <strong>Formato del Excel:</strong>
+                        <ul className="mt-2 space-y-1 text-sm">
+                          <li>• Columna "Email" o "email" con los correos</li>
+                          <li>• Columna "Name" o "Nombre" (opcional) para personalizar</li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
 
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="excel-upload">Subir Excel de Clientes</Label>
-                      <Input
-                        id="excel-upload"
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={handleFileUpload}
-                        className="mt-2"
-                      />
-                    </div>
-
-                    {emailList.length > 0 && (
-                      <div className="p-4 bg-muted rounded-lg">
-                        <p className="font-medium">{emailList.length} emails cargados</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Primeros 5: {emailList.slice(0, 5).map(e => e.email).join(', ')}
-                          {emailList.length > 5 && '...'}
-                        </p>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="excel-upload">Subir Excel de Clientes</Label>
+                        <Input
+                          id="excel-upload"
+                          type="file"
+                          accept=".xlsx,.xls"
+                          onChange={handleFileUpload}
+                          className="mt-2"
+                        />
                       </div>
-                    )}
 
-                    {isSendingBulk && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Enviando emails...</span>
-                          <span>{bulkProgress}%</span>
+                      {emailList.length > 0 && (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <p className="font-medium">{emailList.length} emails cargados</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Primeros 5: {emailList.slice(0, 5).map(e => e.email).join(', ')}
+                            {emailList.length > 5 && '...'}
+                          </p>
                         </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full transition-all"
-                            style={{ width: `${bulkProgress}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {bulkResults && (
-                      <Alert className={bulkResults.failed > 0 ? 'border-yellow-500' : 'border-green-500'}>
-                        <CheckCircle className="w-4 h-4" />
-                        <AlertDescription>
-                          <strong>Resultados:</strong> {bulkResults.sent} enviados correctamente
-                          {bulkResults.failed > 0 && `, ${bulkResults.failed} fallidos`}
-                        </AlertDescription>
-                      </Alert>
-                    )}
-
-                    <Button 
-                      onClick={handleBulkSend} 
-                      className="w-full"
-                      disabled={emailList.length === 0 || isSendingBulk}
-                    >
-                      {isSendingBulk ? (
-                        <>Enviando...</>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Enviar Campaña a {emailList.length} Clientes
-                        </>
                       )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+
+                      {isSendingBulk && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Enviando emails...</span>
+                            <span>{bulkProgress}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: `${bulkProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {bulkResults && (
+                        <Alert className={bulkResults.failed > 0 ? 'border-yellow-500' : 'border-green-500'}>
+                          <CheckCircle className="w-4 h-4" />
+                          <AlertDescription>
+                            <strong>Resultados:</strong> {bulkResults.sent} enviados correctamente
+                            {bulkResults.failed > 0 && `, ${bulkResults.failed} fallidos`}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      <Button 
+                        onClick={handleBulkSend} 
+                        className="w-full"
+                        disabled={emailList.length === 0 || isSendingBulk}
+                      >
+                        {isSendingBulk ? (
+                          <>Enviando...</>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Enviar Campaña a {emailList.length} Clientes
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
           </Tabs>
 
           {/* Instrucciones */}
