@@ -114,7 +114,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Enviar email al amigo
     const friendResponse = await resend.emails.send({
-      from: "Mad Men Barbería <noreply@madmenmadrid.com>",
+      from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
       to: [friendEmail],
       subject: `${referrerName} te invita a Mad Men Barbería 💈 ¡Limpieza facial GRATIS!`,
       html: friendEmailHtml,
@@ -155,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     await resend.emails.send({
-      from: "Mad Men Sistema <noreply@madmenmadrid.com>",
+      from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
       to: ["madmenmadrid@outlook.es"],
       subject: `Nuevo Referido: ${referrerName} invitó a ${friendName}`,
       html: notificationHtml,
