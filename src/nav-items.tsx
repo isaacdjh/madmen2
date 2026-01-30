@@ -8,7 +8,7 @@ import Equipo from "./pages/Equipo";
 import Bonos from "./pages/Bonos";
 import Blog from "./pages/Blog";
 import Productos from "./pages/Productos";
-import Contacto from "./pages/Contacto";
+import ContactoRedirect from "./pages/ContactoRedirect";
 import Amigos from "./pages/Amigos";
 import NotFound from "./pages/NotFound";
 
@@ -68,7 +68,7 @@ const navItems: NavItem[] = [
     title: "Contacto",
     to: "/contacto",
     icon: Phone,
-    page: <Contacto />,
+    page: <ContactoRedirect />,
   },
   {
     title: "Referidos",
