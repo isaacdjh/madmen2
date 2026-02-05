@@ -34,7 +34,7 @@ const Equipo = () => {
       location: 'Salamanca',
       specialty: 'Cortes Modernos',
       experience: '5 años',
-      image: null,
+      image: '/lovable-uploads/randy-barber.jpg',
     },
     {
       name: 'Jorge',
