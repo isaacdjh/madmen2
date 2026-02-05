@@ -13,7 +13,7 @@ const Equipo = () => {
       location: 'Salamanca',
       specialty: 'Cortes Clásicos',
       experience: '8 años',
-      image: null,
+      image: '/lovable-uploads/isaac-barber.jpg',
     },
     {
       name: 'Carlos López',
