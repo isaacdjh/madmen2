@@ -44,7 +44,7 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
   return (
     <div className="min-h-screen">
       <Suspense fallback={null}>
-        <ValentinesPopup onBookingClick={() => setShowBookingForm(true)} />
+        <ValentinesPopup />
       </Suspense>
       <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />

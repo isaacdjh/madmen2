@@ -2,11 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface ValentinesPopupProps {
-  onBookingClick: () => void;
-}
-
-const ValentinesPopup = ({ onBookingClick }: ValentinesPopupProps) => {
+const ValentinesPopup = () => {
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
 
@@ -37,8 +33,8 @@ const ValentinesPopup = ({ onBookingClick }: ValentinesPopupProps) => {
         <div className="text-center space-y-4">
           <div className="flex justify-center gap-1">
             <Heart className="w-5 h-5 text-rose-400 fill-rose-400 animate-pulse" />
-            <Heart className="w-6 h-6 text-red-400 fill-red-400 animate-pulse delay-100" />
-            <Heart className="w-5 h-5 text-rose-400 fill-rose-400 animate-pulse delay-200" />
+            <Heart className="w-6 h-6 text-red-400 fill-red-400 animate-pulse" />
+            <Heart className="w-5 h-5 text-rose-400 fill-rose-400 animate-pulse" />
           </div>
           
           <p className="text-2xl font-bold text-rose-100">
@@ -54,12 +50,26 @@ const ValentinesPopup = ({ onBookingClick }: ValentinesPopupProps) => {
             </p>
           </div>
           
-          <Button
-            onClick={() => { handleClose(); onBookingClick(); }}
-            className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold py-3 text-base rounded-xl shadow-lg"
-          >
-            👉 Reserva ahora
-          </Button>
+          <p className="text-rose-200 text-xs font-medium">👉 Reserva ahora</p>
+          
+          <div className="flex gap-3">
+            <Button
+              asChild
+              className="flex-1 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold py-3 text-sm rounded-xl shadow-lg"
+            >
+              <a href="https://booksy.com/es-es/891982_mad-men-barberia-salamanca_barberia_madrid_c-de-padilla-46" target="_blank" rel="noopener noreferrer">
+                📍 Salamanca
+              </a>
+            </Button>
+            <Button
+              asChild
+              className="flex-1 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold py-3 text-sm rounded-xl shadow-lg"
+            >
+              <a href="https://booksy.com/es-es/1084498_mad-men-barberia-retiro_barberia_madrid_c-de-narvaez-11" target="_blank" rel="noopener noreferrer">
+                📍 Retiro
+              </a>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
