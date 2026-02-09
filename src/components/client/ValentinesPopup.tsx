@@ -57,7 +57,7 @@ const ValentinesPopup = () => {
               asChild
               className="flex-1 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold py-3 text-sm rounded-xl shadow-lg"
             >
-              <a href="https://booksy.com/es-es/891982_mad-men-barberia-salamanca_barberia_madrid_c-de-padilla-46" target="_blank" rel="noopener noreferrer">
+              <a href="https://booksy.com/es-es/108540_mad-men-barberia-tradicional-barrio-salamanca_barberia_53009_madrid" target="_blank" rel="noopener noreferrer">
                 📍 Salamanca
               </a>
             </Button>
