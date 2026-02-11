@@ -45,7 +45,7 @@ const LocationsSection = () => {
                 <img 
                   src={location.image} 
                   alt={location.name}
-                  className="w-full h-full object-contain bg-barbershop-dark"
+                  className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 left-4 bg-barbershop-dark/90 backdrop-blur-sm rounded-lg p-2">
                     <img 
