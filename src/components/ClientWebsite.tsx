@@ -5,7 +5,7 @@ import ClientHeroSection from './client/ClientHeroSection';
 
 // Lazy load componentes que no son críticos para el primer render
 const ClientBookingForm = lazy(() => import('./ClientBookingForm'));
-const ValentinesPopup = lazy(() => import('./client/ValentinesPopup'));
+
 const TestimonialsSection = lazy(() => import('./client/TestimonialsSection'));
 const OffersSection = lazy(() => import('./client/OffersSection'));
 const ContactSection = lazy(() => import('./client/ContactSection'));
@@ -43,9 +43,6 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
 
   return (
     <div className="min-h-screen">
-      <Suspense fallback={null}>
-        <ValentinesPopup />
-      </Suspense>
       <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
       
