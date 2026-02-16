@@ -31,10 +31,10 @@ const LocationsSection = () => {
     <section id="ubicaciones" className="py-24 modern-section">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-primary mb-6">Nuestras Ubicaciones</h2>
+          <h2 className="text-5xl font-bold text-primary mb-6">Nuestras Barberías en Madrid</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Dos ubicaciones estratégicas en Madrid con los mejores barberos profesionales. 
-            Cada centro cuenta con barberos expertos y el mismo nivel de excelencia.
+            Dos barberías en los mejores barrios de Madrid: Salamanca y Retiro. 
+            Barberos profesionales, corte clásico, afeitado con navaja y arreglo de barba.
           </p>
         </div>
         

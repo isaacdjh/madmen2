@@ -9,7 +9,7 @@ interface ClientHeroSectionProps {
 
 const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
   return (
-    <section id="inicio" className="relative min-h-screen flex items-center justify-center text-white overflow-hidden">
+    <section id="inicio" className="relative min-h-screen flex items-center justify-center text-white overflow-hidden" aria-label="Barbería en Madrid - Mad Men Barbería Tradicional">
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <video
@@ -36,7 +36,10 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
             />
           </div>
 
-          {/* Descripción Elegante - sin título Mad Men */}
+          {/* H1 SEO - visible para buscadores */}
+          <h1 className="sr-only">Barbería en Madrid - Mad Men Barbería Tradicional - Corte de pelo y afeitado profesional</h1>
+          
+          {/* Descripción Elegante */}
           <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto leading-relaxed">
             Donde el estilo clásico se encuentra con la excelencia moderna. 
             El arte de la barbería tradicional perfeccionado en Madrid.

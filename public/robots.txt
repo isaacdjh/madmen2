@@ -12,3 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+
+Sitemap: https://madmen2.lovable.app/sitemap.xml
