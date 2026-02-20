@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, Users, Send, Mail, FileSpreadsheet, Upload, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import * as XLSX from 'xlsx';
+import readXlsxFile from 'read-excel-file';
 import { useAuth } from '@/hooks/useAuth';
 
 const Amigos = () => {
@@ -61,38 +61,35 @@ const Amigos = () => {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        const emails: Array<{ email: string; name: string }> = [];
+    try {
+      const rows = await readXlsxFile(file);
+      const emails: Array<{ email: string; name: string }> = [];
+      
+      if (rows.length > 1) {
+        const headers = rows[0].map(h => String(h || '').toLowerCase());
+        const emailIdx = headers.findIndex(h => h.includes('email') || h.includes('correo'));
+        const nameIdx = headers.findIndex(h => h.includes('name') || h.includes('nombre'));
         
-        jsonData.forEach((row: any) => {
-          const email = row['Email'] || row['email'] || row['EMAIL'] || row['Correo'] || row['correo'];
-          const name = row['Name'] || row['name'] || row['NAME'] || row['Nombre'] || row['nombre'] || '';
+        for (let i = 1; i < rows.length; i++) {
+          const email = emailIdx >= 0 ? String(rows[i][emailIdx] || '') : '';
+          const name = nameIdx >= 0 ? String(rows[i][nameIdx] || '') : '';
           
           if (email && email.includes('@')) {
             emails.push({ email: email.trim(), name: name.trim() || 'Cliente' });
           }
-        });
-
-        setEmailList(emails);
-        toast.success(`${emails.length} emails cargados correctamente`);
-      } catch (error) {
-        console.error('Error procesando Excel:', error);
-        toast.error('Error al procesar el archivo Excel');
+        }
       }
-    };
-    reader.readAsArrayBuffer(file);
+
+      setEmailList(emails);
+      toast.success(`${emails.length} emails cargados correctamente`);
+    } catch (error) {
+      console.error('Error procesando Excel:', error);
+      toast.error('Error al procesar el archivo Excel');
+    }
   };
 
   const handleBulkSend = async () => {
