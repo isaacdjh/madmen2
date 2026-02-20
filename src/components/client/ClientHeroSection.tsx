@@ -40,7 +40,7 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
           <h1 className="sr-only">Barbería en Madrid - Mad Men Barbería Tradicional - Corte de pelo y afeitado profesional</h1>
           
           {/* Descripción Elegante */}
-          <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl mb-8 mt-16 md:mt-0 text-white/90 max-w-3xl mx-auto leading-relaxed">
             Donde el estilo clásico se encuentra con la excelencia moderna. 
             El arte de la barbería tradicional perfeccionado en Madrid.
           </p>
