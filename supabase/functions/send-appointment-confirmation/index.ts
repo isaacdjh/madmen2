@@ -4,11 +4,27 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const allowedOrigins = [
+  'https://madmen2.lovable.app',
+  'https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com',
+  'https://id-preview--7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovable.app',
+  'http://localhost:5173',
+];
+
+const getCorsHeaders = (origin: string | null) => ({
+  "Access-Control-Allow-Origin": allowedOrigins.includes(origin || '') ? (origin || allowedOrigins[0]) : allowedOrigins[0],
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+});
+
+function escapeHtml(str: string): string {
+  return String(str).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[char] || char));
+}
 
 interface AppointmentEmailRequest {
   clientName: string;
@@ -105,6 +121,9 @@ END:VCALENDAR`;
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -112,27 +131,52 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log("=== Inicio del proceso de envío de email ===");
     
-    const appointment: AppointmentEmailRequest = await req.json();
-    console.log("Datos de la cita recibidos:", JSON.stringify(appointment, null, 2));
-    
+    const body = await req.json();
+
+    // Input validation
+    if (!body.clientEmail || typeof body.clientEmail !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.clientEmail)) {
+      throw new Error("Email del cliente inválido o requerido");
+    }
+    if (!body.clientName || typeof body.clientName !== 'string' || body.clientName.length > 200) {
+      throw new Error("Nombre del cliente inválido o requerido");
+    }
+    if (!body.service || typeof body.service !== 'string' || body.service.length > 200) {
+      throw new Error("Servicio inválido o requerido");
+    }
+
+    const appointment: AppointmentEmailRequest = {
+      clientName: body.clientName.slice(0, 200),
+      clientEmail: body.clientEmail.slice(0, 320),
+      service: body.service.slice(0, 200),
+      barber: typeof body.barber === 'string' ? body.barber.slice(0, 100) : '',
+      location: typeof body.location === 'string' ? body.location.slice(0, 100) : '',
+      date: typeof body.date === 'string' ? body.date.slice(0, 20) : '',
+      time: typeof body.time === 'string' ? body.time.slice(0, 10) : '',
+      price: typeof body.price === 'number' ? body.price : 0,
+      appointmentId: typeof body.appointmentId === 'string' ? body.appointmentId.slice(0, 100) : '',
+    };
+
     const apiKey = Deno.env.get("RESEND_API_KEY");
     console.log("API Key disponible:", apiKey ? "SÍ" : "NO");
-    console.log("Longitud de API Key:", apiKey ? apiKey.length : 0);
     
+    // Escape all user-provided values before use in HTML
+    const safeClientName = escapeHtml(appointment.clientName);
+    const safeService = escapeHtml(appointment.service);
+
     const locationDetails = getLocationDetails(appointment.location);
-    const barberName = getBarberName(appointment.barber);
+    const barberName = escapeHtml(getBarberName(appointment.barber));
     const { googleUrl, icalContent } = generateCalendarLinks(appointment, locationDetails, barberName);
-    const formattedDate = formatDate(appointment.date);
+    const formattedDate = escapeHtml(formatDate(appointment.date));
+    const safeTime = escapeHtml(appointment.time);
+    const safePrice = Number(appointment.price) || 0;
+    const safeLocationName = escapeHtml(locationDetails.name);
+    const safeLocationAddress = escapeHtml(locationDetails.address);
+    const safeLocationPhone = escapeHtml(locationDetails.phone);
 
     // URL de cancelación con el dominio correcto
-    const cancelUrl = `https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/cancel/${appointment.appointmentId}`;
+    const cancelUrl = `https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com/cancel/${encodeURIComponent(appointment.appointmentId)}`;
 
     console.log("=== Preparando envío de email ===");
-    console.log("De:", "Mad Men Barbershop <noreply@madmenbarberia.com>");
-    console.log("Para:", appointment.clientEmail);
-    console.log("Asunto:", "✂️ Tu cita está confirmada - Mad Men Barbershop");
-    console.log("Barbero:", barberName);
-    console.log("URL de cancelación:", cancelUrl);
 
     const emailResponse = await resend.emails.send({
       from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
@@ -557,7 +601,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <!-- Main Content -->
             <div class="main-content">
-              <h1 class="greeting">¡Hola ${appointment.clientName}!</h1>
+              <h1 class="greeting">¡Hola ${safeClientName}!</h1>
               <p class="intro-text">
                 Tu cita ha sido confirmada exitosamente. Nos complace recibirte en Mad Men Barbershop, 
                 donde la tradición y el estilo se encuentran para ofrecerte la mejor experiencia.
@@ -579,7 +623,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <div class="appointment-icon">🕐</div>
                     <div>
                       <div class="appointment-label">Hora</div>
-                      <div class="appointment-value">${appointment.time}</div>
+                      <div class="appointment-value">${safeTime}</div>
                     </div>
                   </div>
                   
@@ -587,7 +631,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <div class="appointment-icon">✂️</div>
                     <div>
                       <div class="appointment-label">Servicio</div>
-                      <div class="appointment-value">${appointment.service}</div>
+                      <div class="appointment-value">${safeService}</div>
                     </div>
                   </div>
                   
@@ -602,7 +646,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <div class="appointment-item price-highlight">
                     <div>
                       <div class="appointment-label">Precio del Servicio</div>
-                      <div class="appointment-value">${appointment.price}€</div>
+                      <div class="appointment-value">${safePrice}€</div>
                     </div>
                   </div>
                 </div>
@@ -615,9 +659,9 @@ const handler = async (req: Request): Promise<Response> => {
                   Ubicación
                 </h3>
                 <div class="location-details">
-                  <strong>${locationDetails.name}</strong>
-                  ${locationDetails.address}<br>
-                  📞 ${locationDetails.phone}
+                  <strong>${safeLocationName}</strong>
+                  ${safeLocationAddress}<br>
+                  📞 ${safeLocationPhone}
                 </div>
               </div>
               
@@ -628,7 +672,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <a href="${googleUrl}" target="_blank" class="btn btn-calendar">
                     📅 Google Calendar
                   </a>
-                  <a href="data:text/calendar;charset=utf-8;base64,${encodeToBase64(icalContent)}" download="cita-madmen-${appointment.appointmentId}.ics" class="btn btn-apple">
+                  <a href="data:text/calendar;charset=utf-8;base64,${encodeToBase64(icalContent)}" download="cita-madmen-${encodeURIComponent(appointment.appointmentId)}.ics" class="btn btn-apple">
                     🍎 Apple Calendar
                   </a>
                 </div>
@@ -653,7 +697,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="footer-logo">MAD MEN</div>
               <div class="footer-tagline">"El arte de ser un caballero"</div>
               <div class="footer-contact">
-                📞 ${locationDetails.phone}<br>
+                📞 ${safeLocationPhone}<br>
                 ✉️ <a href="mailto:info@madmenbarberia.com">info@madmenbarberia.com</a><br>
                 🌐 <a href="https://madmenbarberia.com">www.madmenbarberia.com</a>
               </div>

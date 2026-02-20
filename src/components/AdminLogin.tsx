@@ -6,44 +6,55 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdminLoginProps {
   onLogin: () => void;
 }
 
 const AdminLogin = ({ onLogin }: AdminLoginProps) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Credenciales de administrador (en un entorno real, esto debería estar en una base de datos segura)
-  const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'madmen2024' // Contraseña actualizada
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Simular una verificación de credenciales
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-      // Crear sesión de administrador
-      const adminSession = {
-        username: username,
-        loginTime: new Date().toISOString(),
-        role: 'administrator'
-      };
-      
-      localStorage.setItem('adminSession', JSON.stringify(adminSession));
-      onLogin();
-    } else {
-      setError('Credenciales incorrectas. Verifique su usuario y contraseña.');
+      if (authError) {
+        setError('Credenciales incorrectas. Verifique su email y contraseña.');
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Verify admin role server-side
+        const { data: roleData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .single();
+
+        if (roleData?.role !== 'admin') {
+          await supabase.auth.signOut();
+          setError('No tienes permisos de administrador.');
+          setLoading(false);
+          return;
+        }
+
+        onLogin();
+      }
+    } catch (err) {
+      setError('Error de conexión. Inténtalo de nuevo.');
     }
 
     setLoading(false);
@@ -67,13 +78,13 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuario</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Ingrese su usuario"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Ingrese su email"
                 required
                 className="w-full"
               />
@@ -121,17 +132,6 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
               {loading ? 'Verificando...' : 'Iniciar Sesión'}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-800">
-              <strong>Credenciales por defecto:</strong><br />
-              Usuario: admin<br />
-              Contraseña: madmen2024
-            </p>
-            <p className="text-xs text-amber-600 mt-2">
-              ⚠️ Recuerde cambiar estas credenciales en producción
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
