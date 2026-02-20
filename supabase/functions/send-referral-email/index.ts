@@ -3,29 +3,64 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const allowedOrigins = [
+  'https://madmen2.lovable.app',
+  'https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com',
+  'https://id-preview--7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovable.app',
+  'http://localhost:5173',
+];
 
-interface ReferralEmailRequest {
-  referrerName: string;
-  referrerEmail?: string;
-  friendEmail: string;
-  friendName: string;
+const getCorsHeaders = (origin: string | null) => ({
+  "Access-Control-Allow-Origin": allowedOrigins.includes(origin || '') ? (origin || allowedOrigins[0]) : allowedOrigins[0],
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+});
+
+function escapeHtml(str: string): string {
+  return str.replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[char] || char));
+}
+
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 320;
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { referrerName, referrerEmail, friendEmail, friendName }: ReferralEmailRequest = await req.json();
+    const body = await req.json();
+    const referrerName: string = body.referrerName ?? '';
+    const referrerEmail: string = body.referrerEmail ?? '';
+    const friendEmail: string = body.friendEmail ?? '';
+    const friendName: string = body.friendName ?? '';
 
-    if (!referrerName || !friendEmail) {
-      throw new Error("Faltan campos obligatorios");
+    if (!referrerName || typeof referrerName !== 'string') {
+      throw new Error("Nombre del cliente es requerido");
     }
+    if (!friendEmail || !validateEmail(friendEmail)) {
+      throw new Error("Email del amigo inválido o requerido");
+    }
+    if (referrerEmail && !validateEmail(referrerEmail)) {
+      throw new Error("Email del cliente inválido");
+    }
+    if (referrerName.length > 200 || friendName.length > 200) {
+      throw new Error("Nombre demasiado largo");
+    }
+
+    const safeReferrerName = escapeHtml(referrerName.slice(0, 200));
+    const safeFriendName = escapeHtml(friendName.slice(0, 200));
+    const safeFriendEmail = friendEmail.slice(0, 320);
+    const safeReferrerEmail = referrerEmail.slice(0, 320);
 
     // Email al amigo invitado
     const friendEmailHtml = `
@@ -45,39 +80,34 @@ const handler = async (req: Request): Promise<Response> => {
     .gift-box h2 { color: #ffffff; margin: 0 0 10px; font-size: 24px; }
     .gift-box p { color: #a3d977; margin: 0; font-size: 18px; }
     .cta-button { display: inline-block; background: #4a7c23; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 20px 0; }
-    .cta-button:hover { background: #3d6a1c; }
     .note { background: #2a2a2a; border-left: 4px solid #4a7c23; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
     .note p { margin: 0; color: #cccccc; font-size: 14px; }
     .note strong { color: #a3d977; }
     .footer { padding: 30px; text-align: center; border-top: 1px solid #333; }
     .footer p { color: #888; font-size: 12px; margin: 5px 0; }
-    .locations { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; gap: 20px; }
-    .location { text-align: center; flex: 1; min-width: 200px; }
-    .location h4 { color: #4a7c23; margin: 0 0 5px; }
-    .location p { color: #888; font-size: 13px; margin: 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>💈 MAD MEN BARBERÍA</h1>
+      <h1>&#x2702; MAD MEN BARBER&Iacute;A</h1>
       <p>La Experiencia Premium de Madrid</p>
     </div>
     
     <div class="content">
-      <p style="font-size: 18px; margin-bottom: 10px;">Hola ${friendName},</p>
+      <p style="font-size: 18px; margin-bottom: 10px;">Hola ${safeFriendName},</p>
       
       <p style="color: #cccccc; line-height: 1.6;">
-        Tu amigo <strong style="color: #4a7c23;">${referrerName}</strong> quiere que vivas la experiencia Mad Men.
+        Tu amigo <strong style="color: #4a7c23;">${safeReferrerName}</strong> quiere que vivas la experiencia Mad Men.
       </p>
 
       <div class="gift-box">
-        <h2>🎁 LIMPIEZA FACIAL GRATIS</h2>
+        <h2>&#x1F381; LIMPIEZA FACIAL GRATIS</h2>
         <p>En tu primer servicio con nosotros</p>
       </div>
 
       <p style="color: #cccccc; text-align: center;">
-        Reserva tu cita ahora y disfruta de una limpieza facial de cortesía valorada en 15€
+        Reserva tu cita ahora y disfruta de una limpieza facial de cortes&iacute;a valorada en 15&euro;
       </p>
 
       <div style="text-align: center;">
@@ -85,18 +115,18 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
 
       <div class="note">
-        <p><strong>Importante:</strong> Al reservar, escribe en el campo de notas: <strong>"Vengo de parte de ${referrerName}"</strong></p>
+        <p><strong>Importante:</strong> Al reservar, escribe en el campo de notas: <strong>&quot;Vengo de parte de ${safeReferrerName}&quot;</strong></p>
       </div>
 
       <p style="color: #888; font-size: 13px; text-align: center; margin-top: 20px;">
-        Válido únicamente en nuestras ubicaciones:<br/>
+        V&aacute;lido &uacute;nicamente en nuestras ubicaciones:<br/>
         <strong>C/ General Pardiñas, 101</strong> y <strong>C/ Alcalde Sainz de Baranda, 53</strong>
       </p>
     </div>
 
     <div class="footer">
-      <p>Mad Men Barbería Madrid</p>
-      <p>La barbería premium donde el estilo clásico se encuentra con lo contemporáneo</p>
+      <p>Mad Men Barber&iacute;a Madrid</p>
+      <p>La barber&iacute;a premium donde el estilo cl&aacute;sico se encuentra con lo contempor&aacute;neo</p>
       <p style="color: #4a7c23;">@madmenmadrid</p>
     </div>
   </div>
@@ -107,12 +137,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Enviar email al amigo
     const friendResponse = await resend.emails.send({
       from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
-      to: [friendEmail],
-      subject: `${referrerName} te invita a Mad Men Barbería 💈 ¡Limpieza facial GRATIS!`,
+      to: [safeFriendEmail],
+      subject: `${safeReferrerName} te invita a Mad Men Barbería 💈 ¡Limpieza facial GRATIS!`,
       html: friendEmailHtml,
     });
 
-    console.log("Email enviado al amigo:", friendResponse);
+    console.log("Email enviado al amigo");
 
     // Email de notificación al negocio
     const notificationHtml = `
@@ -127,20 +157,19 @@ const handler = async (req: Request): Promise<Response> => {
   </style>
 </head>
 <body>
-  <h2>🎯 Nueva Invitación de Referido</h2>
+  <h2>&#x1F3AF; Nueva Invitaci&oacute;n de Referido</h2>
   
   <div class="info">
-    <p><span class="label">Cliente que invita:</span> ${referrerName}</p>
-    <p><span class="label">Email del cliente:</span> ${referrerEmail || 'No proporcionado'}</p>
-    <p><span class="label">Amigo invitado:</span> ${friendName}</p>
-    <p><span class="label">Email del amigo:</span> ${friendEmail}</p>
+    <p><span class="label">Cliente que invita:</span> ${safeReferrerName}</p>
+    <p><span class="label">Email del cliente:</span> ${safeReferrerEmail || 'No proporcionado'}</p>
+    <p><span class="label">Amigo invitado:</span> ${safeFriendName}</p>
     <p><span class="label">Fecha:</span> ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
   </div>
 
   <p><strong>Recordatorio:</strong></p>
   <ul>
     <li>El amigo recibirá una limpieza facial gratis en su primera visita</li>
-    <li>${referrerName} debe recibir su premio (cera STMNT o facial) en su próxima visita</li>
+    <li>${safeReferrerName} debe recibir su premio (cera STMNT o facial) en su próxima visita</li>
   </ul>
 </body>
 </html>
@@ -149,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
     await resend.emails.send({
       from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
       to: ["madmenmadrid@outlook.es"],
-      subject: `Nuevo Referido: ${referrerName} invitó a ${friendName}`,
+      subject: `Nuevo Referido: ${safeReferrerName} invitó a ${safeFriendName}`,
       html: notificationHtml,
     });
 
@@ -161,9 +190,9 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error en send-referral-email:", error);
+    console.error("Error en send-referral-email:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Error al enviar la invitación" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

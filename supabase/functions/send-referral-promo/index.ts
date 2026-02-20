@@ -3,10 +3,27 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const allowedOrigins = [
+  'https://madmen2.lovable.app',
+  'https://7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovableproject.com',
+  'https://id-preview--7c7f3e19-545f-4dc1-b55b-6d7eb4ffbe30.lovable.app',
+  'http://localhost:5173',
+];
+
+const getCorsHeaders = (origin: string | null) => ({
+  "Access-Control-Allow-Origin": allowedOrigins.includes(origin || '') ? (origin || allowedOrigins[0]) : allowedOrigins[0],
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+});
+
+function escapeHtml(str: string): string {
+  return str.replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[char] || char));
+}
 
 interface PromoEmailRequest {
   clientEmail: string;
@@ -14,16 +31,31 @@ interface PromoEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { clientEmail, clientName }: PromoEmailRequest = await req.json();
+    const body = await req.json();
+    const clientEmail: string = body.clientEmail ?? '';
+    const clientName: string = body.clientName ?? '';
 
-    if (!clientEmail) {
+    if (!clientEmail || typeof clientEmail !== 'string') {
       throw new Error("Email es requerido");
     }
+    // Basic email format validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+      throw new Error("Formato de email inválido");
+    }
+    if (clientName.length > 200) {
+      throw new Error("Nombre demasiado largo");
+    }
+
+    const safeClientName = escapeHtml(clientName.slice(0, 200));
+    const safeClientEmail = clientEmail.slice(0, 320);
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -54,64 +86,64 @@ const handler = async (req: Request): Promise<Response> => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>💈 MAD MEN BARBERÍA</h1>
-      <p style="color: #a3d977; margin-top: 10px;">¿Quieres una cera STMNT gratis?</p>
+      <h1>&#x2702; MAD MEN BARBER&Iacute;A</h1>
+      <p style="color: #a3d977; margin-top: 10px;">&iquest;Quieres una cera STMNT gratis?</p>
     </div>
     
     <div class="content">
-      <p style="font-size: 18px;">Hola ${clientName},</p>
+      <p style="font-size: 18px;">Hola ${safeClientName},</p>
       
       <p style="color: #cccccc; line-height: 1.6;">
         En Mad Men Madrid sabemos que <strong style="color: #4a7c23;">la lealtad se premia</strong>. 
-        Por eso, queremos que tu próxima visita te salga con regalo.
+        Por eso, queremos que tu pr&oacute;xima visita te salga con regalo.
       </p>
 
       <div class="highlight">
-        <h3 style="color: #ffffff; margin-top: 0;">¿Cómo funciona?</h3>
+        <h3 style="color: #ffffff; margin-top: 0;">&iquest;C&oacute;mo funciona?</h3>
         
         <div class="steps">
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <strong>Trae a un amigo o familiar</strong> que no nos conozca todavía
+              <strong>Trae a un amigo o familiar</strong> que no nos conozca todav&iacute;a
             </div>
           </div>
           
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-content">
-              Tu invitado recibirá una <strong style="color: #4a7c23;">Limpieza Facial de cortesía</strong> en su primer servicio
+              Tu invitado recibir&aacute; una <strong style="color: #4a7c23;">Limpieza Facial de cortes&iacute;a</strong> en su primer servicio
             </div>
           </div>
           
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-content">
-              <strong>¡Y tú eliges tu premio!</strong>
+              <strong>&iexcl;Y t&uacute; eliges tu premio!</strong>
             </div>
           </div>
         </div>
 
         <div class="prize">
-          <div class="prize-icon">🧴</div>
+          <div class="prize-icon">&#x1F9F4;</div>
           <div class="prize-text">
             <h4>Cera STMNT</h4>
-            <p>Para mantener el estilo en casa (Valor: 23€)</p>
+            <p>Para mantener el estilo en casa (Valor: 23&euro;)</p>
           </div>
         </div>
         
         <div class="prize">
-          <div class="prize-icon">✨</div>
+          <div class="prize-icon">&#x2728;</div>
           <div class="prize-text">
             <h4>Limpieza Facial Profesional</h4>
-            <p>Para renovar tu look (Valor: 15€)</p>
+            <p>Para renovar tu look (Valor: 15&euro;)</p>
           </div>
         </div>
       </div>
 
-      <h3 style="color: #ffffff;">¿Cómo participar?</h3>
+      <h3 style="color: #ffffff;">&iquest;C&oacute;mo participar?</h3>
       <p style="color: #cccccc; line-height: 1.8;">
-        Dile a tu amigo que, al reservar en nuestra web, escriba <strong style="color: #4a7c23;">tu nombre en el apartado de "Notas"</strong>. ¡Así de fácil!
+        Dile a tu amigo que, al reservar en nuestra web, escriba <strong style="color: #4a7c23;">tu nombre en el apartado de &quot;Notas&quot;</strong>. &iexcl;As&iacute; de f&aacute;cil!
       </p>
 
       <div style="text-align: center; margin: 30px 0;">
@@ -119,16 +151,16 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
 
       <p style="color: #888; font-size: 13px; text-align: center;">
-        O también puedes enviar directamente el email de tu amigo desde nuestra página de referidos
+        O tambi&eacute;n puedes enviar directamente el email de tu amigo desde nuestra p&aacute;gina de referidos
       </p>
     </div>
 
     <div class="footer">
-      <p><strong>Mad Men Barbería Madrid</strong></p>
-      <p>Válido en: C/ General Pardiñas, 101 | C/ Alcalde Sainz de Baranda, 53</p>
+      <p><strong>Mad Men Barber&iacute;a Madrid</strong></p>
+      <p>V&aacute;lido en: C/ General Pardiñas, 101 | C/ Alcalde Sainz de Baranda, 53</p>
       <p style="color: #4a7c23;">@madmenmadrid</p>
       <p style="margin-top: 15px; font-size: 11px; color: #666;">
-        Si no deseas recibir más emails promocionales, responde a este correo con "BAJA"
+        Si no deseas recibir m&aacute;s emails promocionales, responde a este correo con &quot;BAJA&quot;
       </p>
     </div>
   </div>
@@ -138,12 +170,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     const response = await resend.emails.send({
       from: "Mad Men Barbershop <noreply@madmenbarberia.com>",
-      to: [clientEmail],
+      to: [safeClientEmail],
       subject: "¿Quieres una cera STMNT gratis? Trae a un colega a Mad Men 💈",
       html: emailHtml,
     });
 
-    console.log("Email promocional enviado a:", clientEmail, response);
+    console.log("Email promocional enviado a:", safeClientEmail);
 
     return new Response(
       JSON.stringify({ success: true }),
@@ -153,9 +185,9 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error en send-referral-promo:", error);
+    console.error("Error en send-referral-promo:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Error al enviar el email" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
