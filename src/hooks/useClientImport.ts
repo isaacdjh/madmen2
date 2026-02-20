@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import * as XLSX from 'xlsx';
+import readXlsxFile from 'read-excel-file';
 import { 
   BooksyClient, 
   mapColumnHeaders, 
@@ -39,17 +39,11 @@ export const useClientImport = () => {
       console.log('Modo actualización:', updateExisting ? 'Activado' : 'Desactivado');
       
       // Leer el archivo Excel
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
+      const rows = await readXlsxFile(file);
       
-      // Convertir a JSON
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-        header: 1,
-        raw: false,
-        defval: ''
-      }) as any[][];
+      const jsonData = rows.map(row => row.map(cell => cell !== null && cell !== undefined ? String(cell) : ''));
+      
+      console.log('Filas totales en Excel:', jsonData.length);
       
       console.log('Filas totales en Excel:', jsonData.length);
       
