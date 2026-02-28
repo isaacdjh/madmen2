@@ -86,7 +86,7 @@ const LocationsSection = () => {
                     <div className="text-sm space-y-1">
                       <div>Lun-Vie: 11:00 - 21:00</div>
                       <div>Sábado: 10:00 - 21:00</div>
-                      <div>Domingo: 10:00 - 17:00</div>
+                      <div>Domingo: Cerrado</div>
                     </div>
                   </div>
                 </div>
