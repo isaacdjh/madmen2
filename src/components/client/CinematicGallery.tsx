@@ -13,8 +13,8 @@ const CinematicGallery = () => {
         {/* Label */}
         <p
           className="uppercase tracking-[0.35em] text-[11px] mb-20 md:mb-28 font-light text-center"
-          style={{ color: 'hsl(var(--barbershop-gold))' }}
-        >
+          style={{ color: 'hsl(var(--barbershop-gold))' }}>
+
           El arte del detalle
         </p>
 
@@ -27,20 +27,20 @@ const CinematicGallery = () => {
                 <img
                   src={beardDetailImg}
                   alt="Detalle de arreglo de barba con cepillo y navaja — Mad Men Barbería"
-                  className="w-full h-[500px] md:h-[700px] object-cover"
-                />
+                  className="w-full h-[500px] md:h-[700px] object-cover" />
+
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
                     background:
-                      'linear-gradient(to top, hsl(0 0% 7% / 0.4) 0%, transparent 40%)',
-                  }}
-                />
+                    'linear-gradient(to top, hsl(0 0% 7% / 0.4) 0%, transparent 40%)'
+                  }} />
+
               </div>
               <p
                 className="mt-6 uppercase tracking-[0.3em] text-[10px] font-light"
-                style={{ color: 'hsl(0 0% 40%)' }}
-              >
+                style={{ color: 'hsl(0 0% 40%)' }}>
+
                 Precisión en cada trazo
               </p>
             </div>
@@ -51,28 +51,28 @@ const CinematicGallery = () => {
                 <img
                   src={shaveDetailNew}
                   alt="Corte masculino en Mad Men Barbería"
-                  className="w-full h-[500px] md:h-[700px] object-cover"
-                />
+                  className="w-full h-[500px] md:h-[700px] object-cover" />
+
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
                     background:
-                      'linear-gradient(to top, hsl(0 0% 7% / 0.4) 0%, transparent 40%)',
-                  }}
-                />
+                    'linear-gradient(to top, hsl(0 0% 7% / 0.4) 0%, transparent 40%)'
+                  }} />
+
               </div>
               <p
                 className="mt-6 uppercase tracking-[0.3em] text-[10px] font-light"
-                style={{ color: 'hsl(0 0% 40%)' }}
-              >
-                Ritual de afeitado tradicional
+                style={{ color: 'hsl(0 0% 40%)' }}>
+
+
               </p>
             </div>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default CinematicGallery;
