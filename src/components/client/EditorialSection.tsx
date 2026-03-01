@@ -38,7 +38,8 @@ const EditorialSection = () => {
         >
           Dos sedes en los mejores barrios de Madrid — Salamanca y Retiro —
           diseñadas para quienes valoran la calidad y el cuidado personal
-          como un ritual.
+          como un ritual. Disfruta de bebidas de cortesía y café molido
+          de la mejor calidad mientras te atendemos.
         </p>
 
         <div
