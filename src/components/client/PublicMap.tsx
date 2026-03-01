@@ -1,16 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Phone, Clock } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
-// Fix para iconos por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
+
+const locations = [
+  {
+    id: 1,
+    name: 'Salamanca',
+    address: 'General Pardiñas 101, 28006 Madrid',
+    phone: '+34 910 597 766',
+    coordinates: [40.4368176, -3.6777538] as [number, number],
+    hours: 'L–V 11–21h · S 10–21h',
+  },
+  {
+    id: 2,
+    name: 'Retiro',
+    address: 'Alcalde Sainz de Baranda 53, 28009 Madrid',
+    phone: '+34 912 231 715',
+    coordinates: [40.4172, -3.6694] as [number, number],
+    hours: 'L–V 11–21h · S 10–21h · D 10–17h',
+  },
+];
 
 const PublicMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -19,143 +36,95 @@ const PublicMap = () => {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Ubicaciones de Mad Men Barbería (solo lectura para usuarios)
-  const locations = [
-    {
-      id: 1,
-      name: 'Mad Men Barbería - General Pardiñas 101',
-      address: 'Calle del Gral. Pardiñas, 101, Salamanca, 28006 Madrid',
-      phone: '+34 910597766',
-      coordinates: [40.4368176, -3.6777538] as [number, number],
-      hours: 'L-V: 11:00-21:00 | S: 10:00-21:00',
-      description: 'Nuestra ubicación en el exclusivo barrio de Salamanca'
-    },
-    {
-      id: 2,
-      name: 'Mad Men Barbería - Retiro',
-      address: 'Calle Alcalde Sainz de Baranda 53, 28009 Madrid',
-      phone: '+34 912 231 715',
-      coordinates: [40.4172, -3.6694] as [number, number],
-      hours: 'L-V: 11:00-21:00 | S: 10:00-21:00 | D: 10:00-17:00',
-      description: 'Nuestra nueva ubicación en el barrio Retiro'
-    }
-  ];
-
   const initializeMap = () => {
     if (!mapContainer.current || map.current || !isMapVisible) return;
 
-    // Detectar si es dispositivo móvil
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // Crear el mapa con configuración optimizada para móviles
-    map.current = L.map(mapContainer.current, {
-      zoomControl: !isMobile, // Deshabilitar controles de zoom en móvil
-      attributionControl: false, // Deshabilitar atribución para ahorrar espacio
-      dragging: !isMobile, // Deshabilitar arrastre en móvil para evitar conflictos
-      touchZoom: false, // Deshabilitar zoom táctil
-      scrollWheelZoom: false, // Deshabilitar zoom con scroll
-      doubleClickZoom: false, // Deshabilitar zoom con doble click
-      boxZoom: false, // Deshabilitar zoom con caja
-      keyboard: false // Deshabilitar controles de teclado
-    }).setView([40.4337, -3.6923], isMobile ? 12 : 13);
 
-    // Agregar capa de OpenStreetMap con configuración optimizada
-    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: isMobile ? 15 : 18,
-      tileSize: isMobile ? 512 : 256,
-      zoomOffset: isMobile ? -1 : 0,
+    map.current = L.map(mapContainer.current, {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: !isMobile,
+      touchZoom: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+    }).setView([40.4270, -3.6736], isMobile ? 12 : 13);
+
+    // Desaturated grayscale tiles
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO',
+      maxZoom: 18,
       updateWhenIdle: true,
       keepBuffer: isMobile ? 1 : 2,
-      className: 'map-tiles-green' // Clase para aplicar filtro verde
     }).addTo(map.current);
 
-    // Crear icono personalizado para las barberías - Amarillo con tijeras
+    // Minimal marker
     const customIcon = L.divIcon({
-      html: `
-        <div style="
-          width: 44px;
-          height: 44px;
-          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-          border-radius: 50%;
-          border: 3px solid #fef3c7;
-          box-shadow: 0 4px 15px rgba(251, 191, 36, 0.5), 0 2px 8px rgba(0,0,0,0.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 20px;
-        ">
-          ✂️
-        </div>
-      `,
-      className: 'custom-marker',
-      iconSize: [44, 44],
-      iconAnchor: [22, 22],
-      popupAnchor: [0, -22]
+      html: `<div style="
+        width: 12px; height: 12px;
+        background: hsl(155, 28%, 22%);
+        border-radius: 50%;
+        border: 2px solid hsl(0, 0%, 75%);
+        box-shadow: 0 0 12px rgba(30, 61, 47, 0.4);
+      "></div>`,
+      className: '',
+      iconSize: [12, 12],
+      iconAnchor: [6, 6],
+      popupAnchor: [0, -10],
     });
 
-    // Agregar marcadores para cada ubicación
-    locations.forEach((location) => {
-      const marker = L.marker(location.coordinates, { icon: customIcon })
-        .addTo(map.current!);
+    locations.forEach((loc) => {
+      const marker = L.marker(loc.coordinates, { icon: customIcon }).addTo(map.current!);
 
-      // Crear popup con información - con colores verdes
       const popupContent = `
-        <div style="padding: 12px; min-width: 220px;">
-          <h3 style="margin: 0 0 10px 0; font-weight: bold; color: #16a34a; font-size: 15px;">${location.name}</h3>
-          <p style="margin: 6px 0; font-size: 14px; color: #374151;"><strong>📍</strong> ${location.address}</p>
-          <p style="margin: 6px 0; font-size: 14px; color: #374151;"><strong>📞</strong> <a href="tel:${location.phone}" style="color: #16a34a; text-decoration: none;">${location.phone}</a></p>
-          <p style="margin: 6px 0; font-size: 14px; color: #374151;"><strong>🕒</strong> ${location.hours}</p>
-          <p style="margin: 10px 0 4px 0; font-size: 13px; color: #6b7280; font-style: italic;">${location.description}</p>
+        <div style="padding: 14px 16px; min-width: 200px; font-family: system-ui, sans-serif;">
+          <p style="margin: 0 0 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em; color: hsl(0,0%,55%);">
+            Barrio de ${loc.name}
+          </p>
+          <p style="margin: 0 0 10px; font-size: 14px; color: hsl(0,0%,93%); font-weight: 400;">
+            ${loc.address}
+          </p>
+          <p style="margin: 0 0 4px; font-size: 12px; color: hsl(0,0%,50%);">
+            ${loc.hours}
+          </p>
+          <p style="margin: 0; font-size: 12px;">
+            <a href="tel:${loc.phone}" style="color: hsl(155,28%,28%); text-decoration: none;">${loc.phone}</a>
+          </p>
         </div>
       `;
 
-      marker.bindPopup(popupContent);
+      marker.bindPopup(popupContent, {
+        closeButton: false,
+        className: 'minimal-popup',
+      });
     });
-    
+
     setIsMapLoaded(true);
   };
 
-  // Configurar Intersection Observer para lazy loading
   useEffect(() => {
     if (!mapContainer.current) return;
-
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !isMapVisible) {
-            setIsMapVisible(true);
-          }
+          if (entry.isIntersecting && !isMapVisible) setIsMapVisible(true);
         });
       },
-      {
-        rootMargin: '100px', // Cargar cuando esté 100px antes de ser visible
-        threshold: 0.1
-      }
+      { rootMargin: '100px', threshold: 0.1 }
     );
-
     observerRef.current.observe(mapContainer.current);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
+    return () => observerRef.current?.disconnect();
   }, [isMapVisible]);
 
-  // Inicializar mapa cuando sea visible
   useEffect(() => {
     if (isMapVisible && !map.current) {
-      // Agregar un pequeño delay para mejorar rendimiento
-      const timer = setTimeout(() => {
-        initializeMap();
-      }, 100);
-
+      const timer = setTimeout(initializeMap, 100);
       return () => clearTimeout(timer);
     }
   }, [isMapVisible]);
 
-  // Cleanup
   useEffect(() => {
     return () => {
       if (map.current) {
@@ -166,48 +135,73 @@ const PublicMap = () => {
   }, []);
 
   return (
-    <section className="py-20 bg-muted/30">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">Encuéntranos</h2>
-          <p className="text-xl text-muted-foreground">Haz clic en los marcadores para ver la información de cada ubicación</p>
-        </div>
-        
-        <div>
+    <section className="bg-barbershop-dark">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="h-px" style={{ background: 'hsl(0 0% 18%)' }} />
+      </div>
+
+      <div className="py-32 md:py-44">
+        <div className="max-w-5xl mx-auto px-6">
+          {/* Header */}
+          <div className="text-center mb-16 md:mb-24">
+            <p
+              className="uppercase tracking-[0.35em] text-[11px] mb-8 font-light"
+              style={{ color: 'hsl(0 0% 50%)' }}
+            >
+              Mapa
+            </p>
+            <h2
+              className="font-serif text-2xl md:text-4xl font-normal tracking-tight"
+              style={{ color: 'hsl(0 0% 93%)' }}
+            >
+              Nuestras ubicaciones
+            </h2>
+          </div>
+
+          {/* Map */}
           <style>{`
-            .map-tiles-green {
-              filter: hue-rotate(85deg) saturate(1.2) brightness(0.95);
+            .minimal-popup .leaflet-popup-content-wrapper {
+              background: hsl(0, 0%, 14%);
+              border-radius: 4px;
+              box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+              border: 1px solid hsl(0,0%,20%);
             }
-            .leaflet-popup-content-wrapper {
-              border-radius: 12px;
-              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            .minimal-popup .leaflet-popup-tip {
+              background: hsl(0,0%,14%);
+              border: 1px solid hsl(0,0%,20%);
+              border-top: none;
+              border-left: none;
             }
-            .leaflet-popup-content h3 {
-              color: #16a34a !important;
-            }
-            .custom-marker {
-              background: transparent !important;
-              border: none !important;
+            .minimal-popup .leaflet-popup-content {
+              margin: 0;
             }
           `}</style>
-          <div 
-            ref={mapContainer} 
-            className="w-full h-96 rounded-lg shadow-lg border border-primary/30 relative overflow-hidden"
+
+          <div
+            ref={mapContainer}
+            className="w-full overflow-hidden relative"
+            style={{
+              height: '400px',
+              border: '1px solid hsl(0 0% 18%)',
+            }}
           >
             {!isMapLoaded && isMapVisible && (
-              <div className="absolute inset-0 flex items-center justify-center bg-muted/50 rounded-lg z-10">
+              <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: 'hsl(0 0% 11%)' }}>
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                  <p className="text-sm text-muted-foreground">Cargando mapa...</p>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b border-muted-foreground mx-auto mb-3" />
+                  <p className="text-xs tracking-widest uppercase" style={{ color: 'hsl(0 0% 40%)' }}>
+                    Cargando
+                  </p>
                 </div>
               </div>
             )}
             {!isMapVisible && (
-              <div className="absolute inset-0 flex items-center justify-center bg-muted/30 rounded-lg">
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'hsl(0 0% 11%)' }}>
                 <div className="text-center">
-                  <MapPin className="w-12 h-12 text-primary mx-auto mb-2" />
-                  <p className="text-lg font-semibold text-primary">Mapa Interactivo</p>
-                  <p className="text-sm text-muted-foreground">Se cargará automáticamente</p>
+                  <MapPin className="w-8 h-8 mx-auto mb-3" style={{ color: 'hsl(0 0% 35%)' }} />
+                  <p className="text-xs tracking-widest uppercase" style={{ color: 'hsl(0 0% 35%)' }}>
+                    Mapa interactivo
+                  </p>
                 </div>
               </div>
             )}
