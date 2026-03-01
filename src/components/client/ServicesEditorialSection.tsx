@@ -1,6 +1,7 @@
 import fadeProfesionalImg from '@/assets/fade-profesional.jpg';
 import corteMasculinoImg from '@/assets/corte-masculino.jpg';
 import arregloBarbaImg from '@/assets/arreglo-barba.jpg';
+import ritualClasicoImg from '@/assets/ritual-clasico.jpg';
 
 const services = [
   {
@@ -25,6 +26,7 @@ const services = [
     name: 'Ritual Clásico',
     description:
       'Corte, barba, toalla caliente y acabado premium. Un lujo atemporal.',
+    image: ritualClasicoImg,
   },
 ];
 
