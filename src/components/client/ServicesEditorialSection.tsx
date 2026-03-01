@@ -69,10 +69,10 @@ const ServicesEditorialSection = () => {
                   >
                     {/* Background image */}
                     <div
-                      className="absolute inset-0 bg-cover bg-center opacity-15"
+                      className="absolute inset-0 bg-cover bg-center opacity-25"
                       style={{ backgroundImage: `url(${service.image})` }}
                     />
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, hsl(0 0% 7% / 0.85), hsl(0 0% 7% / 0.5))' }} />
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, hsl(0 0% 7% / 0.75), hsl(0 0% 7% / 0.4))' }} />
                     {/* Content */}
                     <div className="relative py-28 md:py-40 px-2">
                       <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-12">
