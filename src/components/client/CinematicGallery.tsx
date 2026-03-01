@@ -64,8 +64,7 @@ const CinematicGallery = () => {
               <p
                 className="mt-6 uppercase tracking-[0.3em] text-[10px] font-light"
                 style={{ color: 'hsl(0 0% 40%)' }}>
-
-
+                Tradición, precisión y confianza absoluta
               </p>
             </div>
           </div>
