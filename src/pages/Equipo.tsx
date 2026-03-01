@@ -1,10 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import ClientNavigation from '@/components/client/ClientNavigation';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, MapPin, Award } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Equipo = () => {
   const barbers = [
@@ -52,9 +49,8 @@ const Equipo = () => {
     },
   ];
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
+  const salamanca = barbers.filter(b => b.location === 'Salamanca');
+  const retiro = barbers.filter(b => b.location === 'Retiro');
 
   return (
     <>
@@ -63,98 +59,152 @@ const Equipo = () => {
         <meta name="description" content="Conoce a nuestros barberos profesionales. Expertos con años de experiencia en cortes clásicos, degradados y afeitado tradicional." />
       </Helmet>
       
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: '#1C1C1C' }}>
         <ClientNavigation onBookingClick={() => window.open('https://madmenbarberia.com/reserva', '_blank')} />
         
-        <div className="pt-20">
-          <div className="container mx-auto px-4 py-8">
-            <Link to="/">
-              <Button variant="ghost" className="mb-6 text-muted-foreground hover:text-primary">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Volver al inicio
-              </Button>
+        <div className="pt-24 pb-32">
+          {/* Back link */}
+          <div className="max-w-6xl mx-auto px-6 mb-20">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 uppercase tracking-[0.25em] text-[11px] font-light transition-colors"
+              style={{ color: 'hsl(0 0% 45%)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'hsl(0 0% 70%)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'hsl(0 0% 45%)')}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Volver
             </Link>
-            
-            <div className="text-center mb-16">
-              <h1 className="text-5xl font-bold text-primary mb-6">Nuestro Equipo</h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Profesionales apasionados por la barbería tradicional. 
-                Cada uno con su estilo único pero todos con el mismo compromiso de excelencia.
-              </p>
+          </div>
+
+          {/* Header */}
+          <div className="max-w-6xl mx-auto px-6 mb-28">
+            <p
+              className="uppercase tracking-[0.35em] text-[11px] font-light mb-6"
+              style={{ color: 'hsl(var(--barbershop-gold))' }}
+            >
+              Nuestro equipo
+            </p>
+            <h1
+              className="text-4xl md:text-5xl font-light tracking-tight leading-tight max-w-xl"
+              style={{ color: 'hsl(0 0% 90%)' }}
+            >
+              Profesionales con estilo propio
+            </h1>
+          </div>
+
+          {/* Salamanca */}
+          <div className="max-w-6xl mx-auto px-6 mb-32">
+            <p
+              className="uppercase tracking-[0.3em] text-[10px] font-light mb-12"
+              style={{ color: 'hsl(0 0% 40%)' }}
+            >
+              Mad Men Salamanca
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {salamanca.map((barber, i) => (
+                <BarberCard key={i} barber={barber} />
+              ))}
             </div>
-            
-            {/* Salamanca Team */}
-            <div className="mb-16">
-              <div className="flex items-center justify-center gap-2 mb-8">
-                <MapPin className="w-6 h-6 text-primary" />
-                <h2 className="text-3xl font-bold text-primary">Mad Men Salamanca</h2>
-              </div>
-              
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
-                {barbers.filter(b => b.location === 'Salamanca').map((barber, index) => (
-                  <Card key={index} className="text-center hover:border-primary/50 transition-colors">
-                    <CardContent className="pt-8 pb-6">
-                      <Avatar className="w-24 h-24 mx-auto mb-4 border-2 border-primary">
-                        <AvatarImage src={barber.image || undefined} alt={barber.name} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-                          {getInitials(barber.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <h3 className="text-xl font-bold text-foreground mb-1">{barber.name}</h3>
-                      <p className="text-primary text-sm font-medium mb-2">{barber.specialty}</p>
-                      <div className="flex items-center justify-center text-muted-foreground text-sm">
-                        <Award className="w-4 h-4 mr-1" />
-                        {barber.experience}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+          </div>
+
+          {/* Divider */}
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="h-px mb-32" style={{ background: 'hsl(0 0% 18%)' }} />
+          </div>
+
+          {/* Retiro */}
+          <div className="max-w-6xl mx-auto px-6 mb-32">
+            <p
+              className="uppercase tracking-[0.3em] text-[10px] font-light mb-12"
+              style={{ color: 'hsl(0 0% 40%)' }}
+            >
+              Mad Men Retiro
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-2xl lg:max-w-none">
+              {retiro.map((barber, i) => (
+                <BarberCard key={i} barber={barber} />
+              ))}
             </div>
-            
-            {/* Retiro Team */}
-            <div className="mb-16">
-              <div className="flex items-center justify-center gap-2 mb-8">
-                <MapPin className="w-6 h-6 text-primary" />
-                <h2 className="text-3xl font-bold text-primary">Mad Men Retiro</h2>
-              </div>
-              
-              <div className="grid gap-6 sm:grid-cols-2 max-w-2xl mx-auto">
-                {barbers.filter(b => b.location === 'Retiro').map((barber, index) => (
-                  <Card key={index} className="text-center hover:border-primary/50 transition-colors">
-                    <CardContent className="pt-8 pb-6">
-                      <Avatar className="w-24 h-24 mx-auto mb-4 border-2 border-primary">
-                        <AvatarImage src={barber.image || undefined} alt={barber.name} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-                          {getInitials(barber.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <h3 className="text-xl font-bold text-foreground mb-1">{barber.name}</h3>
-                      <p className="text-primary text-sm font-medium mb-2">{barber.specialty}</p>
-                      <div className="flex items-center justify-center text-muted-foreground text-sm">
-                        <Award className="w-4 h-4 mr-1" />
-                        {barber.experience}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-            
+          </div>
+
+          {/* Footer CTA */}
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="h-px mb-20" style={{ background: 'hsl(0 0% 18%)' }} />
             <div className="text-center">
-              <p className="text-muted-foreground mb-6">
+              <p
+                className="text-sm font-light mb-6"
+                style={{ color: 'hsl(0 0% 40%)' }}
+              >
                 ¿Quieres formar parte de nuestro equipo?
               </p>
-              <a href="mailto:madmenmadrid@outlook.es?subject=Solicitud de empleo - Mad Men Barbería">
-                <Button variant="outline" size="lg">
-                  Trabaja con Nosotros
-                </Button>
+              <a
+                href="mailto:madmenmadrid@outlook.es?subject=Solicitud de empleo - Mad Men Barbería"
+                className="inline-block uppercase tracking-[0.25em] text-[11px] font-light pb-1 border-b transition-colors"
+                style={{
+                  color: 'hsl(0 0% 55%)',
+                  borderColor: 'hsl(0 0% 25%)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = 'hsl(var(--barbershop-gold))';
+                  e.currentTarget.style.borderColor = 'hsl(var(--barbershop-gold))';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = 'hsl(0 0% 55%)';
+                  e.currentTarget.style.borderColor = 'hsl(0 0% 25%)';
+                }}
+              >
+                Trabaja con Nosotros
               </a>
             </div>
           </div>
         </div>
       </div>
     </>
+  );
+};
+
+const BarberCard = ({ barber }: { barber: { name: string; specialty: string; experience: string; image: string | null } }) => {
+  return (
+    <div className="group">
+      {/* Photo */}
+      <div className="relative overflow-hidden mb-5 aspect-[3/4]" style={{ background: '#222' }}>
+        {barber.image ? (
+          <img
+            src={barber.image}
+            alt={barber.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-2xl font-light" style={{ color: 'hsl(0 0% 30%)' }}>
+              {barber.name.split(' ').map(n => n[0]).join('')}
+            </span>
+          </div>
+        )}
+        {/* Subtle gradient overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to top, hsl(0 0% 7% / 0.5) 0%, transparent 50%)',
+          }}
+        />
+      </div>
+
+      {/* Info */}
+      <h3
+        className="text-sm font-normal tracking-wide mb-1"
+        style={{ color: 'hsl(0 0% 85%)' }}
+      >
+        {barber.name}
+      </h3>
+      <p
+        className="text-[11px] uppercase tracking-[0.2em] font-light"
+        style={{ color: 'hsl(0 0% 40%)' }}
+      >
+        {barber.specialty} · {barber.experience}
+      </p>
+    </div>
   );
 };
 
