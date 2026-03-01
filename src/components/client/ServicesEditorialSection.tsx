@@ -2,74 +2,88 @@ const services = [
   {
     name: 'Corte Masculino',
     description:
-      'Técnica depurada y atención al detalle para un corte que define tu estilo personal.',
+      'Técnica depurada y atención al detalle para un corte que define tu estilo.',
   },
   {
     name: 'Fade Profesional',
     description:
-      'Degradados impecables ejecutados con precisión milimétrica. El sello de un barbero experto.',
+      'Degradados impecables ejecutados con precisión milimétrica.',
   },
   {
     name: 'Arreglo de Barba',
     description:
-      'Perfilado, recorte y cuidado profesional para una barba definida con carácter.',
+      'Perfilado, recorte y cuidado profesional para una barba con carácter.',
   },
   {
     name: 'Ritual Clásico',
     description:
-      'La experiencia completa: corte, barba, toalla caliente y acabado premium. Un lujo atemporal.',
+      'Corte, barba, toalla caliente y acabado premium. Un lujo atemporal.',
   },
 ];
 
 const ServicesEditorialSection = () => {
   return (
-    <section className="bg-barbershop-dark py-28 md:py-40">
+    <section className="bg-barbershop-dark">
+      {/* Thin separator */}
       <div className="max-w-5xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-20 md:mb-28">
-          <p
-            className="uppercase tracking-[0.3em] text-xs mb-8"
-            style={{ color: 'hsl(var(--barbershop-gold))' }}
-          >
-            Nuestros servicios
-          </p>
-          <h2
-            className="font-serif text-3xl md:text-5xl font-bold leading-tight"
-            style={{ color: 'hsl(0 0% 95%)' }}
-          >
-            Lo que hacemos
-            <br />
-            <span className="font-light italic">mejor</span>
-          </h2>
-        </div>
+        <div className="h-px" style={{ background: 'hsl(0 0% 18%)' }} />
+      </div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px" style={{ background: 'hsl(0 0% 20%)' }}>
-          {services.map((service, index) => (
-            <div
-              key={index}
-              className="bg-barbershop-dark p-10 md:p-16 group transition-colors duration-500 hover:bg-barbershop-navy"
+      <div className="py-36 md:py-52">
+        <div className="max-w-4xl mx-auto px-6">
+          {/* Header */}
+          <div className="text-center mb-24 md:mb-32">
+            <p
+              className="uppercase tracking-[0.35em] text-[11px] mb-10 font-light"
+              style={{ color: 'hsl(var(--barbershop-gold))' }}
             >
-              <span
-                className="font-serif text-sm tracking-widest mb-6 block"
-                style={{ color: 'hsl(var(--barbershop-gold) / 0.6)' }}
+              Nuestros servicios
+            </p>
+            <h2
+              className="font-serif text-3xl md:text-5xl lg:text-6xl font-normal leading-[1.1] tracking-tight"
+              style={{ color: 'hsl(0 0% 93%)' }}
+            >
+              Lo que hacemos
+              <br />
+              <span className="italic font-light">mejor</span>
+            </h2>
+          </div>
+
+          {/* Services List — vertical, editorial */}
+          <div className="space-y-0">
+            {services.map((service, index) => (
+              <div
+                key={index}
+                className="group py-12 md:py-16 border-t transition-colors duration-500"
+                style={{ borderColor: 'hsl(0 0% 18%)' }}
               >
-                0{index + 1}
-              </span>
-              <h3
-                className="font-serif text-2xl md:text-3xl font-bold mb-5 transition-colors duration-500"
-                style={{ color: 'hsl(0 0% 92%)' }}
-              >
-                {service.name}
-              </h3>
-              <p
-                className="text-sm md:text-base leading-relaxed max-w-sm"
-                style={{ color: 'hsl(0 0% 55%)' }}
-              >
-                {service.description}
-              </p>
-            </div>
-          ))}
+                <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-12">
+                  <div className="flex items-baseline gap-6">
+                    <span
+                      className="font-serif text-xs tracking-widest font-light"
+                      style={{ color: 'hsl(var(--barbershop-gold) / 0.4)' }}
+                    >
+                      0{index + 1}
+                    </span>
+                    <h3
+                      className="font-serif text-2xl md:text-3xl font-normal tracking-tight transition-colors duration-500 group-hover:text-barbershop-gold"
+                      style={{ color: 'hsl(0 0% 88%)' }}
+                    >
+                      {service.name}
+                    </h3>
+                  </div>
+                  <p
+                    className="text-sm font-light leading-relaxed max-w-xs md:text-right tracking-wide"
+                    style={{ color: 'hsl(0 0% 45%)' }}
+                  >
+                    {service.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {/* Bottom border */}
+            <div className="h-px" style={{ background: 'hsl(0 0% 18%)' }} />
+          </div>
         </div>
       </div>
     </section>

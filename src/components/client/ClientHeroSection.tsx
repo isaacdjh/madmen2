@@ -1,5 +1,4 @@
 
-import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
 import heroImage from '@/assets/hero-barbershop-bg.jpg';
 
@@ -21,62 +20,68 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
           alt="Interior de Mad Men Barbería - ambiente premium y elegante"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-black/65" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-3xl mx-auto">
-        {/* Eyebrow */}
         <p
-          className="uppercase tracking-[0.35em] text-xs md:text-sm mb-8"
+          className="uppercase tracking-[0.4em] text-[11px] md:text-xs mb-10 font-light"
           style={{ color: 'hsl(var(--barbershop-gold))' }}
         >
           Barbería Tradicional en Madrid
         </p>
 
-        {/* SEO H1 - visible */}
         <h1
-          className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] mb-6"
-          style={{ color: 'hsl(0 0% 98%)' }}
+          className="font-serif text-6xl md:text-8xl lg:text-9xl font-normal leading-[0.9] mb-8 tracking-tight"
+          style={{ color: 'hsl(0 0% 96%)' }}
         >
           Mad Men
           <br />
-          <span className="font-light italic">Barbería</span>
+          <span className="italic font-light text-[0.75em]">Barbería</span>
         </h1>
 
-        {/* Subtitle */}
         <p
-          className="text-base md:text-lg max-w-xl mx-auto mb-12 leading-relaxed"
-          style={{ color: 'hsl(0 0% 75%)' }}
+          className="text-sm md:text-base max-w-md mx-auto mb-16 leading-loose font-light tracking-wide"
+          style={{ color: 'hsl(0 0% 60%)' }}
         >
-          El arte de la barbería clásica perfeccionado con excelencia moderna.
-          Una experiencia única en Salamanca y Retiro.
+          El arte de la barbería clásica perfeccionado
+          <br className="hidden md:block" />
+          con excelencia moderna.
         </p>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button
-            size="lg"
-            className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-10 py-6 text-base tracking-wide"
-            onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
+        {/* Minimal CTA */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <a
+            href="https://booksy.com/es-es/instant-experiences/widget/108540"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-3 uppercase tracking-[0.25em] text-[11px] font-light transition-colors duration-500"
+            style={{ color: 'hsl(0 0% 70%)' }}
           >
-            <Calendar className="w-5 h-5 mr-2" />
-            Reservar en Salamanca
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-barbershop-gold/40 text-white hover:bg-barbershop-gold/10 hover:border-barbershop-gold px-10 py-6 text-base tracking-wide"
-            onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}
+            <span
+              className="w-8 h-px transition-all duration-500 group-hover:w-12"
+              style={{ background: 'hsl(var(--barbershop-gold))' }}
+            />
+            Reservar Salamanca
+          </a>
+          <a
+            href="https://booksy.com/es-es/instant-experiences/widget/160842"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-3 uppercase tracking-[0.25em] text-[11px] font-light transition-colors duration-500"
+            style={{ color: 'hsl(0 0% 70%)' }}
           >
-            <Calendar className="w-5 h-5 mr-2" />
-            Reservar en Retiro
-          </Button>
+            <span
+              className="w-8 h-px transition-all duration-500 group-hover:w-12"
+              style={{ background: 'hsl(var(--barbershop-gold))' }}
+            />
+            Reservar Retiro
+          </a>
         </div>
       </div>
 
-      {/* Subtle bottom gradient */}
-      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/40 to-transparent z-[5]" />
+      <div className="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-black/50 to-transparent z-[5]" />
     </section>
   );
 };
