@@ -1,5 +1,5 @@
 import beardDetailImg from '@/assets/barbershop-beard-detail.jpg';
-import heroVideo from '@/assets/hero-barbershop-bg.mp4';
+import shaveDetailNew from '@/assets/barbershop-shave-detail-new.jpg';
 
 const CinematicGallery = () => {
   return (
@@ -48,12 +48,9 @@ const CinematicGallery = () => {
             {/* Smaller image — right, offset up */}
             <div className="md:col-span-5 md:pb-16">
               <div className="relative overflow-hidden">
-                <video
-                  src={heroVideo}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+                <img
+                  src={shaveDetailNew}
+                  alt="Corte masculino en Mad Men Barbería"
                   className="w-full h-[400px] md:h-[520px] object-cover"
                 />
                 <div
