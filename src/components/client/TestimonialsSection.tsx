@@ -1,76 +1,114 @@
-
-import { Card, CardContent } from '@/components/ui/card';
-import { Star } from 'lucide-react';
-import testimonialCarlos from '@/assets/testimonial-carlos.jpg';
-import testimonialMiguel from '@/assets/testimonial-miguel.jpg';
-import testimonialDavid from '@/assets/testimonial-david.jpg';
-import testimonialAntonio from '@/assets/testimonial-antonio.jpg';
-import testimonialRoberto from '@/assets/testimonial-roberto.jpg';
+const reviews = [
+  {
+    text: 'Te ofrecen refrescos, café además de un servicio perfecto. El trato es excepcional y el resultado siempre impecable.',
+    name: 'Carlos M.',
+  },
+  {
+    text: 'La mejor barbería tradicional de Madrid. Ambiente auténtico y profesionales de primera. Siempre salgo como nuevo.',
+    name: 'Miguel R.',
+  },
+  {
+    text: 'Llevo años viniendo y nunca me decepciona. El corte clásico que buscaba y un afeitado con navaja espectacular.',
+    name: 'David L.',
+  },
+  {
+    text: 'Profesionalidad y calidad en cada visita. El ambiente tradicional y la atención personalizada son únicos en Madrid.',
+    name: 'Antonio G.',
+  },
+];
 
 const TestimonialsSection = () => {
-  const testimonials = [
-    { 
-      name: 'Carlos M.', 
-      rating: 5, 
-      text: 'Te ofrecen refrescos, café además de un servicio perfecto. El trato es excepcional y el resultado siempre impecable.',
-      image: testimonialCarlos
-    },
-    { 
-      name: 'Miguel R.', 
-      rating: 5, 
-      text: 'La mejor barbería tradicional de Madrid. Ambiente auténtico y profesionales de primera. Siempre salgo como nuevo.',
-      image: testimonialMiguel
-    },
-    { 
-      name: 'David L.', 
-      rating: 5, 
-      text: 'Llevo años viniendo y nunca me decepciona. El corte clásico que buscaba y un afeitado con navaja espectacular.',
-      image: testimonialDavid
-    },
-    { 
-      name: 'Antonio G.', 
-      rating: 5, 
-      text: 'Profesionalidad y calidad en cada visita. El ambiente tradicional y la atención personalizada son únicos.',
-      image: testimonialAntonio
-    },
-    { 
-      name: 'Roberto F.', 
-      rating: 5, 
-      text: 'Barbería de toda la vida con técnicas modernas. Los mejores en Cristóbal Bordiú, sin duda recomendable 100%.',
-      image: testimonialRoberto
-    },
-  ];
-
   return (
-    <section className="py-20 bg-muted/50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">Lo Que Dicen Nuestros Clientes</h2>
-          <p className="text-xl text-muted-foreground">Testimonios reales de clientes satisfechos</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <Card key={index} className="overflow-hidden">
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={testimonial.image} 
-                  alt={`Cliente ${testimonial.name}`}
-                  className="w-full h-full object-cover object-top"
-                />
+    <section
+      className="py-44 md:py-64"
+      style={{ background: '#1C1C1C' }}
+    >
+      <div className="max-w-2xl mx-auto px-6">
+        {/* Separator */}
+        <div
+          className="w-10 h-px mx-auto mb-14"
+          style={{ background: 'hsl(155 28% 17% / 0.5)' }}
+        />
+
+        {/* Label */}
+        <p
+          className="uppercase tracking-[0.35em] text-[11px] text-center mb-12 font-light"
+          style={{ color: 'hsl(155 28% 17%)' }}
+        >
+          Reseñas reales
+        </p>
+
+        {/* Title */}
+        <h2
+          className="font-serif text-3xl md:text-5xl lg:text-6xl font-normal leading-[1.1] text-center mb-24 md:mb-32 tracking-tight"
+          style={{ color: '#F2F2F2' }}
+        >
+          Lo que dicen
+          <br />
+          <span className="italic font-light">nuestros clientes</span>
+        </h2>
+
+        {/* Reviews */}
+        <div className="space-y-0">
+          {reviews.map((review, index) => (
+            <div key={index}>
+              <div className="py-14 md:py-20 text-center">
+                <p
+                  className="font-serif text-lg md:text-xl italic font-light leading-relaxed tracking-wide mb-8"
+                  style={{ color: '#F2F2F2' }}
+                >
+                  "{review.text}"
+                </p>
+                <p
+                  className="text-xs uppercase tracking-[0.3em] font-light"
+                  style={{ color: 'hsl(0 0% 45%)' }}
+                >
+                  — {review.name}
+                </p>
               </div>
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-4">"{testimonial.text}"</p>
-                <p className="font-semibold">- {testimonial.name}</p>
-              </CardContent>
-            </Card>
+              {index < reviews.length - 1 && (
+                <div
+                  className="w-12 h-px mx-auto"
+                  style={{ background: '#1E3D2F' }}
+                />
+              )}
+            </div>
           ))}
         </div>
+
+        {/* CTA */}
+        <div className="text-center mt-24 md:mt-32">
+          <p
+            className="text-xs uppercase tracking-[0.3em] font-light mb-8"
+            style={{ color: 'hsl(0 0% 45%)' }}
+          >
+            Más de 200 reseñas de 5 estrellas
+          </p>
+          <a
+            href="https://www.google.com/maps/place/Mad+Men+Barbershop/@40.4292,-3.6735,15z"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-sm tracking-[0.2em] uppercase font-light border-b pb-1 transition-colors duration-300"
+            style={{
+              color: '#F2F2F2',
+              borderColor: '#1E3D2F',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#1E3D2F';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#F2F2F2';
+            }}
+          >
+            Ver todas en Google
+          </a>
+        </div>
+
+        {/* Bottom separator */}
+        <div
+          className="w-10 h-px mx-auto mt-20"
+          style={{ background: 'hsl(155 28% 17% / 0.5)' }}
+        />
       </div>
     </section>
   );
