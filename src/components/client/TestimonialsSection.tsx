@@ -85,7 +85,7 @@ const TestimonialsSection = () => {
             Más de 200 reseñas de 5 estrellas
           </p>
           <a
-            href="https://www.google.com/maps/place/Mad+Men+Barbershop/@40.4292,-3.6735,15z"
+            href="https://www.google.com/search?q=MAD+MEN+Barber%C3%ADa+tradicional%E2%80%94Barrio+de+Salamanca&stick=H4sIAAAAAAAA_-NgU1I2qEgxMTKytDBPTTY0MTI1MrUyqDA0tDROSzRMM0lNtEyyNFzEauzr6KLg6-qn4JRYlJRadHhtokJJUWJKZnJmfl5izqOGKUDxosx8hZRUheDEnMTcxLzkRAC6FmK1XQAAAA&hl=es&mat=Ce-HllYFws1WElcBTVDHnvvi9opM4r55v2wNwWpFgmQk2IKkbclO-6rxGaAFYM1bEzggXF7guxN5hUUqYJxk40A4K88FjMTO2zvy3JgcKoW7muXldfi9LkDe6UoUL9H391U&authuser=0#mpd=~6254868785670817775/customers/reviews"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block text-sm tracking-[0.2em] uppercase font-light border-b pb-1 transition-colors duration-300"
