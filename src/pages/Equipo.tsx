@@ -202,7 +202,7 @@ const BarberCard = ({ barber }: { barber: { name: string; specialty: string; exp
         className="text-[11px] uppercase tracking-[0.2em] font-light"
         style={{ color: 'hsl(0 0% 40%)' }}
       >
-        {barber.specialty} · {barber.experience}
+        {barber.specialty}
       </p>
     </div>
   );
