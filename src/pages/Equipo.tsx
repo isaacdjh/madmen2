@@ -20,7 +20,7 @@ const Equipo = () => {
       location: 'Salamanca',
       specialty: 'Degradados',
       experience: '6 años',
-      image: null,
+      image: '/lovable-uploads/carlos-barber.jpg',
     },
     {
       name: 'Luis Urbiñez',
