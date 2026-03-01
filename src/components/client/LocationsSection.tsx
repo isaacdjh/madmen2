@@ -17,7 +17,7 @@ const locations = [
     phone: '+34 912 231 715',
     hours: 'Lun–Vie 11–21h · Sáb 10–21h',
     image: locationRetiro,
-    imagePosition: 'center center',
+    imagePosition: 'center 40%',
     bookingUrl: 'https://booksy.com/es-es/instant-experiences/widget/160842',
   },
 ];
