@@ -59,7 +59,7 @@ const LocationsSection = () => {
                   <img
                     src={loc.image}
                     alt={`Mad Men Barbería ${loc.neighborhood}`}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+                    className="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.03]"
                     style={{ objectPosition: loc.imagePosition }}
                   />
                 </div>
