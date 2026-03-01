@@ -3,6 +3,7 @@ import { useState, lazy, Suspense } from 'react';
 import ClientNavigation from './client/ClientNavigation';
 import ClientHeroSection from './client/ClientHeroSection';
 import EditorialSection from './client/EditorialSection';
+import ServicesEditorialSection from './client/ServicesEditorialSection';
 
 // Lazy load componentes que no son críticos para el primer render
 const ClientBookingForm = lazy(() => import('./ClientBookingForm'));
@@ -47,6 +48,7 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
       <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
       <EditorialSection />
+      <ServicesEditorialSection />
       
       <Suspense fallback={<SectionSkeleton />}>
         <OffersSection onViewBonuses={() => window.open('/bonos', '_blank')} />
