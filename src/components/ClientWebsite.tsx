@@ -2,6 +2,7 @@
 import { useState, lazy, Suspense } from 'react';
 import ClientNavigation from './client/ClientNavigation';
 import ClientHeroSection from './client/ClientHeroSection';
+import EditorialSection from './client/EditorialSection';
 
 // Lazy load componentes que no son críticos para el primer render
 const ClientBookingForm = lazy(() => import('./ClientBookingForm'));
@@ -45,6 +46,7 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
     <div className="min-h-screen">
       <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
+      <EditorialSection />
       
       <Suspense fallback={<SectionSkeleton />}>
         <OffersSection onViewBonuses={() => window.open('/bonos', '_blank')} />
