@@ -47,7 +47,7 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
     <div className="min-h-screen">
       <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
-      <EditorialSection onBookingClick={() => setShowBookingForm(true)} />
+      <EditorialSection />
       <ServicesEditorialSection />
       
       <Suspense fallback={<SectionSkeleton />}>

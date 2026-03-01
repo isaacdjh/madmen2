@@ -1,11 +1,4 @@
-import { Button } from '@/components/ui/button';
-import { CalendarDays } from 'lucide-react';
-
-interface EditorialSectionProps {
-  onBookingClick?: () => void;
-}
-
-const EditorialSection = ({ onBookingClick }: EditorialSectionProps) => {
+const EditorialSection = () => {
   return (
     <section className="bg-barbershop-dark py-44 md:py-64">
       <div className="max-w-xl mx-auto px-6 text-center">
@@ -40,7 +33,7 @@ const EditorialSection = ({ onBookingClick }: EditorialSectionProps) => {
         </p>
 
         <p
-          className="text-sm md:text-base leading-[2] font-light tracking-wide mb-14"
+          className="text-sm md:text-base leading-[2] font-light tracking-wide"
           style={{ color: 'hsl(0 0% 55%)' }}
         >
           Dos sedes en los mejores barrios de Madrid — Salamanca y Retiro —
@@ -48,17 +41,6 @@ const EditorialSection = ({ onBookingClick }: EditorialSectionProps) => {
           como un ritual. Disfruta de bebidas de cortesía y café molido
           de la mejor calidad mientras te atendemos.
         </p>
-
-        {onBookingClick && (
-          <Button
-            onClick={onBookingClick}
-            size="lg"
-            className="bg-transparent border border-[hsl(var(--barbershop-gold)/0.6)] text-[hsl(var(--barbershop-gold))] hover:bg-[hsl(var(--barbershop-gold)/0.1)] tracking-[0.2em] uppercase text-xs px-10 py-6 rounded-none transition-all duration-300"
-          >
-            <CalendarDays className="w-4 h-4 mr-3" />
-            Reservar Cita
-          </Button>
-        )}
 
         <div
           className="w-10 h-px mx-auto mt-16"
