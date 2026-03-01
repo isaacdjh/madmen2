@@ -122,7 +122,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/productos">
                     <Button
                       variant="outline"
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground bg-primary-foreground">
 
                       Productos STMNT
                     </Button>
@@ -130,7 +130,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/bonos">
                     <Button
                       variant="outline"
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground bg-secondary-foreground">
 
                       Bonos de Ahorro
                     </Button>
@@ -138,7 +138,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/blog">
                     <Button
                       variant="outline"
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+                      className="w-full justify-start border-primary/50 bg-primary-foreground text-primary-foreground">
 
                       Blog & Tips
                     </Button>
@@ -146,7 +146,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/amigos">
                     <Button
                       variant="outline"
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground bg-secondary-foreground">
 
                       <Gift className="w-4 h-4 mr-2" />
                       Invita a un Amigo
@@ -155,7 +155,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Button
                     onClick={sendCurriculum}
                     variant="outline"
-                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+                    className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground bg-primary-foreground">
 
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
@@ -163,7 +163,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Button
                     onClick={() => window.open('mailto:madmenmadrid@outlook.es', '_blank')}
                     variant="outline"
-                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+                    className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground bg-secondary-foreground">
 
                     <Mail className="w-4 h-4 mr-2" />
                     Contacto
@@ -171,7 +171,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                   <Link to="/contacto">
                     <Button
                       variant="outline"
-                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground">
+                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground bg-primary-foreground">
 
                       <Phone className="w-4 h-4 mr-2" />
                       Información Completa
@@ -180,7 +180,7 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                 </div>
                 <DrawerFooter>
                   <DrawerClose asChild>
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Button className="text-primary-foreground bg-secondary-foreground">
                       Cerrar
                     </Button>
                   </DrawerClose>
