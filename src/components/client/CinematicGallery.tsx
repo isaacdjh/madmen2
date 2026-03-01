@@ -48,9 +48,12 @@ const CinematicGallery = () => {
             {/* Smaller image — right, offset up */}
             <div className="md:col-span-5 md:pb-16">
               <div className="relative overflow-hidden">
-                <img
+                <video
                   src={shaveDetailImg}
-                  alt="Afeitado clásico con espuma y navaja — Mad Men Barbería"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
                   className="w-full h-[400px] md:h-[520px] object-cover"
                 />
                 <div
