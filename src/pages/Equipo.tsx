@@ -27,7 +27,7 @@ const Equipo = () => {
       location: 'Salamanca',
       specialty: 'Afeitado Tradicional',
       experience: '10 años',
-      image: null,
+      image: '/lovable-uploads/luis-barber.jpg',
     },
     {
       name: 'Randy Valdespino',
