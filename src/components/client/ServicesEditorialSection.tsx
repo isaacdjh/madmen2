@@ -55,42 +55,70 @@ const ServicesEditorialSection = () => {
           {/* Services List — vertical, editorial */}
           <div className="space-y-0">
             {services.map((service, index) => (
-              <div
-                key={index}
-                className="group py-14 md:py-20 border-t transition-colors duration-500"
-                style={{ borderColor: 'hsl(0 0% 18%)' }}
-              >
-                <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-12">
-                  <div className="flex items-baseline gap-6">
-                    <span
-                      className="font-serif text-xs tracking-widest font-light"
-                      style={{ color: 'hsl(var(--barbershop-gold) / 0.4)' }}
-                    >
-                      0{index + 1}
-                    </span>
-                    <h3
-                      className="font-serif text-2xl md:text-3xl font-normal tracking-tight transition-colors duration-500 group-hover:text-barbershop-gold"
-                      style={{ color: 'hsl(0 0% 88%)' }}
-                    >
-                      {service.name}
-                    </h3>
-                  </div>
-                  <p
-                    className="text-sm font-light leading-relaxed max-w-xs md:text-right tracking-wide"
-                    style={{ color: 'hsl(0 0% 45%)' }}
+              <div key={index}>
+                {service.image ? (
+                  <div
+                    className="relative border-t overflow-hidden"
+                    style={{ borderColor: 'hsl(0 0% 18%)' }}
                   >
-                    {service.description}
-                  </p>
-                </div>
-                {service.image && (
-                  <div className="mt-10 md:mt-14 flex justify-center md:justify-end">
-                    <div className="w-48 md:w-56 overflow-hidden rounded-sm opacity-70 group-hover:opacity-90 transition-opacity duration-700">
-                      <img
-                        src={service.image}
-                        alt={service.name}
-                        className="w-full h-auto object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-700"
-                        loading="lazy"
-                      />
+                    {/* Background image */}
+                    <div
+                      className="absolute inset-0 bg-cover bg-center opacity-15"
+                      style={{ backgroundImage: `url(${service.image})` }}
+                    />
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, hsl(0 0% 7% / 0.85), hsl(0 0% 7% / 0.5))' }} />
+                    {/* Content */}
+                    <div className="relative py-20 md:py-28 px-2">
+                      <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-12">
+                        <div className="flex items-baseline gap-6">
+                          <span
+                            className="font-serif text-xs tracking-widest font-light"
+                            style={{ color: 'hsl(var(--barbershop-gold) / 0.4)' }}
+                          >
+                            0{index + 1}
+                          </span>
+                          <h3
+                            className="font-serif text-2xl md:text-3xl font-normal tracking-tight"
+                            style={{ color: 'hsl(0 0% 93%)' }}
+                          >
+                            {service.name}
+                          </h3>
+                        </div>
+                        <p
+                          className="text-sm font-light leading-relaxed max-w-xs md:text-right tracking-wide"
+                          style={{ color: 'hsl(0 0% 60%)' }}
+                        >
+                          {service.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="group py-14 md:py-20 border-t transition-colors duration-500"
+                    style={{ borderColor: 'hsl(0 0% 18%)' }}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-12">
+                      <div className="flex items-baseline gap-6">
+                        <span
+                          className="font-serif text-xs tracking-widest font-light"
+                          style={{ color: 'hsl(var(--barbershop-gold) / 0.4)' }}
+                        >
+                          0{index + 1}
+                        </span>
+                        <h3
+                          className="font-serif text-2xl md:text-3xl font-normal tracking-tight transition-colors duration-500 group-hover:text-barbershop-gold"
+                          style={{ color: 'hsl(0 0% 88%)' }}
+                        >
+                          {service.name}
+                        </h3>
+                      </div>
+                      <p
+                        className="text-sm font-light leading-relaxed max-w-xs md:text-right tracking-wide"
+                        style={{ color: 'hsl(0 0% 45%)' }}
+                      >
+                        {service.description}
+                      </p>
                     </div>
                   </div>
                 )}
