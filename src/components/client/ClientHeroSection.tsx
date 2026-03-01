@@ -17,8 +17,8 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
-        >
+          className="w-full h-full object-cover">
+
           <source src={heroVideo} type="video/mp4" />
         </video>
         {/* Dark overlay for better text readability */}
@@ -29,11 +29,11 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
         <div className="max-w-4xl mx-auto">
           {/* Logo Principal - Centrado donde estaban las letras amarillas */}
           <div className="mb-6 hidden md:block">
-            <img 
-              src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
-              alt="Mad Men Logo" 
-              className="w-40 h-40 mx-auto object-contain"
-            />
+            
+
+
+
+
           </div>
 
           {/* H1 SEO - visible para buscadores */}
@@ -47,19 +47,19 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
 
           {/* Botones móviles para reservas - solo visible en móviles */}
           <div className="md:hidden flex flex-wrap gap-2 justify-center mb-8">
-            <Button 
+            <Button
               onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
               size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-3 py-2"
-            >
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-3 py-2">
+
               <Calendar className="w-4 h-4 mr-1" />
               Salamanca
             </Button>
-            <Button 
+            <Button
               onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}
               size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-3 py-2"
-            >
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-3 py-2">
+
               <Calendar className="w-4 h-4 mr-1" />
               Retiro
             </Button>
@@ -89,20 +89,20 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
           {/* Call to Action */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-6 py-4 text-base"
-                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
-              >
+                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}>
+
                 <Calendar className="w-5 h-5 mr-2" />
                 Reservar Salamanca
               </Button>
               
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold px-6 py-4 text-base"
-                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}
-              >
+                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}>
+
                 <Calendar className="w-5 h-5 mr-2" />
                 Reservar Retiro
               </Button>
@@ -117,8 +117,8 @@ const ClientHeroSection = ({ onBookingClick }: ClientHeroSectionProps) => {
 
       {/* Decorative Elements */}
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/20 to-transparent" />
-    </section>
-  );
+    </section>);
+
 };
 
 export default ClientHeroSection;
