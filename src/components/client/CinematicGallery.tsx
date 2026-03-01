@@ -51,7 +51,7 @@ const CinematicGallery = () => {
                 <img
                   src={shaveDetailNew}
                   alt="Corte masculino en Mad Men Barbería"
-                  className="w-full h-[400px] md:h-[520px] object-cover"
+                  className="w-full h-[350px] md:h-[420px] object-cover"
                 />
                 <div
                   className="absolute inset-0 pointer-events-none"
