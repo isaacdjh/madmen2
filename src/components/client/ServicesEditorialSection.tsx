@@ -68,7 +68,7 @@ const ServicesEditorialSection = () => {
                     />
                     <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, hsl(0 0% 7% / 0.85), hsl(0 0% 7% / 0.5))' }} />
                     {/* Content */}
-                    <div className="relative py-20 md:py-28 px-2">
+                    <div className="relative py-28 md:py-40 px-2">
                       <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-12">
                         <div className="flex items-baseline gap-6">
                           <span
