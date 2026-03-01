@@ -1,3 +1,5 @@
+import fadeProfesionalImg from '@/assets/fade-profesional.jpg';
+
 const services = [
   {
     name: 'Corte Masculino',
@@ -8,6 +10,7 @@ const services = [
     name: 'Fade Profesional',
     description:
       'Degradados impecables ejecutados con precisión milimétrica.',
+    image: fadeProfesionalImg,
   },
   {
     name: 'Arreglo de Barba',
@@ -79,6 +82,18 @@ const ServicesEditorialSection = () => {
                     {service.description}
                   </p>
                 </div>
+                {service.image && (
+                  <div className="mt-10 md:mt-14 flex justify-center md:justify-end">
+                    <div className="w-48 md:w-56 overflow-hidden rounded-sm opacity-70 group-hover:opacity-90 transition-opacity duration-700">
+                      <img
+                        src={service.image}
+                        alt={service.name}
+                        className="w-full h-auto object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-700"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {/* Bottom border */}
