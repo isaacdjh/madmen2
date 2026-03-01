@@ -1,10 +1,12 @@
 import fadeProfesionalImg from '@/assets/fade-profesional.jpg';
+import corteMasculinoImg from '@/assets/corte-masculino.jpg';
 
 const services = [
   {
     name: 'Corte Masculino',
     description:
       'Técnica depurada y atención al detalle para un corte que define tu estilo.',
+    image: corteMasculinoImg,
   },
   {
     name: 'Fade Profesional',
