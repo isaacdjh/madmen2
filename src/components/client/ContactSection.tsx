@@ -12,7 +12,10 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
-            <h2 className="text-4xl font-bold mb-8">Contáctanos</h2>
+            <p className="uppercase tracking-[0.35em] text-[11px] mb-6 font-light" style={{ color: 'hsl(0 0% 50%)' }}>Contacto</p>
+            <h2 className="font-serif text-3xl md:text-4xl font-normal tracking-tight mb-10" style={{ color: 'hsl(0 0% 93%)' }}>
+              Estamos aquí<br /><span className="italic font-light">para ti</span>
+            </h2>
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
