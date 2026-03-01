@@ -11,8 +11,8 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+  DrawerTrigger } from
+"@/components/ui/drawer";
 
 interface ClientNavigationProps {
   onBookingClick: () => void;
@@ -49,57 +49,57 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="w-24 h-20 flex items-center justify-center hover:opacity-80 transition-opacity">
-              <img 
-                src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png" 
-                alt="Mad Men Logo" 
-                className="w-full h-full object-contain"
-              />
+              <img
+                src="/lovable-uploads/5d557fb8-205e-4120-b27d-62c08ba09e6f.png"
+                alt="Mad Men Logo"
+                className="w-full h-full object-contain" />
+
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link 
+            <Link
               to="/"
-              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/' ? 'text-barbershop-gold' : ''}`}
-            >
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/' ? 'text-barbershop-gold' : ''}`}>
+
               Inicio
             </Link>
-            <Link 
+            <Link
               to="/ubicaciones"
-              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/ubicaciones' ? 'text-barbershop-gold' : ''}`}
-            >
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/ubicaciones' ? 'text-barbershop-gold' : ''}`}>
+
               Ubicaciones
             </Link>
-            <Link 
+            <Link
               to="/servicios"
-              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/servicios' ? 'text-barbershop-gold' : ''}`}
-            >
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/servicios' ? 'text-barbershop-gold' : ''}`}>
+
               Servicios
             </Link>
-            <Link 
+            <Link
               to="/equipo"
-              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/equipo' ? 'text-barbershop-gold' : ''}`}
-            >
+              className={`text-white hover:text-barbershop-gold transition-colors font-medium ${location.pathname === '/equipo' ? 'text-barbershop-gold' : ''}`}>
+
               Equipo
             </Link>
           </div>
 
           {/* Desktop Booking Buttons */}
           <div className="hidden md:flex items-center space-x-2">
-            <Button 
+            <Button
               onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
               size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
-            >
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold bg-primary text-primary-foreground">
+
               <Calendar className="w-4 h-4 mr-1" />
               Salamanca
             </Button>
-            <Button 
+            <Button
               onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}
               size="sm"
-              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold"
-            >
+              className="bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-gold/90 font-semibold bg-primary text-primary-foreground">
+
               <Calendar className="w-4 h-4 mr-1" />
               Retiro
             </Button>
@@ -120,59 +120,59 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                 </DrawerHeader>
                 <div className="px-6 space-y-4">
                   <Link to="/productos">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+
                       Productos STMNT
                     </Button>
                   </Link>
                   <Link to="/bonos">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+
                       Bonos de Ahorro
                     </Button>
                   </Link>
                   <Link to="/blog">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+
                       Blog & Tips
                     </Button>
                   </Link>
                   <Link to="/amigos">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                    >
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+
                       <Gift className="w-4 h-4 mr-2" />
                       Invita a un Amigo
                     </Button>
                   </Link>
-                  <Button 
+                  <Button
                     onClick={sendCurriculum}
-                    variant="outline" 
-                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                  >
+                    variant="outline"
+                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => window.open('mailto:madmenmadrid@outlook.es', '_blank')}
-                    variant="outline" 
-                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                  >
+                    variant="outline"
+                    className="w-full justify-start border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
+
                     <Mail className="w-4 h-4 mr-2" />
                     Contacto
                   </Button>
                   <Link to="/contacto">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground"
-                    >
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border-primary/50 text-primary hover:text-primary-foreground">
+
                       <Phone className="w-4 h-4 mr-2" />
                       Información Completa
                     </Button>
@@ -207,70 +207,70 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                  <div className="px-6 space-y-3">
                    <DrawerClose asChild>
                      <Link to="/">
-                       <Button 
-                         variant="ghost" 
-                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                       >
+                       <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                          Inicio
                        </Button>
                      </Link>
                    </DrawerClose>
                    <DrawerClose asChild>
                      <Link to="/ubicaciones">
-                       <Button 
-                         variant="ghost" 
-                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                       >
+                       <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                          Ubicaciones
                        </Button>
                      </Link>
                    </DrawerClose>
                    <DrawerClose asChild>
                      <Link to="/servicios">
-                       <Button 
-                         variant="ghost" 
-                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                       >
+                       <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                          Servicios
                        </Button>
                      </Link>
                    </DrawerClose>
                    <DrawerClose asChild>
                      <Link to="/productos">
-                       <Button 
-                         variant="ghost" 
-                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                       >
+                       <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                          Productos
                        </Button>
                      </Link>
                    </DrawerClose>
                    <DrawerClose asChild>
                      <Link to="/bonos">
-                       <Button 
-                         variant="ghost" 
-                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                       >
+                       <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                          Bonos de Ahorro
                        </Button>
                      </Link>
                     </DrawerClose>
                     <DrawerClose asChild>
                       <Link to="/blog">
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                        >
+                        <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                           Blog & Tips
                         </Button>
                       </Link>
                     </DrawerClose>
                     <DrawerClose asChild>
                       <Link to="/amigos">
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                        >
+                        <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                           <Gift className="w-4 h-4 mr-2" />
                           Invita a un Amigo
                         </Button>
@@ -278,28 +278,28 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
                     </DrawerClose>
                     <DrawerClose asChild>
                       <Link to="/equipo">
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                        >
+                        <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                           Equipo
                         </Button>
                       </Link>
                    </DrawerClose>
-                  <Button 
+                  <Button
                     onClick={sendCurriculum}
-                    variant="outline" 
-                    className="w-full justify-start border-white/50 text-white hover:bg-white hover:text-barbershop-navy"
-                  >
+                    variant="outline"
+                    className="w-full justify-start border-white/50 text-white hover:bg-white hover:text-barbershop-navy">
+
                     <Briefcase className="w-4 h-4 mr-2" />
                     Trabajar con Nosotros
                   </Button>
                    <DrawerClose asChild>
                      <Link to="/contacto">
-                       <Button 
-                         variant="ghost" 
-                         className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10"
-                       >
+                       <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:text-barbershop-gold hover:bg-white/10">
+
                          Contacto
                        </Button>
                      </Link>
@@ -317,8 +317,8 @@ const ClientNavigation = ({ onBookingClick }: ClientNavigationProps) => {
           </div>
         </div>
       </div>
-    </nav>
-  );
+    </nav>);
+
 };
 
 export default ClientNavigation;

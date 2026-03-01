@@ -18,7 +18,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
             </h2>
             <div className="space-y-6">
               <div>
-                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2 text-primary">
+                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2 text-primary">Barberia Mad Men Barrio Salamanca
                   <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="h-8 w-auto object-contain" />
                   Barberia Mad Men  Barrio Salamanca
                 </h3>
@@ -37,7 +37,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
+                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2 text-primary">Barberia Mad Men Barrio Retiro
                   <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="h-8 w-auto object-contain" />
                   Mad Men Retiro
                 </h3>
@@ -101,7 +101,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
             <div className="space-y-3">
               <Button
                 size="lg"
-                className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
+                className="w-full text-barbershop-dark font-semibold bg-primary text-primary-foreground"
                 onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}>
 
                 <Calendar className="w-5 h-5 mr-2" />
@@ -109,7 +109,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
               </Button>
               <Button
                 size="lg"
-                className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
+                className="w-full text-barbershop-dark font-semibold bg-primary text-primary-foreground"
                 onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}>
 
                 <Calendar className="w-5 h-5 mr-2" />
