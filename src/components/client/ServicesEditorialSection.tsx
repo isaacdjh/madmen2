@@ -1,5 +1,6 @@
 import fadeProfesionalImg from '@/assets/fade-profesional.jpg';
 import corteMasculinoImg from '@/assets/corte-masculino.jpg';
+import arregloBarbaImg from '@/assets/arreglo-barba.jpg';
 
 const services = [
   {
@@ -18,6 +19,7 @@ const services = [
     name: 'Arreglo de Barba',
     description:
       'Perfilado, recorte y cuidado profesional para una barba con carácter.',
+    image: arregloBarbaImg,
   },
   {
     name: 'Ritual Clásico',
