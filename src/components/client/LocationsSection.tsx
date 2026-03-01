@@ -30,7 +30,7 @@ const LocationsSection = () => {
         <div className="h-px" style={{ background: 'hsl(0 0% 18%)' }} />
       </div>
 
-      <div className="py-36 md:py-52">
+      <div className="py-44 md:py-64">
         <div className="max-w-5xl mx-auto px-6">
           {/* Header */}
           <div className="text-center mb-24 md:mb-32">

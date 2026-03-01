@@ -1,6 +1,6 @@
 const EditorialSection = () => {
   return (
-    <section className="bg-barbershop-dark py-36 md:py-52">
+    <section className="bg-barbershop-dark py-44 md:py-64">
       <div className="max-w-xl mx-auto px-6 text-center">
         <div
           className="w-10 h-px mx-auto mb-14"

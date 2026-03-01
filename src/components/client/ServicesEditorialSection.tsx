@@ -29,7 +29,7 @@ const ServicesEditorialSection = () => {
         <div className="h-px" style={{ background: 'hsl(0 0% 18%)' }} />
       </div>
 
-      <div className="py-36 md:py-52">
+      <div className="py-44 md:py-64">
         <div className="max-w-4xl mx-auto px-6">
           {/* Header */}
           <div className="text-center mb-24 md:mb-32">
@@ -54,7 +54,7 @@ const ServicesEditorialSection = () => {
             {services.map((service, index) => (
               <div
                 key={index}
-                className="group py-12 md:py-16 border-t transition-colors duration-500"
+                className="group py-14 md:py-20 border-t transition-colors duration-500"
                 style={{ borderColor: 'hsl(0 0% 18%)' }}
               >
                 <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-12">
