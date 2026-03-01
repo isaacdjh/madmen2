@@ -18,7 +18,7 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
             </h2>
             <div className="space-y-6">
               <div>
-                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2">
+                <h3 className="text-xl font-semibold mb-4 gold-accent flex items-center gap-2 text-primary">
                   <img src="/images/barber-pole.gif?v=2" alt="Barber pole" className="h-8 w-auto object-contain" />
                   Mad Men Salamanca
                 </h3>
@@ -69,12 +69,12 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
                 <Instagram className="w-6 h-6 mr-4 gold-accent" />
                 <div>
                   <h4 className="font-semibold">Instagram</h4>
-                  <a 
-                    href="https://www.instagram.com/madmenmadrid/" 
-                    target="_blank" 
+                  <a
+                    href="https://www.instagram.com/madmenmadrid/"
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="opacity-90 hover:text-accent transition-colors"
-                  >
+                    className="opacity-90 hover:text-accent transition-colors">
+
                     @madmenmadrid
                   </a>
                 </div>
@@ -99,19 +99,19 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
               por qué somos la barbería preferida de caballeros distinguidos.
             </p>
             <div className="space-y-3">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
-                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}
-              >
+                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/108540', '_blank')}>
+
                 <Calendar className="w-5 h-5 mr-2" />
                 Reservar Salamanca
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="w-full bg-accent text-barbershop-dark hover:bg-accent/90 font-semibold"
-                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}
-              >
+                onClick={() => window.open('https://booksy.com/es-es/instant-experiences/widget/160842', '_blank')}>
+
                 <Calendar className="w-5 h-5 mr-2" />
                 Reservar Retiro
               </Button>
@@ -119,8 +119,8 @@ const ContactSection = ({ onBookingClick }: ContactSectionProps) => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default ContactSection;
