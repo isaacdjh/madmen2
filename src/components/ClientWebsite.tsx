@@ -4,6 +4,7 @@ import ClientNavigation from './client/ClientNavigation';
 import ClientHeroSection from './client/ClientHeroSection';
 import EditorialSection from './client/EditorialSection';
 import ServicesEditorialSection from './client/ServicesEditorialSection';
+import CinematicGallery from './client/CinematicGallery';
 
 // Lazy load componentes que no son críticos para el primer render
 const ClientBookingForm = lazy(() => import('./ClientBookingForm'));
@@ -48,6 +49,7 @@ const ClientWebsite = ({ onBookingClick }: ClientWebsiteProps) => {
       <ClientNavigation onBookingClick={() => setShowBookingForm(true)} />
       <ClientHeroSection onBookingClick={() => setShowBookingForm(true)} />
       <EditorialSection />
+      <CinematicGallery />
       <ServicesEditorialSection />
       
       <Suspense fallback={<SectionSkeleton />}>
