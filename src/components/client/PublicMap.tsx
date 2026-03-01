@@ -62,17 +62,14 @@ const PublicMap = () => {
 
     // Minimal marker
     const customIcon = L.divIcon({
-      html: `<div style="
-        width: 12px; height: 12px;
-        background: hsl(155, 28%, 22%);
-        border-radius: 50%;
-        border: 2px solid hsl(0, 0%, 75%);
-        box-shadow: 0 0 12px rgba(30, 61, 47, 0.4);
-      "></div>`,
+      html: `<svg width="28" height="40" viewBox="0 0 28 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.268 21.732 0 14 0z" fill="#C0392B"/>
+        <circle cx="14" cy="14" r="5.5" fill="white"/>
+      </svg>`,
       className: '',
-      iconSize: [12, 12],
-      iconAnchor: [6, 6],
-      popupAnchor: [0, -10],
+      iconSize: [28, 40],
+      iconAnchor: [14, 40],
+      popupAnchor: [0, -40],
     });
 
     locations.forEach((loc) => {
