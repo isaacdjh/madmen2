@@ -1,5 +1,5 @@
 import beardDetailImg from '@/assets/barbershop-beard-detail.jpg';
-import shaveDetailImg from '@/assets/barbershop-shave-detail.jpg';
+import heroVideo from '@/assets/hero-barbershop-bg.mp4';
 
 const CinematicGallery = () => {
   return (
@@ -49,7 +49,7 @@ const CinematicGallery = () => {
             <div className="md:col-span-5 md:pb-16">
               <div className="relative overflow-hidden">
                 <video
-                  src={shaveDetailImg}
+                  src={heroVideo}
                   autoPlay
                   loop
                   muted
